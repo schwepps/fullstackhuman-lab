@@ -1,3 +1,5 @@
+import { LocaleSwitcher } from '@/components/layout/locale-switcher'
+
 export default function MarketingLayout({
   children,
 }: {
@@ -5,6 +7,9 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="flex min-h-screen flex-col">
+      <header className="fixed top-0 right-0 z-40 p-4 sm:p-6">
+        <LocaleSwitcher />
+      </header>
       <main className="flex-1">{children}</main>
     </div>
   )

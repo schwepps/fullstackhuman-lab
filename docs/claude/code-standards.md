@@ -185,6 +185,37 @@ components/                  components/
                                  feature-detail.tsx
 ```
 
+### Internationalization
+
+All user-facing strings live in `messages/fr.json` and `messages/en.json`. Never hardcode text in components.
+
+**Client Components** (with `'use client'`):
+
+```typescript
+// ✅ Good: Translation hook with namespace
+const t = useTranslations('hero')
+return <h1>{t('headline')}</h1>
+
+// ❌ Bad: Hardcoded string
+return <h1>EXECUTE: full_stack_human.sh</h1>
+```
+
+**Server Components**:
+
+```typescript
+// ✅ Good: Async translation function
+const t = await getTranslations('metadata')
+return { title: t('title') }
+```
+
+**Adding a new translatable string**:
+
+1. Add the key to BOTH `messages/fr.json` AND `messages/en.json`
+2. Use the appropriate translation function in the component
+3. TypeScript will catch missing keys via `global.d.ts` augmentation
+
+**Locale-aware links** — Use `Link` from `@/i18n/routing`, not `next/link`, to auto-prefix locale in URLs.
+
 ---
 
 ## Prohibited Patterns
@@ -199,6 +230,7 @@ components/                  components/
 - **No duplicate definitions** — If you define the same constant, type, or configuration in multiple files, extract it to a shared location
 - **No labels without association** — Every `<Label>` needs `htmlFor` + `id` on the input, or use a wrapping `<label>` element
 - **No loose types for SSOT values** — Use the canonical type, not `string`, in props, form state, and mocks. Import from the SSOT source
+- **No hardcoded user-facing strings** — All text must go through `useTranslations()` / `getTranslations()` via message files
 
 ---
 

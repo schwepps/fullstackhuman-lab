@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "description": "Fullstackhuman - Coming soon."
+  },
+  "hero": {
+    "headline": "EXECUTE: full_stack_human.sh",
+    "subheadline": "One human. Every layer. Now callable.",
+    "cta": "> CONNECT_TO_INSTANCE"
+  },
+  "about": {
+    "bio": "Fran\u00e7ois\u2019s product thinking, technical depth, and delivery instinct \u2014 packaged as an on-demand AI. No fluff. No generic answers. Just the real thing, at machine speed."
+  },
+  "boot": {
+    "mount": {
+      "text": "> Mounting 20+ years of source code... ",
+      "status": "OK"
+    },
+    "product": {
+      "text": "> Loading product instinct... ",
+      "status": "OK"
+    },
+    "leadership": {
+      "text": "> Loading technical leadership... ",
+      "status": "OK"
+    },
+    "honesty": {
+      "text": "> Activating radical honesty module... ",
+      "status": "ALWAYS ON"
+    },
+    "deploy": {
+      "text": "> Deploying Full Stack Human... ",
+      "status": "READY"
+    }
+  },
+  "hud": {
+    "sysId": "SYS.ID: FSH-001",
+    "status": "[ACTIVE]",
+    "role": "ROLE: builder / operator",
+    "version": "v1.0.0"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for does not exist.",
+    "backHome": "Back to Home"
+  }
+}
