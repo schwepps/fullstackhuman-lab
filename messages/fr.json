@@ -1,0 +1,46 @@
+{
+  "metadata": {
+    "description": "Fullstackhuman - Bient\u00f4t disponible."
+  },
+  "hero": {
+    "headline": "EX\u00c9CUTER: full_stack_human.sh",
+    "subheadline": "Un humain. Chaque couche. D\u00e9sormais appelable.",
+    "cta": "> CONNECTER_INSTANCE"
+  },
+  "about": {
+    "bio": "La vision produit, la profondeur technique et l\u2019instinct de livraison de Fran\u00e7ois \u2014 packag\u00e9s en IA \u00e0 la demande. Pas de blabla. Pas de r\u00e9ponses g\u00e9n\u00e9riques. L\u2019authentique, \u00e0 la vitesse machine."
+  },
+  "boot": {
+    "mount": {
+      "text": "> Montage de 20+ ans de code source... ",
+      "status": "OK"
+    },
+    "product": {
+      "text": "> Chargement de l\u2019instinct produit... ",
+      "status": "OK"
+    },
+    "leadership": {
+      "text": "> Chargement du leadership technique... ",
+      "status": "OK"
+    },
+    "honesty": {
+      "text": "> Activation du module d\u2019honn\u00eatet\u00e9 radicale... ",
+      "status": "TOUJOURS ACTIF"
+    },
+    "deploy": {
+      "text": "> D\u00e9ploiement du Full Stack Human... ",
+      "status": "PR\u00caT"
+    }
+  },
+  "hud": {
+    "sysId": "SYS.ID: FSH-001",
+    "status": "[ACTIF]",
+    "role": "R\u00d4LE: builder / op\u00e9rateur",
+    "version": "v1.0.0"
+  },
+  "notFound": {
+    "title": "Page introuvable",
+    "description": "La page que vous recherchez n\u2019existe pas.",
+    "backHome": "Retour \u00e0 l\u2019accueil"
+  }
+}
