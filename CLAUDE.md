@@ -88,3 +88,10 @@ Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `buil
 - **Constants**: UPPER_SNAKE (`MAX_RETRIES`)
 - **Booleans**: Prefix with `is`, `has`, `can`
 - **Prettier**: No semicolons, single quotes, trailing commas (es5)
+
+---
+
+## Detailed Standards & Workflow
+
+@docs/claude/code-standards.md
+@docs/claude/workflow-rules.md
