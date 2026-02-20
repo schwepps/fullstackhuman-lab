@@ -69,14 +69,126 @@
       "dismiss": "Dismiss"
     },
     "quota": {
-      "remaining": "{remaining} of {limit} conversations remaining today",
-      "exhausted": "Daily limit reached. Come back tomorrow or book a call.",
-      "badge": "{remaining}/{limit}"
+      "remainingDay": "{remaining} of {limit} conversations remaining today",
+      "remainingMonth": "{remaining} of {limit} conversations this month",
+      "remainingUnlimited": "Unlimited conversations",
+      "exhausted": "Conversation limit reached. Come back later or upgrade your account.",
+      "badge": "{remaining}/{limit}",
+      "badgeUnlimited": "\u221e"
     },
     "selection": {
       "title": "How can I help?",
       "subtitle": "Choose a conversation mode"
     },
     "avatarAlt": "AI assistant"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to access your conversations",
+      "email": "Email",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "submitting": "Signing in...",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up",
+      "google": "Google",
+      "resetSuccess": "Password reset successfully. You can now sign in."
+    },
+    "signup": {
+      "title": "Create account",
+      "subtitle": "Start your conversations",
+      "displayName": "Name",
+      "email": "Email",
+      "password": "Password",
+      "passwordHint": "At least {minLength} characters with letters and digits",
+      "submit": "Create account",
+      "submitting": "Creating account...",
+      "hasAccount": "Already have an account?",
+      "loginLink": "Sign in",
+      "google": "Google"
+    },
+    "forgotPassword": {
+      "title": "Reset your password",
+      "subtitle": "We'll send you a reset link",
+      "email": "Email",
+      "submit": "Send reset link",
+      "submitting": "Sending...",
+      "success": "If an account exists with that email, you'll receive a reset link.",
+      "backToLogin": "Back to sign in"
+    },
+    "resetPassword": {
+      "title": "Set new password",
+      "subtitle": "Enter your new password",
+      "password": "New password",
+      "confirmPassword": "Confirm password",
+      "passwordHint": "At least {minLength} characters with letters and digits",
+      "submit": "Reset password",
+      "submitting": "Resetting..."
+    },
+    "divider": "Or continue with",
+    "errors": {
+      "invalidCredentials": "Invalid email or password",
+      "passwordsDontMatch": "Passwords do not match.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "userMenu": {
+    "account": "Account settings",
+    "logout": "Sign out",
+    "login": "Sign in"
+  },
+  "account": {
+    "title": "Account settings",
+    "profile": {
+      "title": "Profile",
+      "email": "Email",
+      "displayName": "Display name"
+    },
+    "changePassword": {
+      "title": "Change password",
+      "currentPassword": "Current password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "passwordHint": "At least {minLength} characters with letters and digits",
+      "submit": "Update password",
+      "submitting": "Updating...",
+      "success": "Password updated successfully."
+    },
+    "changeEmail": {
+      "title": "Change email",
+      "newEmail": "New email address",
+      "password": "Current password",
+      "submit": "Update email",
+      "submitting": "Updating...",
+      "success": "Confirmation email sent to your new address."
+    },
+    "oauthOnly": {
+      "title": "Signed in with Google",
+      "description": "To change your password or email, you'll need to set a password first.",
+      "setPasswordLink": "Set a password"
+    },
+    "deleteAccount": {
+      "title": "Delete account",
+      "description": "Permanently delete your account and all associated data. This action cannot be undone.",
+      "submit": "Delete my account",
+      "confirmTitle": "Are you sure?",
+      "confirmDescription": "This will permanently delete your account and all your data. This cannot be undone.",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password to confirm",
+      "confirmSubmit": "Yes, delete my account",
+      "confirming": "Deleting...",
+      "cancel": "Cancel",
+      "closeLabel": "Close"
+    },
+    "errors": {
+      "wrongPassword": "Current password is incorrect",
+      "passwordsDontMatch": "Passwords do not match.",
+      "samePassword": "New password must be different from current password.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "generic": "Something went wrong. Please try again."
+    }
   }
 }

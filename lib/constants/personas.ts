@@ -56,3 +56,14 @@ export const PERSONA_OPENING_MESSAGE_KEYS: Record<
   critic: 'personas.critic.openingMessage',
   guide: 'personas.guide.openingMessage',
 }
+
+export const PERSONA_NAME_KEYS: Record<
+  PersonaId,
+  | 'header.personaName.doctor'
+  | 'header.personaName.critic'
+  | 'header.personaName.guide'
+> = {
+  doctor: 'header.personaName.doctor',
+  critic: 'header.personaName.critic',
+  guide: 'header.personaName.guide',
+}

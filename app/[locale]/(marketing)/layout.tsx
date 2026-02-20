@@ -1,4 +1,6 @@
 import { LocaleSwitcher } from '@/components/layout/locale-switcher'
+import { UserMenu } from '@/components/layout/user-menu'
+import { BrandLink } from '@/components/layout/brand-link'
 
 export default function MarketingLayout({
   children,
@@ -7,8 +9,13 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="fixed top-0 right-0 z-40 p-4 sm:p-6">
-        <LocaleSwitcher />
+      {/* Fixed + transparent: floats over the full-bleed hero without obscuring content */}
+      <header className="fixed top-0 right-0 left-0 z-40 flex h-14 items-center justify-between border-b border-transparent px-4 sm:px-6">
+        <BrandLink />
+        <div className="flex items-center gap-3">
+          <LocaleSwitcher />
+          <UserMenu />
+        </div>
       </header>
       <main className="flex-1">{children}</main>
     </div>

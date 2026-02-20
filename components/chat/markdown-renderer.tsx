@@ -27,16 +27,21 @@ const markdownComponents: Components = {
     <strong className="font-bold text-primary">{children}</strong>
   ),
   em: ({ children }) => <em className="text-accent italic">{children}</em>,
-  a: ({ href, children }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-primary underline transition-colors hover:text-accent"
-    >
-      {children}
-    </a>
-  ),
+  a: ({ href, children }) => {
+    if (href && !/^https?:\/\//i.test(href)) {
+      return <span>{children}</span>
+    }
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-primary underline transition-colors hover:text-accent"
+      >
+        {children}
+      </a>
+    )
+  },
   ul: ({ children }) => (
     <ul className="mb-3 ml-4 list-disc space-y-1 text-foreground/90">
       {children}

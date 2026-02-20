@@ -2,11 +2,13 @@ import { NextRequest } from 'next/server'
 import { getAnthropicClient } from '@/lib/ai/client'
 import { assembleSystemPrompt } from '@/lib/ai/prompt-assembler'
 import {
-  checkRateLimit,
-  recordConversationStart,
-  checkIpRateLimit,
-  recordIpRequest,
+  checkAnonymousRateLimit,
+  recordAnonymousConversation,
+  consumeAuthenticatedConversation,
+  consumeIpRequest,
 } from '@/lib/ai/rate-limiter'
+import { getOptionalAuth } from '@/lib/auth/helpers'
+import { getClientIp } from '@/lib/utils'
 import { PERSONA_IDS } from '@/lib/constants/personas'
 import {
   ANTHROPIC_MODEL,
@@ -32,14 +34,6 @@ function isValidMessageRole(
   )
 }
 
-function getClientIp(request: NextRequest): string {
-  return (
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    request.headers.get('x-real-ip') ??
-    'unknown'
-  )
-}
-
 export async function POST(request: NextRequest) {
   // CSRF: require Origin header and verify it matches host.
   // fetch() POST always sends Origin in modern browsers.
@@ -58,11 +52,13 @@ export async function POST(request: NextRequest) {
   }
 
   // Server-side IP rate limiting (defense in depth)
-  const clientIp = getClientIp(request)
-  if (!checkIpRateLimit(clientIp)) {
+  const clientIp = getClientIp(request.headers)
+  if (!consumeIpRequest(clientIp)) {
     return Response.json({ error: 'rate_limit_exceeded' }, { status: 429 })
   }
-  recordIpRequest(clientIp)
+
+  // Check auth state (non-blocking — anonymous users get null)
+  const auth = await getOptionalAuth()
 
   let body: unknown
   try {
@@ -114,14 +110,28 @@ export async function POST(request: NextRequest) {
 
   try {
     // Rate limit: only count new conversations (detected by message count heuristic).
-    // NOTE: messages.length is client-controlled — a crafted request could bypass this check.
-    // The IP rate limiter (60 req/hour) provides a hard cap on total API cost regardless.
-    // For stronger enforcement, migrate to server-side conversation tracking (Vercel KV/Redis).
     const isNewConversation = messages.length === NEW_CONVERSATION_MESSAGE_COUNT
     if (isNewConversation) {
-      const { allowed } = await checkRateLimit()
-      if (!allowed) {
-        return Response.json({ error: 'rate_limit_exceeded' }, { status: 429 })
+      if (auth.isAuthenticated) {
+        // Atomic check-and-consume via PostgreSQL function
+        const { allowed } = await consumeAuthenticatedConversation(auth.user.id)
+        if (!allowed) {
+          return Response.json(
+            { error: 'rate_limit_exceeded' },
+            { status: 429 }
+          )
+        }
+      } else {
+        const rateResult = await checkAnonymousRateLimit()
+        if (!rateResult.allowed) {
+          return Response.json(
+            { error: 'rate_limit_exceeded' },
+            { status: 429 }
+          )
+        }
+        // Record immediately after check passes, before stream creation.
+        // Prevents bypass via stream failures that would skip recording.
+        await recordAnonymousConversation()
       }
     }
 
@@ -141,11 +151,6 @@ export async function POST(request: NextRequest) {
       system: systemPrompt,
       messages: anthropicMessages,
     })
-
-    // Record after successful stream creation
-    if (isNewConversation) {
-      await recordConversationStart()
-    }
 
     const encoder = new TextEncoder()
     const readable = new ReadableStream({
