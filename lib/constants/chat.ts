@@ -1,4 +1,3 @@
-export const MAX_CONVERSATIONS_PER_DAY = 3
 export const MAX_MESSAGES_PER_REQUEST = 50
 export const RATE_LIMIT_COOKIE_NAME = 'fsh_conversations'
 export const RATE_LIMIT_COOKIE_MAX_AGE_SECONDS = 86_400 // 24 hours
@@ -16,7 +15,7 @@ export const NEW_CONVERSATION_MESSAGE_COUNT = 3
 
 export const VALID_MESSAGE_ROLES = ['user', 'assistant'] as const
 
-export const BRAND_NAME = 'FULL_STACK_HUMAN'
+export { BRAND_NAME, BRAND_NAME_SHORT } from '@/lib/constants/brand'
 
 // Error code → i18n key mapping for chat error messages
 export type ErrorMessageKey =

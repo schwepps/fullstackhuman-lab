@@ -28,6 +28,11 @@ const securityHeaders = [
     key: 'Permissions-Policy',
     value: 'camera=(), microphone=(), geolocation=()',
   },
+  {
+    key: 'Content-Security-Policy',
+    value:
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://*.supabase.co; font-src 'self'; frame-ancestors 'self';",
+  },
 ]
 
 const nextConfig: NextConfig = {

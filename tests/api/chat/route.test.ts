@@ -31,6 +31,10 @@ vi.mock('@anthropic-ai/sdk', () => ({
   },
 }))
 
+vi.mock('@/lib/auth/helpers', () => ({
+  getOptionalAuth: vi.fn(async () => ({ isAuthenticated: false, user: null })),
+}))
+
 // Set API key before importing route
 vi.stubEnv('ANTHROPIC_API_KEY', 'test-key')
 

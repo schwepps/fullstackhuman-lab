@@ -1,26 +1,27 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { MAX_CONVERSATIONS_PER_DAY } from '@/lib/constants/chat'
+import { useState, useEffect, useCallback } from 'react'
+import { TIER_QUOTAS } from '@/lib/constants/quotas'
+import type { QuotaInfo } from '@/types/user'
 
-interface QuotaState {
-  remaining: number
-  limit: number
+interface QuotaState extends QuotaInfo {
   isLoading: boolean
 }
 
 const INITIAL_STATE: QuotaState = {
-  remaining: MAX_CONVERSATIONS_PER_DAY,
-  limit: MAX_CONVERSATIONS_PER_DAY,
+  remaining: TIER_QUOTAS.anonymous.maxConversationsPerDay,
+  limit: TIER_QUOTAS.anonymous.maxConversationsPerDay,
+  tier: 'anonymous',
+  period: 'day',
   isLoading: true,
 }
 
-async function fetchQuota(): Promise<{ remaining: number; limit: number }> {
+async function fetchQuota(): Promise<QuotaInfo> {
   const response = await fetch('/api/chat/quota')
   if (!response.ok) {
     throw new Error('Failed to fetch quota')
   }
-  return response.json() as Promise<{ remaining: number; limit: number }>
+  return response.json() as Promise<QuotaInfo>
 }
 
 export function useQuota() {
@@ -31,22 +32,14 @@ export function useQuota() {
     fetchQuota()
       .then((data) => {
         if (!cancelled) {
-          setState({
-            remaining: data.remaining,
-            limit: data.limit,
-            isLoading: false,
-          })
+          setState({ ...data, isLoading: false })
         }
       })
       .catch(() => {
         if (!cancelled) {
           // Optimistic: allow conversations when quota endpoint is unreachable.
           // Server-side rate limiter still enforces limits.
-          setState({
-            remaining: MAX_CONVERSATIONS_PER_DAY,
-            limit: MAX_CONVERSATIONS_PER_DAY,
-            isLoading: false,
-          })
+          setState({ ...INITIAL_STATE, isLoading: false })
         }
       })
     return () => {
@@ -54,18 +47,14 @@ export function useQuota() {
     }
   }, [])
 
-  async function refetch() {
+  const refetch = useCallback(async () => {
     try {
       const data = await fetchQuota()
-      setState({
-        remaining: data.remaining,
-        limit: data.limit,
-        isLoading: false,
-      })
+      setState({ ...data, isLoading: false })
     } catch {
       // Keep current state on refetch failure
     }
-  }
+  }, [])
 
   return { ...state, refetch }
 }

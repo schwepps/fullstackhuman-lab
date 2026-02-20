@@ -10,17 +10,33 @@ import {
 } from '@/lib/constants/personas'
 import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
 import type { PersonaId } from '@/types/chat'
+import type { QuotaPeriod } from '@/types/user'
 
-function getQuotaColor(remaining: number): string {
+function getQuotaColor(remaining: number | null): string {
+  if (remaining === null) return 'text-primary/70'
   if (remaining === 0) return 'text-destructive'
   if (remaining === 1) return 'text-warning'
   return 'text-primary/70'
 }
 
+function getQuotaMessage(
+  isExhausted: boolean,
+  period: QuotaPeriod,
+  remaining: number | null,
+  limit: number | null,
+  t: ReturnType<typeof useTranslations>
+): string {
+  if (isExhausted) return t('quota.exhausted')
+  if (limit === null || remaining === null) return t('quota.remainingUnlimited')
+  if (period === 'month') return t('quota.remainingMonth', { remaining, limit })
+  return t('quota.remainingDay', { remaining, limit })
+}
+
 interface PersonaSelectorProps {
   onSelect: (persona: PersonaId) => void
-  remaining: number
-  limit: number
+  remaining: number | null
+  limit: number | null
+  period: QuotaPeriod
   isLoading: boolean
 }
 
@@ -28,10 +44,12 @@ export function PersonaSelector({
   onSelect,
   remaining,
   limit,
+  period,
   isLoading,
 }: PersonaSelectorProps) {
   const t = useTranslations('chat')
-  const isExhausted = !isLoading && remaining === 0
+  const isUnlimited = limit === null
+  const isExhausted = !isLoading && !isUnlimited && remaining === 0
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
@@ -51,9 +69,7 @@ export function PersonaSelector({
           <span
             className={`terminal-border mt-3 inline-block px-3 py-1 font-mono text-xs ${getQuotaColor(remaining)}`}
           >
-            {isExhausted
-              ? t('quota.exhausted')
-              : t('quota.remaining', { remaining, limit })}
+            {getQuotaMessage(isExhausted, period, remaining, limit, t)}
           </span>
         )}
       </motion.div>

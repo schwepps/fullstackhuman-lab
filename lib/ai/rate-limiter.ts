@@ -1,23 +1,26 @@
 import { cookies } from 'next/headers'
 import {
   RATE_LIMIT_COOKIE_NAME,
-  MAX_CONVERSATIONS_PER_DAY,
   RATE_LIMIT_COOKIE_MAX_AGE_SECONDS,
 } from '@/lib/constants/chat'
+import { consumeFromTimestampMap } from '@/lib/rate-limit-utils'
+import { TIER_QUOTAS, type UserTier, USER_TIERS } from '@/lib/constants/quotas'
+import { createClient } from '@/lib/supabase/server'
+import type { QuotaInfo } from '@/types/user'
 
-interface RateLimitResult {
+export interface RateLimitResult extends QuotaInfo {
   allowed: boolean
-  remaining: number
 }
 
-// Server-side in-memory rate limit store (per-IP, sliding window).
-// Supplements the cookie-based tracking for defense in depth.
-// NOTE: On serverless platforms (e.g., Vercel), each function instance has its own
-// Map. Cold starts reset the counter. For stronger enforcement, migrate to an
-// edge-compatible store (Vercel KV, Upstash Redis).
+// --- Anonymous rate limiting (cookie-based) ---
+// Trade-off: cookie-based quota can be bypassed by clearing cookies / incognito.
+// The IP rate limiter below provides a secondary defense layer.
+
+// Known limitation: in-memory Map resets on serverless cold starts.
+// For production hardening, migrate to a durable store (Upstash Redis / Vercel KV).
 const ipRequestCounts = new Map<string, number[]>()
 const MAX_REQUESTS_PER_IP_PER_HOUR = 60
-const IP_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+const IP_WINDOW_MS = 60 * 60 * 1000
 
 function getConversationTimestamps(cookieValue: string | undefined): number[] {
   if (!cookieValue) return []
@@ -33,37 +36,35 @@ function getConversationTimestamps(cookieValue: string | undefined): number[] {
   }
 }
 
-export function checkIpRateLimit(ip: string): boolean {
-  const now = Date.now()
-  const cutoff = now - IP_WINDOW_MS
-  const timestamps = ipRequestCounts.get(ip) ?? []
-  const recent = timestamps.filter((ts) => ts > cutoff)
-  if (recent.length === 0) {
-    ipRequestCounts.delete(ip)
-  } else {
-    ipRequestCounts.set(ip, recent)
-  }
-  return recent.length < MAX_REQUESTS_PER_IP_PER_HOUR
+/**
+ * Atomically check and record an IP request.
+ * Returns true if the request is allowed, false if rate-limited.
+ */
+export function consumeIpRequest(ip: string): boolean {
+  return consumeFromTimestampMap(
+    ipRequestCounts,
+    ip,
+    IP_WINDOW_MS,
+    MAX_REQUESTS_PER_IP_PER_HOUR
+  )
 }
 
-export function recordIpRequest(ip: string): void {
-  const now = Date.now()
-  const cutoff = now - IP_WINDOW_MS
-  const timestamps = ipRequestCounts.get(ip) ?? []
-  const recent = timestamps.filter((ts) => ts > cutoff)
-  recent.push(now)
-  ipRequestCounts.set(ip, recent)
-}
-
-export async function checkRateLimit(): Promise<RateLimitResult> {
+export async function checkAnonymousRateLimit(): Promise<RateLimitResult> {
   const cookieStore = await cookies()
   const cookie = cookieStore.get(RATE_LIMIT_COOKIE_NAME)
   const timestamps = getConversationTimestamps(cookie?.value)
-  const remaining = Math.max(0, MAX_CONVERSATIONS_PER_DAY - timestamps.length)
-  return { allowed: timestamps.length < MAX_CONVERSATIONS_PER_DAY, remaining }
+  const limit = TIER_QUOTAS.anonymous.maxConversationsPerDay
+  const remaining = Math.max(0, limit - timestamps.length)
+  return {
+    allowed: timestamps.length < limit,
+    remaining,
+    limit,
+    tier: 'anonymous',
+    period: 'day',
+  }
 }
 
-export async function recordConversationStart(): Promise<void> {
+export async function recordAnonymousConversation(): Promise<void> {
   const cookieStore = await cookies()
   const cookie = cookieStore.get(RATE_LIMIT_COOKIE_NAME)
   const timestamps = getConversationTimestamps(cookie?.value)
@@ -76,4 +77,88 @@ export async function recordConversationStart(): Promise<void> {
     maxAge: RATE_LIMIT_COOKIE_MAX_AGE_SECONDS,
     path: '/',
   })
+}
+
+// --- Authenticated rate limiting (DB-based, atomic via RPC) ---
+
+function isValidTier(tier: unknown): tier is UserTier {
+  return typeof tier === 'string' && USER_TIERS.includes(tier as UserTier)
+}
+
+/**
+ * Read-only rate limit check for authenticated users.
+ * Used by the quota API endpoint to display remaining quota.
+ * Does NOT consume a conversation — use consumeAuthenticatedConversation() for that.
+ */
+export async function checkAuthenticatedRateLimit(
+  userId: string
+): Promise<RateLimitResult> {
+  const supabase = await createClient()
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('tier, conversation_count_month, conversation_count_reset_at')
+    .eq('id', userId)
+    .single()
+
+  if (!profile || !isValidTier(profile.tier)) {
+    return {
+      allowed: false,
+      remaining: 0,
+      limit: 0,
+      tier: 'free',
+      period: 'month',
+    }
+  }
+
+  const tier = profile.tier
+  const quotas = TIER_QUOTAS[tier]
+
+  // Paid users: unlimited
+  if (quotas.maxConversationsPerMonth === null) {
+    return {
+      allowed: true,
+      remaining: null,
+      limit: null,
+      tier,
+      period: 'month',
+    }
+  }
+
+  // Account for monthly reset when reading
+  const resetAt = new Date(profile.conversation_count_reset_at)
+  const monthlyCount =
+    resetAt <= new Date() ? 0 : profile.conversation_count_month
+  const limit = quotas.maxConversationsPerMonth
+  const remaining = Math.max(0, limit - monthlyCount)
+
+  return {
+    allowed: monthlyCount < limit,
+    remaining,
+    limit,
+    tier,
+    period: 'month',
+  }
+}
+
+/**
+ * Atomically check and consume one conversation for an authenticated user.
+ * Uses the use_conversation() PostgreSQL function with row-level locking
+ * to prevent race conditions. Tier-to-limit mapping is resolved inside
+ * the SQL function under the same lock to prevent TOCTOU races.
+ */
+export async function consumeAuthenticatedConversation(
+  userId: string
+): Promise<{ allowed: boolean }> {
+  const supabase = await createClient()
+
+  const { data, error } = await supabase.rpc('use_conversation', {
+    p_user_id: userId,
+  })
+
+  if (error || !data || data.length === 0) {
+    return { allowed: false }
+  }
+
+  return { allowed: data[0].was_allowed }
 }
