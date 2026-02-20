@@ -228,7 +228,7 @@ summary,
   }
 
   .terminal-glow-hover {
-    @apply transition-shadow hover:shadow-[0_0_15px_var(--color-primary,#22d3ee)_/_0.1];
+    @apply transition-shadow hover:shadow-[0_0_15px_var(--color-primary,#22d3ee)/0.1];
   }
 
   .chat-scrollbar::-webkit-scrollbar {
