@@ -41,18 +41,20 @@ function getClientIp(request: NextRequest): string {
 }
 
 export async function POST(request: NextRequest) {
-  // CSRF: verify request origin matches host exactly
+  // CSRF: require Origin header and verify it matches host.
+  // fetch() POST always sends Origin in modern browsers.
   const origin = request.headers.get('origin')
   const host = request.headers.get('host')
-  if (origin && host) {
-    try {
-      const originHost = new URL(origin).host
-      if (originHost !== host) {
-        return Response.json({ error: 'Forbidden' }, { status: 403 })
-      }
-    } catch {
+  if (!origin || !host) {
+    return Response.json({ error: 'Forbidden' }, { status: 403 })
+  }
+  try {
+    const originHost = new URL(origin).host
+    if (originHost !== host) {
       return Response.json({ error: 'Forbidden' }, { status: 403 })
     }
+  } catch {
+    return Response.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   // Server-side IP rate limiting (defense in depth)
