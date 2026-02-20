@@ -131,6 +131,10 @@ export function useChat() {
           setState((prev) => ({
             ...prev,
             isStreaming: false,
+            // Remove empty assistant placeholder if no content was streamed
+            messages: prev.messages.filter(
+              (m) => m.id !== assistantId || m.content !== ''
+            ),
             error: 'stream_error',
           }))
           return

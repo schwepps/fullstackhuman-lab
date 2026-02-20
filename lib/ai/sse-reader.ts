@@ -35,6 +35,9 @@ export async function* readSSEStream(
     }
   }
 
+  // Flush any remaining bytes from the decoder (incomplete multi-byte chars)
+  buffer += decoder.decode()
+
   // Process any remaining buffered data
   if (buffer.startsWith('data: ')) {
     const data = buffer.slice(6)

@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
   if (!checkIpRateLimit(clientIp)) {
     return Response.json({ error: 'rate_limit_exceeded' }, { status: 429 })
   }
+  recordIpRequest(clientIp)
 
   let body: unknown
   try {
@@ -110,7 +111,10 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Rate limit: only count new conversations
+    // Rate limit: only count new conversations (detected by message count heuristic).
+    // NOTE: messages.length is client-controlled — a crafted request could bypass this check.
+    // The IP rate limiter (60 req/hour) provides a hard cap on total API cost regardless.
+    // For stronger enforcement, migrate to server-side conversation tracking (Vercel KV/Redis).
     const isNewConversation = messages.length === NEW_CONVERSATION_MESSAGE_COUNT
     if (isNewConversation) {
       const { allowed } = await checkRateLimit()
@@ -118,9 +122,6 @@ export async function POST(request: NextRequest) {
         return Response.json({ error: 'rate_limit_exceeded' }, { status: 429 })
       }
     }
-
-    // Record IP request for server-side rate limiting
-    recordIpRequest(clientIp)
 
     const systemPrompt = await assembleSystemPrompt(persona)
 
