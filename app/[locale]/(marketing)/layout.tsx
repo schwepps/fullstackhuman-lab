@@ -6,7 +6,7 @@ export default function MarketingLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-svh flex-col">
       <header className="fixed top-0 right-0 z-40 p-4 sm:p-6">
         <LocaleSwitcher />
       </header>

@@ -1,0 +1,65 @@
+'use client'
+
+import { useTranslations } from 'next-intl'
+import { ChatMessageList } from '@/components/chat/chat-message-list'
+import { ChatInput } from '@/components/chat/chat-input'
+import { Button } from '@/components/ui/button'
+import { X } from 'lucide-react'
+import { ERROR_MESSAGE_KEYS } from '@/lib/constants/chat'
+import type { ChatMessage, PersonaId } from '@/types/chat'
+
+interface ChatContainerProps {
+  messages: ChatMessage[]
+  persona: PersonaId
+  isStreaming: boolean
+  error: string | null
+  onSendMessage: (content: string) => void
+  onStopStreaming: () => void
+  onDismissError: () => void
+}
+
+export function ChatContainer({
+  messages,
+  persona,
+  isStreaming,
+  error,
+  onSendMessage,
+  onStopStreaming,
+  onDismissError,
+}: ChatContainerProps) {
+  const t = useTranslations('chat.errors')
+
+  return (
+    <div className="flex flex-1 flex-col">
+      {error && (
+        <div className="border-b border-destructive/20 bg-destructive/10 px-4 py-3">
+          <div className="mx-auto flex max-w-3xl items-start justify-between gap-3">
+            <p className="text-sm text-destructive">
+              {t(ERROR_MESSAGE_KEYS[error] ?? 'genericError')}
+            </p>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              onClick={onDismissError}
+              aria-label={t('dismiss')}
+            >
+              <X className="size-3.5" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <ChatMessageList
+        messages={messages}
+        persona={persona}
+        isStreaming={isStreaming}
+      />
+
+      <ChatInput
+        onSendMessage={onSendMessage}
+        isStreaming={isStreaming}
+        onStopStreaming={onStopStreaming}
+      />
+    </div>
+  )
+}

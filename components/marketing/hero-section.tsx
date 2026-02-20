@@ -2,6 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
+import { Link } from '@/i18n/routing'
 import { PortraitViewfinder } from '@/components/marketing/portrait-viewfinder'
 import type { HeroSectionProps } from '@/types/marketing'
 
@@ -55,12 +56,12 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
 
       {/* CTA */}
       <motion.div variants={itemVariants}>
-        <a
-          href="#connect"
+        <Link
+          href="/chat"
           className="btn-cyber terminal-text-glow inline-flex h-12 items-center px-8 font-mono text-sm uppercase tracking-widest animate-pulse-border touch-manipulation sm:h-10"
         >
           {t('cta')}
-        </a>
+        </Link>
       </motion.div>
     </motion.section>
   )

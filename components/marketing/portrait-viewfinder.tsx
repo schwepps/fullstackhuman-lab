@@ -79,17 +79,17 @@ export function PortraitViewfinder() {
         {/* Portrait image */}
         <div className="relative h-80 w-60 overflow-hidden sm:h-100 sm:w-75">
           <Image
-            src="/images/me.jpg"
+            src="/images/fullstackhuman.png"
             alt="François Schuers"
             fill
             priority
             sizes="(max-width: 640px) 240px, 300px"
             className={cn(
               'object-cover object-top',
-              'grayscale contrast-[1.2] brightness-[0.9] sepia-[0.2] hue-rotate-160',
+              'contrast-[1.2] brightness-[0.9]',
               'transition-[filter] duration-150',
-              'group-hover:grayscale-0 group-hover:sepia-0 group-hover:hue-rotate-0 group-hover:animate-flicker',
-              'group-active:grayscale-0 group-active:sepia-0 group-active:hue-rotate-0'
+              'group-hover:brightness-110 group-hover:contrast-[1.3] group-hover:animate-flicker',
+              'group-active:brightness-110 group-active:contrast-[1.3]'
             )}
           />
 

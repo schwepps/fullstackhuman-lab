@@ -3,6 +3,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Restore cursor: pointer on interactive elements (Tailwind v4 removed the default) */
+button,
+[role='button'],
+a,
+select,
+summary,
+[type='button'],
+[type='submit'],
+[type='reset'] {
+  cursor: pointer;
+}
+
 @theme inline {
   /* Fonts */
   --font-sans: 'Inter', system-ui, sans-serif;
@@ -13,6 +25,8 @@
   --color-foreground: #e2e8f0;
   --color-primary: #22d3ee; /* Electric Cyan */
   --color-accent: #4ade80; /* Matrix Green */
+  --color-warning: #f59e0b; /* Amber Warning */
+  --color-destructive: #ef4444; /* Red Destructive */
   --color-border: #1e293b;
   --color-ring: #22d3ee;
 
@@ -211,5 +225,118 @@
       linear-gradient(rgba(34, 211, 238, 0.07) 1px, transparent 1px),
       linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px);
     background-size: 20px 20px;
+  }
+
+  .terminal-glow-hover {
+    @apply transition-shadow hover:shadow-[0_0_15px_rgba(34,211,238,0.1)];
+  }
+
+  .chat-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .chat-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .chat-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(34, 211, 238, 0.2);
+    border-radius: 3px;
+  }
+}
+
+/* Print-friendly overrides for PDF/browser print */
+@media print {
+  /* Remove CRT effects */
+  body::before,
+  body::after {
+    display: none !important;
+  }
+
+  /* Reset background and text for paper */
+  body {
+    background: white !important;
+    background-image: none !important;
+    color: #1a1a1a !important;
+  }
+
+  /* Strip effects globally */
+  * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  /* Headings and strong text: dark on paper */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  th {
+    color: #1a1a1a !important;
+  }
+
+  /* Links: underlined dark text */
+  a {
+    color: #1a1a1a !important;
+    text-decoration: underline !important;
+  }
+
+  /* Tables: visible gray borders */
+  table,
+  th,
+  td {
+    border-color: #d1d5db !important;
+  }
+
+  thead {
+    background: #f3f4f6 !important;
+  }
+
+  /* Body text */
+  p,
+  li,
+  td,
+  span,
+  div {
+    color: #1a1a1a !important;
+  }
+
+  /* Accent text */
+  em {
+    color: #374151 !important;
+  }
+
+  /* Reset terminal glow classes */
+  .terminal-text-glow,
+  .terminal-green-glow {
+    text-shadow: none !important;
+    color: #1a1a1a !important;
+  }
+
+  .terminal-border {
+    border-color: #d1d5db !important;
+    box-shadow: none !important;
+  }
+
+  /* Page layout */
+  @page {
+    margin: 2cm;
+  }
+
+  /* Prevent page breaks inside key elements */
+  table,
+  blockquote,
+  pre,
+  h2,
+  h3 {
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
   }
 }
