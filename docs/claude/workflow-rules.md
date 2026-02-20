@@ -115,6 +115,94 @@ Run through before opening any PR:
 
 ---
 
+## Server Action Checklist
+
+Every server action MUST include, in order:
+
+1. **Rate limit check** — `checkAuthRateLimit()` before any DB call
+2. **Input validation** — Zod schema with typed error codes
+3. **Auth verification** — `getUser()` independent of UI (don't trust client-side guards)
+4. **Identity type check** — For protected actions, verify `user.identities` includes the expected provider (OAuth-only guard)
+5. **Typed return** — Use `AUTH_ERROR.*` / `AUTH_SUCCESS.*` constants, never string literals
+
+```typescript
+// ✅ Good: Complete server action pattern
+export async function myAction(
+  _prev: AuthActionState,
+  formData: FormData
+): Promise<AuthActionState> {
+  if (!(await checkAuthRateLimit())) return { error: AUTH_ERROR.RATE_LIMITED }
+  const parsed = mySchema.safeParse({
+    /* ... */
+  })
+  if (!parsed.success) return { error: AUTH_ERROR.VALIDATION }
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: AUTH_ERROR.UNAUTHORIZED }
+  // ... business logic ...
+  return { success: AUTH_SUCCESS.MY_CODE }
+}
+```
+
+---
+
+## Custom Hook Return Stability
+
+Every function returned from a custom hook MUST be wrapped in `useCallback`.
+Every object/array returned from a custom hook MUST be wrapped in `useMemo`.
+
+This prevents downstream `useEffect` instability when consumers include hook returns in dependency arrays.
+
+```typescript
+// ❌ Bad: new function reference every render
+export function useMyHook() {
+  function refetch() {
+    /* ... */
+  }
+  return { refetch }
+}
+
+// ✅ Good: stable reference
+export function useMyHook() {
+  const refetch = useCallback(async () => {
+    /* ... */
+  }, [])
+  return { refetch }
+}
+```
+
+---
+
+## DRY Trigger for Auth/Form Patterns
+
+When copying a block >5 lines for the second time in auth or form code, extract immediately. Don't wait for the third occurrence — auth flows almost always have 3+ consumers.
+
+---
+
+## SSOT Verification Before Writing
+
+Before writing any constant, type, or pattern:
+
+1. Grep for the value in `lib/` and `types/`
+2. If it exists, import it
+3. If it doesn't, define it in the canonical location and export
+4. In tests, import constants from source — never redeclare them locally
+
+---
+
+## Automated Quality Checks
+
+Run `pnpm pre-review` before opening any PR. This runs:
+
+- `check:i18n` — Verifies en.json and fr.json have identical key structures
+- `check:auth-strings` — Catches magic auth string literals (must use AUTH_ERROR/AUTH_SUCCESS constants)
+- `check:duplicates` — Copy-paste detection via jscpd
+- `lint` + `typecheck` + `test:run`
+
+---
+
 ## File Editing
 
 Before editing a file, always re-read it first to get the current state. Never edit based on stale file contents. This is especially important during multi-file changes.

@@ -18,7 +18,11 @@
     "db:reset": "supabase db reset",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",
-    "supabase:status": "supabase status"
+    "supabase:status": "supabase status",
+    "check:i18n": "bash scripts/check-i18n-parity.sh",
+    "check:auth-strings": "bash scripts/check-no-magic-auth.sh",
+    "check:duplicates": "jscpd lib/ components/ app/ --config .jscpd.json",
+    "pre-review": "bash scripts/pre-review.sh"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
@@ -57,6 +61,7 @@
     "eslint-config-next": "16.1.6",
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
+    "jscpd": "^4.0.8",
     "jsdom": "^27.4.0",
     "lint-staged": "^16.2.7",
     "prettier": "^3.8.1",
