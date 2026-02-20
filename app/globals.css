@@ -3,6 +3,18 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Restore cursor: pointer on interactive elements (Tailwind v4 removed the default) */
+button,
+[role='button'],
+a,
+select,
+summary,
+[type='button'],
+[type='submit'],
+[type='reset'] {
+  cursor: pointer;
+}
+
 @theme inline {
   /* Fonts */
   --font-sans: 'Inter', system-ui, sans-serif;

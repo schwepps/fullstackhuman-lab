@@ -45,6 +45,7 @@
     "header": {
       "backLabel": "Retour",
       "backConfirm": "Quitter cette conversation ? Votre historique sera perdu.",
+      "newConversation": "Nouveau",
       "personaName": {
         "doctor": "Le Docteur",
         "critic": "Le Critique",
@@ -66,6 +67,11 @@
       "streamError": "La r\u00e9ponse a \u00e9t\u00e9 interrompue. Votre conversation est toujours l\u00e0 \u2014 essayez d\u2019envoyer un autre message.",
       "genericError": "Une erreur s\u2019est produite. Veuillez r\u00e9essayer.",
       "dismiss": "Fermer"
+    },
+    "quota": {
+      "remaining": "{remaining} sur {limit} conversations restantes aujourd\u2019hui",
+      "exhausted": "Limite quotidienne atteinte. Revenez demain ou r\u00e9servez un appel.",
+      "badge": "{remaining}/{limit}"
     },
     "selection": {
       "title": "Comment puis-je vous aider ?",

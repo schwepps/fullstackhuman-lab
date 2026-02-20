@@ -45,6 +45,7 @@
     "header": {
       "backLabel": "Back",
       "backConfirm": "Leave this conversation? Your history will be lost.",
+      "newConversation": "New",
       "personaName": {
         "doctor": "The Doctor",
         "critic": "The Critic",
@@ -66,6 +67,11 @@
       "streamError": "The response was interrupted. Your conversation is still here \u2014 try sending another message.",
       "genericError": "Something went wrong. Please try again.",
       "dismiss": "Dismiss"
+    },
+    "quota": {
+      "remaining": "{remaining} of {limit} conversations remaining today",
+      "exhausted": "Daily limit reached. Come back tomorrow or book a call.",
+      "badge": "{remaining}/{limit}"
     },
     "selection": {
       "title": "How can I help?",

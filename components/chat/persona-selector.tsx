@@ -11,12 +11,25 @@ import {
 import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
 import type { PersonaId } from '@/types/chat'
 
-interface PersonaSelectorProps {
-  onSelect: (persona: PersonaId) => void
+function getQuotaColor(remaining: number): string {
+  if (remaining === 0) return 'text-destructive'
+  if (remaining === 1) return 'text-warning'
+  return 'text-primary/70'
 }
 
-export function PersonaSelector({ onSelect }: PersonaSelectorProps) {
+interface PersonaSelectorProps {
+  onSelect: (persona: PersonaId) => void
+  remaining: number
+  limit: number
+}
+
+export function PersonaSelector({
+  onSelect,
+  remaining,
+  limit,
+}: PersonaSelectorProps) {
   const t = useTranslations('chat')
+  const isExhausted = remaining === 0
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
@@ -32,6 +45,13 @@ export function PersonaSelector({ onSelect }: PersonaSelectorProps) {
         <p className="text-sm text-muted-foreground">
           {t('selection.subtitle')}
         </p>
+        <span
+          className={`terminal-border mt-3 inline-block px-3 py-1 font-mono text-xs ${getQuotaColor(remaining)}`}
+        >
+          {isExhausted
+            ? t('quota.exhausted')
+            : t('quota.remaining', { remaining, limit })}
+        </span>
       </motion.div>
 
       <div className="grid w-full max-w-3xl gap-4 md:grid-cols-3">
@@ -46,15 +66,22 @@ export function PersonaSelector({ onSelect }: PersonaSelectorProps) {
             >
               <Card
                 role="button"
-                tabIndex={0}
-                onClick={() => onSelect(id)}
+                tabIndex={isExhausted ? -1 : 0}
+                onClick={() => {
+                  if (!isExhausted) onSelect(id)
+                }}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
+                  if (!isExhausted && (e.key === 'Enter' || e.key === ' ')) {
                     e.preventDefault()
                     onSelect(id)
                   }
                 }}
-                className="h-full cursor-pointer border-primary/20 transition-all hover:border-primary/50 terminal-glow-hover active:scale-[0.98] touch-manipulation"
+                aria-disabled={isExhausted}
+                className={`h-full transition-all touch-manipulation ${
+                  isExhausted
+                    ? 'cursor-not-allowed border-border opacity-50'
+                    : 'cursor-pointer border-primary/20 hover:border-primary/50 terminal-glow-hover active:scale-[0.98]'
+                }`}
               >
                 <CardContent className="flex h-full flex-col items-center gap-3 pt-6 text-center">
                   <Illustration className="size-20 text-primary" />

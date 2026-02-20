@@ -4,7 +4,7 @@ export const RATE_LIMIT_COOKIE_NAME = 'fsh_conversations'
 export const RATE_LIMIT_COOKIE_MAX_AGE_SECONDS = 86_400 // 24 hours
 
 export const ANTHROPIC_MODEL =
-  process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-20250514'
+  process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6'
 export const ANTHROPIC_MAX_TOKENS = 4096
 
 export const CHAT_INPUT_MAX_LENGTH = 4000
