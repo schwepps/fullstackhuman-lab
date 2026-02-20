@@ -76,6 +76,7 @@
     "selection": {
       "title": "Comment puis-je vous aider ?",
       "subtitle": "Choisissez un mode de conversation"
-    }
+    },
+    "avatarAlt": "Assistant IA"
   }
 }

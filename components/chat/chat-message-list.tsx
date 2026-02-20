@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { ChatBubble } from '@/components/chat/chat-bubble'
+import { AiAvatar } from '@/components/chat/ai-avatar'
 import type { ChatMessage, PersonaId } from '@/types/chat'
 
 interface ChatMessageListProps {
@@ -31,6 +32,7 @@ export function ChatMessageList({
           messages.length > 0 &&
           messages[messages.length - 1].content === '' && (
             <div className="flex justify-start">
+              <AiAvatar className="mt-3" />
               <div className="px-4 py-3">
                 <span className="inline-block h-5 w-2 animate-cursor-blink bg-primary" />
               </div>

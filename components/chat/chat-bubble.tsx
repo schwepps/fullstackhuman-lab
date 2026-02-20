@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils'
 import { MarkdownRenderer } from '@/components/chat/markdown-renderer'
 import { ReportCard } from '@/components/chat/report-card'
+import { AiAvatar } from '@/components/chat/ai-avatar'
 import type { ChatMessage, PersonaId } from '@/types/chat'
 
 interface ChatBubbleProps {
@@ -21,6 +22,7 @@ export function ChatBubble({ message, persona }: ChatBubbleProps) {
     <div
       className={cn('flex w-full', isUser ? 'justify-end' : 'justify-start')}
     >
+      {!isUser && <AiAvatar className="mt-3" />}
       <div
         className={cn(
           'max-w-[85%] rounded-lg px-4 py-3 sm:max-w-[75%]',
