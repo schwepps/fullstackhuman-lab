@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { MAX_CONVERSATIONS_PER_DAY } from '@/lib/constants/chat'
 
 interface QuotaState {
   remaining: number
@@ -9,8 +10,8 @@ interface QuotaState {
 }
 
 const INITIAL_STATE: QuotaState = {
-  remaining: 0,
-  limit: 0,
+  remaining: MAX_CONVERSATIONS_PER_DAY,
+  limit: MAX_CONVERSATIONS_PER_DAY,
   isLoading: true,
 }
 
@@ -39,7 +40,13 @@ export function useQuota() {
       })
       .catch(() => {
         if (!cancelled) {
-          setState((prev) => ({ ...prev, isLoading: false }))
+          // Optimistic: allow conversations when quota endpoint is unreachable.
+          // Server-side rate limiter still enforces limits.
+          setState({
+            remaining: MAX_CONVERSATIONS_PER_DAY,
+            limit: MAX_CONVERSATIONS_PER_DAY,
+            isLoading: false,
+          })
         }
       })
     return () => {

@@ -19,8 +19,9 @@ export function ChatMessageList({
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+    const behavior: ScrollBehavior = isStreaming ? 'auto' : 'smooth'
+    bottomRef.current?.scrollIntoView({ behavior })
+  }, [messages, isStreaming])
 
   return (
     <div className="chat-scrollbar flex-1 overflow-y-auto px-4 py-4">

@@ -22,7 +22,8 @@ export async function* readSSEStream(
     // Keep the last element — it may be an incomplete line
     buffer = lines.pop() ?? ''
 
-    for (const line of lines) {
+    for (const rawLine of lines) {
+      const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine
       if (!line.startsWith('data: ')) continue
       const data = line.slice(6)
       if (data === '[DONE]') continue
@@ -39,8 +40,9 @@ export async function* readSSEStream(
   buffer += decoder.decode()
 
   // Process any remaining buffered data
-  if (buffer.startsWith('data: ')) {
-    const data = buffer.slice(6)
+  const finalBuffer = buffer.endsWith('\r') ? buffer.slice(0, -1) : buffer
+  if (finalBuffer.startsWith('data: ')) {
+    const data = finalBuffer.slice(6)
     if (data !== '[DONE]') {
       try {
         yield JSON.parse(data) as SSEEvent
