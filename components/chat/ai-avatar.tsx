@@ -24,7 +24,7 @@ export function AiAvatar({ className }: AiAvatarProps) {
         alt={t('avatarAlt')}
         fill
         sizes="48px"
-        className="object-cover object-[50%_35%] scale-110"
+        className="object-cover object-[50%_35%] scale-109"
       />
     </div>
   )
