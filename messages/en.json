@@ -10,37 +10,66 @@
   "about": {
     "bio": "Fran\u00e7ois\u2019s product thinking, technical depth, and delivery instinct \u2014 packaged as an on-demand AI. No fluff. No generic answers. Just the real thing, at machine speed."
   },
-  "boot": {
-    "mount": {
-      "text": "> Mounting 20+ years of source code... ",
-      "status": "OK"
-    },
-    "product": {
-      "text": "> Loading product instinct... ",
-      "status": "OK"
-    },
-    "leadership": {
-      "text": "> Loading technical leadership... ",
-      "status": "OK"
-    },
-    "honesty": {
-      "text": "> Activating radical honesty module... ",
-      "status": "ALWAYS ON"
-    },
-    "deploy": {
-      "text": "> Deploying Full Stack Human... ",
-      "status": "READY"
-    }
-  },
   "hud": {
     "sysId": "SYS.ID: FSH-001",
     "status": "[ACTIVE]",
     "role": "ROLE: builder / operator",
     "version": "v1.0.0"
   },
+  "localeSwitcher": {
+    "ariaLabel": "Switch to {locale}"
+  },
   "notFound": {
     "title": "Page not found",
     "description": "The page you are looking for does not exist.",
     "backHome": "Back to Home"
+  },
+  "chat": {
+    "personas": {
+      "doctor": {
+        "trigger": "My project is stuck",
+        "description": "Project diagnostic \u2014 finds the root cause, not the symptoms",
+        "openingMessage": "Alright, let\u2019s figure out what\u2019s going on. No judgment \u2014 every project gets stuck. The question is *why*.\n\nTell me what you\u2019re building and where it hurts."
+      },
+      "critic": {
+        "trigger": "I need a second opinion",
+        "description": "Honest review \u2014 what works, what doesn\u2019t, and what nobody\u2019s telling you",
+        "openingMessage": "Alright, show me what you\u2019ve got. Could be a pitch deck, a product plan, an architecture doc, a business model \u2014 whatever\u2019s keeping you up at night wondering \u201cis this actually good?\u201d\n\nPaste it, describe it, or walk me through it. I\u2019ll tell you what works, what doesn\u2019t, and the thing nobody\u2019s telling you."
+      },
+      "guide": {
+        "trigger": "Just curious what you can do",
+        "description": "Framework and thinking \u2014 a new way to see your question",
+        "openingMessage": "I\u2019m the AI version of Fran\u00e7ois \u2014 15 years across product, tech, and team leadership, compressed into a conversation.\n\nI think about how products actually get built, how teams work (and don\u2019t), and why most projects fail for reasons nobody talks about.\n\nWhat\u2019s on your mind? Could be a decision you\u2019re weighing, something you\u2019ve been thinking about, or just \u201cshow me how you think.\u201d"
+      }
+    },
+    "header": {
+      "backLabel": "Back",
+      "backConfirm": "Leave this conversation? Your history will be lost.",
+      "personaName": {
+        "doctor": "The Doctor",
+        "critic": "The Critic",
+        "guide": "The Guide"
+      }
+    },
+    "input": {
+      "placeholder": "Type your message...",
+      "send": "Send",
+      "stop": "Stop"
+    },
+    "report": {
+      "label": "Report",
+      "copy": "Copy report",
+      "copied": "Copied!"
+    },
+    "errors": {
+      "rateLimitExceeded": "You\u2019ve reached the daily conversation limit. Come back tomorrow, or book a call with the real Fran\u00e7ois.",
+      "streamError": "The response was interrupted. Your conversation is still here \u2014 try sending another message.",
+      "genericError": "Something went wrong. Please try again.",
+      "dismiss": "Dismiss"
+    },
+    "selection": {
+      "title": "How can I help?",
+      "subtitle": "Choose a conversation mode"
+    }
   }
 }

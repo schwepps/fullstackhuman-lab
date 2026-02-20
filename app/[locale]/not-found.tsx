@@ -7,7 +7,7 @@ export default function NotFound() {
   const t = useTranslations('notFound')
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
+    <div className="flex min-h-svh flex-col items-center justify-center p-4">
       <div className="mx-auto max-w-md text-center">
         <div className="relative mx-auto mb-8 flex h-32 w-32 items-center justify-center">
           <div className="absolute inset-0 rounded-full bg-primary/10" />

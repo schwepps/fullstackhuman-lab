@@ -10,37 +10,66 @@
   "about": {
     "bio": "La vision produit, la profondeur technique et l\u2019instinct de livraison de Fran\u00e7ois \u2014 packag\u00e9s en IA \u00e0 la demande. Pas de blabla. Pas de r\u00e9ponses g\u00e9n\u00e9riques. L\u2019authentique, \u00e0 la vitesse machine."
   },
-  "boot": {
-    "mount": {
-      "text": "> Montage de 20+ ans de code source... ",
-      "status": "OK"
-    },
-    "product": {
-      "text": "> Chargement de l\u2019instinct produit... ",
-      "status": "OK"
-    },
-    "leadership": {
-      "text": "> Chargement du leadership technique... ",
-      "status": "OK"
-    },
-    "honesty": {
-      "text": "> Activation du module d\u2019honn\u00eatet\u00e9 radicale... ",
-      "status": "TOUJOURS ACTIF"
-    },
-    "deploy": {
-      "text": "> D\u00e9ploiement du Full Stack Human... ",
-      "status": "PR\u00caT"
-    }
-  },
   "hud": {
     "sysId": "SYS.ID: FSH-001",
     "status": "[ACTIF]",
     "role": "R\u00d4LE: builder / op\u00e9rateur",
     "version": "v1.0.0"
   },
+  "localeSwitcher": {
+    "ariaLabel": "Basculer vers {locale}"
+  },
   "notFound": {
     "title": "Page introuvable",
     "description": "La page que vous recherchez n\u2019existe pas.",
     "backHome": "Retour \u00e0 l\u2019accueil"
+  },
+  "chat": {
+    "personas": {
+      "doctor": {
+        "trigger": "Mon projet est bloqu\u00e9",
+        "description": "Diagnostic de projet \u2014 identifie la cause racine, pas les sympt\u00f4mes",
+        "openingMessage": "Tr\u00e8s bien, voyons ce qui se passe. Pas de jugement \u2014 tous les projets se bloquent. La question, c\u2019est *pourquoi*.\n\nDites-moi ce que vous construisez et o\u00f9 \u00e7a coince."
+      },
+      "critic": {
+        "trigger": "J\u2019ai besoin d\u2019un deuxi\u00e8me avis",
+        "description": "Revue honn\u00eate \u2014 ce qui marche, ce qui ne marche pas, et ce que personne ne vous dit",
+        "openingMessage": "Tr\u00e8s bien, montrez-moi ce que vous avez. \u00c7a peut \u00eatre un pitch deck, un plan produit, un doc d\u2019architecture, un business model \u2014 tout ce qui vous emp\u00eache de dormir en vous demandant \u00ab est-ce que c\u2019est vraiment bien ? \u00bb\n\nCollez-le, d\u00e9crivez-le, ou guidez-moi. Je vous dirai ce qui marche, ce qui ne marche pas, et la chose que personne ne vous dit."
+      },
+      "guide": {
+        "trigger": "Curieux de voir ce que vous faites",
+        "description": "Cadrage et r\u00e9flexion \u2014 une nouvelle fa\u00e7on de voir votre question",
+        "openingMessage": "Je suis la version IA de Fran\u00e7ois \u2014 15 ans de produit, tech et leadership, compress\u00e9s en une conversation.\n\nJe r\u00e9fl\u00e9chis \u00e0 comment les produits se construisent vraiment, comment les \u00e9quipes fonctionnent (ou pas), et pourquoi la plupart des projets \u00e9chouent pour des raisons dont personne ne parle.\n\nQu\u2019est-ce qui vous occupe l\u2019esprit ? \u00c7a peut \u00eatre une d\u00e9cision que vous pesez, quelque chose auquel vous r\u00e9fl\u00e9chissez, ou juste \u00ab montre-moi comment tu penses \u00bb."
+      }
+    },
+    "header": {
+      "backLabel": "Retour",
+      "backConfirm": "Quitter cette conversation ? Votre historique sera perdu.",
+      "personaName": {
+        "doctor": "Le Docteur",
+        "critic": "Le Critique",
+        "guide": "Le Guide"
+      }
+    },
+    "input": {
+      "placeholder": "Tapez votre message...",
+      "send": "Envoyer",
+      "stop": "Arr\u00eater"
+    },
+    "report": {
+      "label": "Rapport",
+      "copy": "Copier le rapport",
+      "copied": "Copi\u00e9 !"
+    },
+    "errors": {
+      "rateLimitExceeded": "Vous avez atteint la limite de conversations du jour. Revenez demain, ou r\u00e9servez un appel avec le vrai Fran\u00e7ois.",
+      "streamError": "La r\u00e9ponse a \u00e9t\u00e9 interrompue. Votre conversation est toujours l\u00e0 \u2014 essayez d\u2019envoyer un autre message.",
+      "genericError": "Une erreur s\u2019est produite. Veuillez r\u00e9essayer.",
+      "dismiss": "Fermer"
+    },
+    "selection": {
+      "title": "Comment puis-je vous aider ?",
+      "subtitle": "Choisissez un mode de conversation"
+    }
   }
 }

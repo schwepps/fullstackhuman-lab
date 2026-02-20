@@ -212,4 +212,117 @@
       linear-gradient(90deg, rgba(34, 211, 238, 0.07) 1px, transparent 1px);
     background-size: 20px 20px;
   }
+
+  .terminal-glow-hover {
+    @apply transition-shadow hover:shadow-[0_0_15px_var(--color-primary,#22d3ee)_/_0.1];
+  }
+
+  .chat-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .chat-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .chat-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(34, 211, 238, 0.2);
+    border-radius: 3px;
+  }
+}
+
+/* Print-friendly overrides for PDF/browser print */
+@media print {
+  /* Remove CRT effects */
+  body::before,
+  body::after {
+    display: none !important;
+  }
+
+  /* Reset background and text for paper */
+  body {
+    background: white !important;
+    background-image: none !important;
+    color: #1a1a1a !important;
+  }
+
+  /* Strip effects globally */
+  * {
+    text-shadow: none !important;
+    box-shadow: none !important;
+    animation: none !important;
+  }
+
+  /* Headings and strong text: dark on paper */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  strong,
+  th {
+    color: #1a1a1a !important;
+  }
+
+  /* Links: underlined dark text */
+  a {
+    color: #1a1a1a !important;
+    text-decoration: underline !important;
+  }
+
+  /* Tables: visible gray borders */
+  table,
+  th,
+  td {
+    border-color: #d1d5db !important;
+  }
+
+  thead {
+    background: #f3f4f6 !important;
+  }
+
+  /* Body text */
+  p,
+  li,
+  td,
+  span,
+  div {
+    color: #1a1a1a !important;
+  }
+
+  /* Accent text */
+  em {
+    color: #374151 !important;
+  }
+
+  /* Reset terminal glow classes */
+  .terminal-text-glow,
+  .terminal-green-glow {
+    text-shadow: none !important;
+    color: #1a1a1a !important;
+  }
+
+  .terminal-border {
+    border-color: #d1d5db !important;
+    box-shadow: none !important;
+  }
+
+  /* Page layout */
+  @page {
+    margin: 2cm;
+  }
+
+  /* Prevent page breaks inside key elements */
+  table,
+  blockquote,
+  pre,
+  h2,
+  h3 {
+    break-inside: avoid;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
 }
