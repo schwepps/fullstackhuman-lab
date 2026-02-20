@@ -25,6 +25,8 @@ summary,
   --color-foreground: #e2e8f0;
   --color-primary: #22d3ee; /* Electric Cyan */
   --color-accent: #4ade80; /* Matrix Green */
+  --color-warning: #f59e0b; /* Amber Warning */
+  --color-destructive: #ef4444; /* Red Destructive */
   --color-border: #1e293b;
   --color-ring: #22d3ee;
 

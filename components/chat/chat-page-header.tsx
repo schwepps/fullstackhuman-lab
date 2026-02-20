@@ -30,6 +30,7 @@ interface ChatPageHeaderProps {
   hasMessages: boolean
   remaining: number
   limit: number
+  isLoading: boolean
 }
 
 export function ChatPageHeader({
@@ -38,6 +39,7 @@ export function ChatPageHeader({
   hasMessages,
   remaining,
   limit,
+  isLoading,
 }: ChatPageHeaderProps) {
   const t = useTranslations('chat')
 
@@ -74,7 +76,7 @@ export function ChatPageHeader({
             variant="ghost"
             size="sm"
             onClick={handleNewConversation}
-            className="gap-1 touch-manipulation font-mono text-xs"
+            className="cursor-pointer gap-1 touch-manipulation font-mono text-xs"
           >
             <Plus className="size-3.5" />
             <span className="hidden sm:inline">
@@ -82,11 +84,13 @@ export function ChatPageHeader({
             </span>
           </Button>
         ) : null}
-        <span
-          className={`rounded-full border px-2 py-0.5 font-mono text-xs ${getQuotaBadgeColor(remaining)}`}
-        >
-          {t('quota.badge', { remaining, limit })}
-        </span>
+        {!isLoading && (
+          <span
+            className={`rounded-full border px-2 py-0.5 font-mono text-xs ${getQuotaBadgeColor(remaining)}`}
+          >
+            {t('quota.badge', { remaining, limit })}
+          </span>
+        )}
         <LocaleSwitcher />
       </div>
     </header>

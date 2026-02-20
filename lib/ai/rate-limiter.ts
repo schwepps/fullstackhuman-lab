@@ -38,7 +38,11 @@ export function checkIpRateLimit(ip: string): boolean {
   const cutoff = now - IP_WINDOW_MS
   const timestamps = ipRequestCounts.get(ip) ?? []
   const recent = timestamps.filter((ts) => ts > cutoff)
-  ipRequestCounts.set(ip, recent)
+  if (recent.length === 0) {
+    ipRequestCounts.delete(ip)
+  } else {
+    ipRequestCounts.set(ip, recent)
+  }
   return recent.length < MAX_REQUESTS_PER_IP_PER_HOUR
 }
 

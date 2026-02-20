@@ -13,6 +13,7 @@ import {
   ANTHROPIC_MAX_TOKENS,
   MAX_MESSAGES_PER_REQUEST,
   CHAT_INPUT_MAX_LENGTH,
+  MAX_MESSAGE_LENGTH,
   NEW_CONVERSATION_MESSAGE_COUNT,
   VALID_MESSAGE_ROLES,
 } from '@/lib/constants/chat'
@@ -100,8 +101,10 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-    // Only enforce max length on user messages — assistant messages are system-generated
-    if (role === 'user' && content.length > CHAT_INPUT_MAX_LENGTH) {
+    // Enforce role-appropriate length limits
+    const maxLength =
+      role === 'user' ? CHAT_INPUT_MAX_LENGTH : MAX_MESSAGE_LENGTH
+    if (content.length > maxLength) {
       return Response.json({ error: 'Message too long' }, { status: 400 })
     }
   }

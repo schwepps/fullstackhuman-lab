@@ -8,6 +8,7 @@ export const ANTHROPIC_MODEL =
 export const ANTHROPIC_MAX_TOKENS = 4096
 
 export const CHAT_INPUT_MAX_LENGTH = 4000
+export const MAX_MESSAGE_LENGTH = 50_000
 
 // First request sends 3 messages: synthetic trigger + opening + first real user message.
 // Subsequent requests add 2 more each time (user + assistant), so: 3, 5, 7, 9...

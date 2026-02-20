@@ -47,6 +47,7 @@ export default function ChatPage() {
         hasMessages={chat.messages.length > 1}
         remaining={quota.remaining}
         limit={quota.limit}
+        isLoading={quota.isLoading}
       />
 
       {chat.phase === 'selection' ? (
@@ -54,6 +55,7 @@ export default function ChatPage() {
           onSelect={handleSelectPersona}
           remaining={quota.remaining}
           limit={quota.limit}
+          isLoading={quota.isLoading}
         />
       ) : persona ? (
         <ChatContainer

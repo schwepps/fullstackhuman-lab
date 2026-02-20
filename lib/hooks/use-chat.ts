@@ -157,7 +157,13 @@ export function useChat() {
       }))
     } catch (error) {
       if ((error as Error).name === 'AbortError') {
-        setState((prev) => ({ ...prev, isStreaming: false }))
+        setState((prev) => ({
+          ...prev,
+          isStreaming: false,
+          messages: prev.messages.filter(
+            (m) => m.id !== assistantId || m.content !== ''
+          ),
+        }))
         return
       }
       setState((prev) => ({

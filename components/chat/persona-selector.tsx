@@ -21,15 +21,17 @@ interface PersonaSelectorProps {
   onSelect: (persona: PersonaId) => void
   remaining: number
   limit: number
+  isLoading: boolean
 }
 
 export function PersonaSelector({
   onSelect,
   remaining,
   limit,
+  isLoading,
 }: PersonaSelectorProps) {
   const t = useTranslations('chat')
-  const isExhausted = remaining === 0
+  const isExhausted = !isLoading && remaining === 0
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-4 py-12">
@@ -45,13 +47,15 @@ export function PersonaSelector({
         <p className="text-sm text-muted-foreground">
           {t('selection.subtitle')}
         </p>
-        <span
-          className={`terminal-border mt-3 inline-block px-3 py-1 font-mono text-xs ${getQuotaColor(remaining)}`}
-        >
-          {isExhausted
-            ? t('quota.exhausted')
-            : t('quota.remaining', { remaining, limit })}
-        </span>
+        {!isLoading && (
+          <span
+            className={`terminal-border mt-3 inline-block px-3 py-1 font-mono text-xs ${getQuotaColor(remaining)}`}
+          >
+            {isExhausted
+              ? t('quota.exhausted')
+              : t('quota.remaining', { remaining, limit })}
+          </span>
+        )}
       </motion.div>
 
       <div className="grid w-full max-w-3xl gap-4 md:grid-cols-3">
