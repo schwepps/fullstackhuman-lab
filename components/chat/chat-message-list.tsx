@@ -2,19 +2,27 @@
 
 import { useEffect, useRef } from 'react'
 import { ChatBubble } from '@/components/chat/chat-bubble'
+import { SignupCta } from '@/components/chat/signup-cta'
 import { AiAvatar } from '@/components/chat/ai-avatar'
 import type { ChatMessage, PersonaId } from '@/types/chat'
+import type { TierKey } from '@/lib/constants/quotas'
 
 interface ChatMessageListProps {
   messages: ChatMessage[]
   persona: PersonaId
   isStreaming: boolean
+  quotaTier: TierKey
+  quotaRemaining: number | null
+  quotaLimit: number | null
 }
 
 export function ChatMessageList({
   messages,
   persona,
   isStreaming,
+  quotaTier,
+  quotaRemaining,
+  quotaLimit,
 }: ChatMessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -23,11 +31,20 @@ export function ChatMessageList({
     bottomRef.current?.scrollIntoView({ behavior })
   }, [messages, isStreaming])
 
+  const isAnonymous = quotaTier === 'anonymous'
+
   return (
     <div className="chat-scrollbar flex-1 overflow-y-auto px-4 py-4">
       <div className="mx-auto flex max-w-3xl flex-col gap-4">
         {messages.map((message) => (
-          <ChatBubble key={message.id} message={message} persona={persona} />
+          <div key={message.id}>
+            <ChatBubble message={message} persona={persona} />
+            {message.isReport && isAnonymous && (
+              <div className="mt-4">
+                <SignupCta remaining={quotaRemaining} limit={quotaLimit} />
+              </div>
+            )}
+          </div>
         ))}
         {isStreaming &&
           messages.length > 0 &&

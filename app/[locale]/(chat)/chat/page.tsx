@@ -71,6 +71,9 @@ export default function ChatPage() {
           onSendMessage={chat.sendMessage}
           onStopStreaming={chat.stopStreaming}
           onDismissError={chat.dismissError}
+          quotaTier={quota.tier}
+          quotaRemaining={quota.remaining}
+          quotaLimit={quota.limit}
         />
       ) : null}
     </>

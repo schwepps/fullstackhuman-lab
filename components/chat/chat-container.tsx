@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { ERROR_MESSAGE_KEYS } from '@/lib/constants/chat'
 import type { ChatMessage, PersonaId } from '@/types/chat'
+import type { TierKey } from '@/lib/constants/quotas'
 
 interface ChatContainerProps {
   messages: ChatMessage[]
@@ -16,6 +17,9 @@ interface ChatContainerProps {
   onSendMessage: (content: string) => void
   onStopStreaming: () => void
   onDismissError: () => void
+  quotaTier: TierKey
+  quotaRemaining: number | null
+  quotaLimit: number | null
 }
 
 export function ChatContainer({
@@ -26,6 +30,9 @@ export function ChatContainer({
   onSendMessage,
   onStopStreaming,
   onDismissError,
+  quotaTier,
+  quotaRemaining,
+  quotaLimit,
 }: ChatContainerProps) {
   const t = useTranslations('chat.errors')
 
@@ -53,6 +60,9 @@ export function ChatContainer({
         messages={messages}
         persona={persona}
         isStreaming={isStreaming}
+        quotaTier={quotaTier}
+        quotaRemaining={quotaRemaining}
+        quotaLimit={quotaLimit}
       />
 
       <ChatInput

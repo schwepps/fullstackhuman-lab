@@ -4,7 +4,7 @@ Priority-tier roadmap for Full Stack Human commercial launch.
 
 **Context:** France/EU first launch, 1-2 month timeline, primary KPI is consulting bookings (Calendly clicks). The AI is a lead magnet — free tier outputs with branding are distribution.
 
-**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting, quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking).
+**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting, quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports.
 
 **Complexity estimates:** S = hours | M = 1-2 days | L = 3-5 days | XL = 1-2 weeks
 All estimates include writing tests to match the project's existing quality bar.
@@ -53,29 +53,15 @@ Core value-add features that directly impact the primary KPI (consulting booking
 
 ---
 
-### 6. French Translation Review
+### ~~6. French Translation Review~~ DONE
 
-**Complexity:** S
-**What:** Review all French translations in `messages/fr.json`. Current translations are literal and lack brand personality. All user-facing strings (hero, chat UI, auth, account, errors, quota) need natural, warm, brand-consistent French copy that matches François's voice.
-**Why launch:** France-first market. Literal translations undermine credibility in a consulting context. The UI chrome being awkward in French signals lack of care.
-**Dependencies:** None.
-**Key files:**
-
-- Update `messages/fr.json`
+Completed in PR #12. Reviewed and warmed up all French translations in `messages/fr.json`. Hero and persona sections were already on-brand; auth, account, error, and utility sections revised from formal/generic to warm, direct copy matching François's voice. Key changes: dropped "Veuillez" constructions, used "On" instead of "Nous" for casual tone, warmer titles ("Content de vous revoir", "Rejoindre Full Stack Human"), more natural error messages ("Quelque chose a coincé"), shorter and more direct copy throughout. Kept "vous" register for professional consulting context.
 
 ---
 
-### 7. Account Creation CTA for Anonymous Users
+### ~~7. Account Creation CTA for Anonymous Users~~ DONE
 
-**Complexity:** S
-**What:** When an anonymous user completes a conversation (receives a report), show a branded, non-intrusive CTA encouraging account creation. Messaging: "Save this report and access your conversation history." Display remaining anonymous quota as urgency ("2 of 3 conversations used today"). Appears after the report card in chat.
-**Why launch:** Middle of the conversion funnel. Anonymous → account signup captures email for nurturing. Without this prompt, anonymous users get value and leave. The quota display already exists via `useQuota` hook.
-**Dependencies:** None technically. Most valuable after conversation persistence (10) exists so the "save your history" promise is real.
-**Key files:**
-
-- Create `components/chat/signup-cta.tsx`
-- Update `components/chat/chat-message-list.tsx` — render CTA after report
-- Update `messages/fr.json` and `messages/en.json`
+Completed in PR #12. `SignupCta` component renders after each report card in chat for anonymous users. Non-intrusive card with quota urgency display (ICU plural syntax). Links to `/auth/signup` via locale-aware routing. Analytics tracked via existing `CTA_CLICK` event with `signup_post_report` source. Quota props threaded from `ChatPage` through `ChatContainer` and `ChatMessageList`. 6 unit tests covering rendering, quota display, link target, and analytics tracking.
 
 ---
 
@@ -340,8 +326,8 @@ Independent (no dependencies):
   2 Error boundaries ✅
   3 Legal docs ✅
   4 Cookie consent ✅
-  6 French translations
-  7 Anon signup CTA
+  6 French translations ✅
+  7 Anon signup CTA ✅
   8 Redis rate limiting
 
 Tier 4:
@@ -367,8 +353,8 @@ Parallel tracks:
 
 **Track A (quick wins):**
 
-1. French translations (6)
-2. Anon signup CTA (7)
+1. ~~French translations (6)~~ DONE
+2. ~~Anon signup CTA (7)~~ DONE
 3. Redis rate limiting (8)
 4. SEO/GEO/WebMCP (9) — can start in parallel
 
