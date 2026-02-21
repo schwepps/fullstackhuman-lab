@@ -1,10 +1,15 @@
 'use client'
 
+import { useMemo } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
+import { useAnalytics } from '@/lib/hooks/use-analytics'
+import { CALENDLY_URL_PATTERN } from '@/lib/constants/analytics'
 
-const markdownComponents: Components = {
+const remarkPlugins = [remarkGfm]
+
+const staticComponents: Partial<Components> = {
   h1: ({ children }) => (
     <h1 className="terminal-text-glow mb-4 mt-6 text-xl font-bold text-primary sm:text-2xl">
       {children}
@@ -27,21 +32,6 @@ const markdownComponents: Components = {
     <strong className="font-bold text-primary">{children}</strong>
   ),
   em: ({ children }) => <em className="text-accent italic">{children}</em>,
-  a: ({ href, children }) => {
-    if (href && !/^https?:\/\//i.test(href)) {
-      return <span>{children}</span>
-    }
-    return (
-      <a
-        href={href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-primary underline transition-colors hover:text-accent"
-      >
-        {children}
-      </a>
-    )
-  },
   ul: ({ children }) => (
     <ul className="mb-3 ml-4 list-disc space-y-1 text-foreground/90">
       {children}
@@ -104,8 +94,38 @@ interface MarkdownRendererProps {
 }
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
+  const { trackCalendlyClick } = useAnalytics()
+
+  const components = useMemo<Components>(
+    () => ({
+      ...staticComponents,
+      a: ({ href, children }) => {
+        if (href && !/^https?:\/\//i.test(href)) {
+          return <span>{children}</span>
+        }
+        const isCalendly = href?.includes(CALENDLY_URL_PATTERN) ?? false
+        return (
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary underline transition-colors hover:text-accent"
+            onClick={
+              isCalendly
+                ? () => trackCalendlyClick({ source: 'report' })
+                : undefined
+            }
+          >
+            {children}
+          </a>
+        )
+      },
+    }),
+    [trackCalendlyClick]
+  )
+
   return (
-    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+    <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
       {content}
     </ReactMarkdown>
   )

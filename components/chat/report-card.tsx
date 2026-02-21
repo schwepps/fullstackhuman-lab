@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Copy, Check } from 'lucide-react'
 import { MarkdownRenderer } from '@/components/chat/markdown-renderer'
 import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
+import { useAnalytics } from '@/lib/hooks/use-analytics'
 import type { PersonaId } from '@/types/chat'
 
 interface ReportCardProps {
@@ -17,17 +18,19 @@ interface ReportCardProps {
 export function ReportCard({ content, persona }: ReportCardProps) {
   const t = useTranslations('chat.report')
   const [copied, setCopied] = useState(false)
+  const { trackReportCopied } = useAnalytics()
   const Illustration = PERSONA_ILLUSTRATIONS[persona]
 
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(content)
+      trackReportCopied({ persona })
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // Clipboard API unavailable (HTTP, iframe, or permission denied)
     }
-  }, [content])
+  }, [content, persona, trackReportCopied])
 
   return (
     <Card className="terminal-border my-2 border-primary/30 bg-card/50">

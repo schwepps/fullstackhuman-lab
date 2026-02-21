@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useMemo } from 'react'
 import { useCookieConsent } from '@/lib/hooks/use-cookie-consent'
+import { usePostHogLifecycle } from '@/lib/hooks/use-posthog-lifecycle'
 import { CookieConsentBanner } from '@/components/layout/cookie-consent-banner'
 import type { ConsentState } from '@/lib/constants/legal'
 
@@ -26,6 +27,8 @@ export function CookieConsentProvider({
 }) {
   const { consentState, isOpen, grantConsent, denyConsent, openBanner } =
     useCookieConsent()
+
+  usePostHogLifecycle(consentState)
 
   const contextValue = useMemo(
     () => ({ openBanner, consentState }),

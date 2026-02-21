@@ -11,12 +11,14 @@ import {
   PERSONA_TRIGGER_KEYS,
   PERSONA_OPENING_MESSAGE_KEYS,
 } from '@/lib/constants/personas'
+import { useAnalytics } from '@/lib/hooks/use-analytics'
 import type { PersonaId } from '@/types/chat'
 
 export default function ChatPage() {
   const t = useTranslations('chat')
   const chat = useChat()
   const quota = useQuota()
+  const { trackPersonaSelected } = useAnalytics()
   const { refetch: refetchQuota } = quota
   const { isStreaming } = chat
 
@@ -30,6 +32,7 @@ export default function ChatPage() {
   }, [isStreaming, refetchQuota])
 
   function handleSelectPersona(id: PersonaId) {
+    trackPersonaSelected({ persona: id })
     chat.selectPersona(
       id,
       t(PERSONA_OPENING_MESSAGE_KEYS[id]),

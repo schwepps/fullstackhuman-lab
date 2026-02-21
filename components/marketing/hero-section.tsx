@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 import { motion } from 'framer-motion'
 import { Link } from '@/i18n/routing'
 import { PortraitViewfinder } from '@/components/marketing/portrait-viewfinder'
+import { useAnalytics } from '@/lib/hooks/use-analytics'
 import type { HeroSectionProps } from '@/types/marketing'
 
 const containerVariants = {
@@ -26,6 +27,7 @@ const itemVariants = {
 export function HeroSection({ isVisible }: HeroSectionProps) {
   const t = useTranslations('hero')
   const tAbout = useTranslations('about')
+  const { trackCtaClick } = useAnalytics()
 
   return (
     <motion.section
@@ -59,6 +61,7 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
       <motion.div variants={itemVariants} className="mb-8">
         <Link
           href="/chat"
+          onClick={() => trackCtaClick({ source: 'hero' })}
           className="btn-cyber terminal-text-glow inline-flex h-12 items-center px-8 font-mono text-sm uppercase tracking-widest animate-pulse-border touch-manipulation sm:h-10"
         >
           {t('cta')}

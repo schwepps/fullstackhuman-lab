@@ -31,7 +31,15 @@ const securityHeaders = [
   {
     key: 'Content-Security-Policy',
     value:
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' https: data:; connect-src 'self' https://*.supabase.co; font-src 'self'; frame-ancestors 'self';",
+      [
+        "default-src 'self'",
+        "script-src 'self' 'unsafe-inline' https://eu-assets.i.posthog.com",
+        "style-src 'self' 'unsafe-inline'",
+        "img-src 'self' https: data:",
+        "connect-src 'self' https://*.supabase.co https://eu.i.posthog.com https://eu-assets.i.posthog.com",
+        "font-src 'self'",
+        "frame-ancestors 'self'",
+      ].join('; ') + ';',
   },
 ]
 

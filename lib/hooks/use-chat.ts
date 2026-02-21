@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useMemo, useRef } from 'react'
 import type {
   ChatMessage,
   ChatState,
@@ -9,6 +9,7 @@ import type {
 } from '@/types/chat'
 import { PERSONAS } from '@/lib/constants/personas'
 import { readSSEStream } from '@/lib/ai/sse-reader'
+import { useAnalytics } from '@/lib/hooks/use-analytics'
 
 function createMessage(
   role: MessageRole,
@@ -52,6 +53,7 @@ const INITIAL_STATE: ChatState = {
 
 export function useChat() {
   const [state, setState] = useState<ChatState>(INITIAL_STATE)
+  const { trackReportGenerated } = useAnalytics()
   const abortRef = useRef<AbortController | null>(null)
   const stateRef = useRef(state)
   stateRef.current = state
@@ -72,111 +74,124 @@ export function useChat() {
     []
   )
 
-  const sendMessage = useCallback(async (content: string) => {
-    const { persona, isStreaming, messages } = stateRef.current
-    if (!persona || isStreaming) return
+  const sendMessage = useCallback(
+    async (content: string) => {
+      const { persona, isStreaming, messages } = stateRef.current
+      if (!persona || isStreaming) return
 
-    const userMsg = createMessage('user', content)
-    const apiMessages = buildApiMessages(messages, userMsg, triggerRef.current)
-    const assistantId = crypto.randomUUID()
-
-    setState((prev) => ({
-      ...prev,
-      messages: [
-        ...prev.messages,
+      const userMsg = createMessage('user', content)
+      const apiMessages = buildApiMessages(
+        messages,
         userMsg,
-        {
-          id: assistantId,
-          role: 'assistant' as const,
-          content: '',
-          isReport: false,
-          timestamp: Date.now(),
-        },
-      ],
-      isStreaming: true,
-      error: null,
-    }))
+        triggerRef.current
+      )
+      const assistantId = crypto.randomUUID()
 
-    try {
-      abortRef.current = new AbortController()
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ persona, messages: apiMessages }),
-        signal: abortRef.current.signal,
-      })
+      setState((prev) => ({
+        ...prev,
+        messages: [
+          ...prev.messages,
+          userMsg,
+          {
+            id: assistantId,
+            role: 'assistant' as const,
+            content: '',
+            isReport: false,
+            timestamp: Date.now(),
+          },
+        ],
+        isStreaming: true,
+        error: null,
+      }))
 
-      if (!response.ok) {
-        let errorCode = 'generic_error'
-        try {
-          const err = (await response.json()) as { error: string }
-          if (err.error === 'rate_limit_exceeded') {
-            errorCode = 'rate_limit_exceeded'
+      try {
+        abortRef.current = new AbortController()
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ persona, messages: apiMessages }),
+          signal: abortRef.current.signal,
+        })
+
+        if (!response.ok) {
+          let errorCode = 'generic_error'
+          try {
+            const err = (await response.json()) as { error: string }
+            if (err.error === 'rate_limit_exceeded') {
+              errorCode = 'rate_limit_exceeded'
+            }
+          } catch {
+            // Non-JSON error response (e.g., proxy 502)
           }
-        } catch {
-          // Non-JSON error response (e.g., proxy 502)
-        }
-        setState((prev) => ({
-          ...prev,
-          isStreaming: false,
-          messages: prev.messages.filter((m) => m.id !== assistantId),
-          error: errorCode,
-        }))
-        return
-      }
-
-      let accumulated = ''
-      for await (const event of readSSEStream(response)) {
-        if (event.error) {
           setState((prev) => ({
             ...prev,
             isStreaming: false,
-            // Remove empty assistant placeholder if no content was streamed
-            messages: prev.messages.filter(
-              (m) => m.id !== assistantId || m.content !== ''
-            ),
-            error: 'stream_error',
+            messages: prev.messages.filter((m) => m.id !== assistantId),
+            error: errorCode,
           }))
           return
         }
-        if (event.text) {
-          accumulated += event.text
-          const current = accumulated
-          setState((prev) => ({
-            ...prev,
-            messages: prev.messages.map((m) =>
-              m.id === assistantId ? { ...m, content: current } : m
-            ),
-          }))
-        }
-      }
 
-      const isReport = detectReport(accumulated, persona)
-      setState((prev) => ({
-        ...prev,
-        isStreaming: false,
-        messages: prev.messages.map((m) =>
-          m.id === assistantId ? { ...m, content: accumulated, isReport } : m
-        ),
-      }))
-    } catch (error) {
-      if ((error as Error).name === 'AbortError') {
+        let accumulated = ''
+        for await (const event of readSSEStream(response)) {
+          if (event.error) {
+            setState((prev) => ({
+              ...prev,
+              isStreaming: false,
+              // Remove empty assistant placeholder if no content was streamed
+              messages: prev.messages.filter(
+                (m) => m.id !== assistantId || m.content !== ''
+              ),
+              error: 'stream_error',
+            }))
+            return
+          }
+          if (event.text) {
+            accumulated += event.text
+            const current = accumulated
+            setState((prev) => ({
+              ...prev,
+              messages: prev.messages.map((m) =>
+                m.id === assistantId ? { ...m, content: current } : m
+              ),
+            }))
+          }
+        }
+
+        const isReport = detectReport(accumulated, persona)
+        if (isReport) {
+          trackReportGenerated({
+            persona,
+            message_count: stateRef.current.messages.length,
+          })
+        }
         setState((prev) => ({
           ...prev,
           isStreaming: false,
-          messages: prev.messages.filter(
-            (m) => m.id !== assistantId || m.content !== ''
+          messages: prev.messages.map((m) =>
+            m.id === assistantId ? { ...m, content: accumulated, isReport } : m
           ),
         }))
-        return
+      } catch (error) {
+        if ((error as Error).name === 'AbortError') {
+          setState((prev) => ({
+            ...prev,
+            isStreaming: false,
+            messages: prev.messages.filter(
+              (m) => m.id !== assistantId || m.content !== ''
+            ),
+          }))
+          return
+        }
+        setState((prev) => ({
+          ...prev,
+          isStreaming: false,
+          error: 'generic_error',
+        }))
       }
-      setState((prev) => ({
-        ...prev,
-        isStreaming: false,
-        error: 'generic_error',
-      }))
-    }
-  }, [])
+    },
+    [trackReportGenerated]
+  )
 
   const resetChat = useCallback(() => {
     abortRef.current?.abort()
@@ -192,12 +207,15 @@ export function useChat() {
     setState((prev) => ({ ...prev, error: null }))
   }, [])
 
-  return {
-    ...state,
-    selectPersona,
-    sendMessage,
-    resetChat,
-    stopStreaming,
-    dismissError,
-  }
+  return useMemo(
+    () => ({
+      ...state,
+      selectPersona,
+      sendMessage,
+      resetChat,
+      stopStreaming,
+      dismissError,
+    }),
+    [state, selectPersona, sendMessage, resetChat, stopStreaming, dismissError]
+  )
 }

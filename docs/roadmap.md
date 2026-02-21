@@ -4,7 +4,7 @@ Priority-tier roadmap for Full Stack Human commercial launch.
 
 **Context:** France/EU first launch, 1-2 month timeline, primary KPI is consulting bookings (Calendly clicks). The AI is a lead magnet — free tier outputs with branding are distribution.
 
-**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting, quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer.
+**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting, quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking).
 
 **Complexity estimates:** S = hours | M = 1-2 days | L = 3-5 days | XL = 1-2 weeks
 All estimates include writing tests to match the project's existing quality bar.
@@ -41,19 +41,9 @@ Completed in PR #10. GDPR-compliant cookie consent banner using `useSyncExternal
 
 ---
 
-### 5. Analytics (PostHog)
+### ~~5. Analytics (PostHog)~~ DONE
 
-**Complexity:** S
-**What:** Integrate PostHog for product analytics. Track: page views, persona selection distribution, conversation completion rates, report generation, Calendly link clicks, and the full conversion funnel (landing → chat → report → Calendly click). Gate behind cookie consent.
-**Why blocking:** The primary KPI is bookings. Without analytics, zero visibility into whether the product works. Cannot measure conversion, identify drop-off points, or justify feature priority decisions.
-**Dependencies:** Cookie consent banner (4) — PostHog cookies need consent.
-**Key files:**
-
-- Install `posthog-js` and `posthog-node`
-- Create `lib/analytics/posthog.ts` — client initialization
-- Update `app/layout.tsx` — PostHog provider, gated behind consent
-- Update `components/chat/persona-selector.tsx` — track persona selection
-- Update `components/chat/report-card.tsx` — track report generation
+Completed in PR #11. Client-side PostHog integration gated behind cookie consent. Tracks page views (via `usePathname`), persona selection, report generation, report copy, Calendly link clicks, and hero CTA clicks. PostHog initializes on consent grant, shuts down and clears cookies/localStorage on consent withdrawal. SSOT event names in `lib/constants/analytics.ts`, wrapper module in `lib/analytics/posthog.ts`, consent lifecycle in `lib/hooks/use-posthog-lifecycle.ts`. CSP headers updated for PostHog domains. No server-side analytics (client-only).
 
 ---
 
@@ -335,7 +325,7 @@ Features for when the product is generating bookings and needs to scale or expan
 
 ```
 Tier 1:
-  3 Legal Docs ✅ ────→ 4 Cookie Consent ✅ ──→ 5 PostHog Analytics
+  3 Legal Docs ✅ ────→ 4 Cookie Consent ✅ ──→ 5 PostHog Analytics ✅
 
 Tier 2:
   10 Conversations ──→ 12 Shareable URLs ──→ 13 PDF Export
@@ -369,7 +359,7 @@ Tier 4:
 2. ~~Error boundaries (2)~~ DONE
 3. ~~Legal docs (3)~~ DONE
 4. ~~Cookie consent (4)~~ DONE
-5. PostHog analytics (5) — needs consent banner (now ready)
+5. ~~PostHog analytics (5)~~ DONE
 
 ### Tier 2 — Weeks 3-6
 
