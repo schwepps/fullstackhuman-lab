@@ -79,14 +79,33 @@ app/
     (marketing)/        # Public marketing pages
       page.tsx          # Homepage
       layout.tsx        # Marketing layout
-    (chat)/             # Chat experience (to build)
-      page.tsx          # Persona selection → chat
-      layout.tsx        # Chat layout
-    layout.tsx          # Root layout
+      error.tsx         # Marketing error boundary
+    (chat)/             # Chat experience
+      chat/
+        page.tsx        # Persona selection → chat
+        layout.tsx      # Chat layout
+        error.tsx       # Chat error boundary
+    (account)/          # Account management
+      account/
+        page.tsx        # Account settings
+        layout.tsx      # Account layout
+        error.tsx       # Account error boundary
+    (auth)/             # Authentication pages
+      auth/
+        login/page.tsx
+        signup/page.tsx
+        forgot-password/page.tsx
+        reset-password/page.tsx
+      layout.tsx        # Auth layout
+    layout.tsx          # Root locale layout
     not-found.tsx       # Locale-aware 404
+    error.tsx           # Root locale error boundary
   api/
-    chat/               # Chat API route (to build)
+    auth/callback/      # OAuth callback
+      route.ts
+    chat/               # Chat API
       route.ts          # Assembles system prompt + streams response
+      quota/route.ts    # Quota checking endpoint
   layout.tsx
   globals.css
   not-found.tsx
@@ -102,8 +121,11 @@ proxy.ts                # Locale detection & redirect
 components/
   ui/                   # shadcn/ui components
   marketing/            # Marketing page components
-  chat/                 # Chat components (to build)
+  chat/                 # Chat components
+  auth/                 # Auth form components
+  account/              # Account management components
   layout/               # Shared layout components
+  shared/               # Cross-route shared components
 prompts/                # Production prompt files (sent to API)
   system-prompt-core.md
   prompt-doctor.md
@@ -115,11 +137,14 @@ docs/                   # Design documentation (reference only)
   persona-doctor.md
   persona-critic.md
   persona-guide.md
-  claude-code-transition.md
+  roadmap.md
 lib/
   utils.ts              # cn() utility
   constants/            # App constants
-  ai/                   # AI client & prompt assembly (to build)
+  ai/                   # AI client & prompt assembly
+  auth/                 # Auth actions, schemas, types
+  supabase/             # Supabase client variants
+  hooks/                # Custom React hooks
 types/
 tests/
 ```

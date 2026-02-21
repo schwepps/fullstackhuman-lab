@@ -4,7 +4,7 @@ Priority-tier roadmap for Full Stack Human commercial launch.
 
 **Context:** France/EU first launch, 1-2 month timeline, primary KPI is consulting bookings (Calendly clicks). The AI is a lead magnet — free tier outputs with branding are distribution.
 
-**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting, quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page.
+**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting, quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries.
 
 **Complexity estimates:** S = hours | M = 1-2 days | L = 3-5 days | XL = 1-2 weeks
 All estimates include writing tests to match the project's existing quality bar.
@@ -17,30 +17,15 @@ Must complete before any commercial launch. Legal, compliance, and reliability r
 
 ---
 
-### 1. `.env.example`
+### ~~1. `.env.example`~~ DONE
 
-**Complexity:** S
-**What:** Create a template file documenting all required environment variables with descriptions. No actual secrets — just variable names, expected format, and where to obtain them.
-**Why blocking:** Developer onboarding risk. No documentation of required env vars. Current `.env.local` is gitignored. Anyone setting up a new environment (staging, production, new developer) has to read source code.
-**Dependencies:** None.
-**Key files:**
-
-- Create `.env.example`
+Completed in PR #9. Documents all 7 environment variables with descriptions and setup links.
 
 ---
 
-### 2. Error Boundary Components
+### ~~2. Error Boundary Components~~ DONE
 
-**Complexity:** S
-**What:** Add `error.tsx` files for main route segments: `(chat)`, `(account)`, `(marketing)`, and root `[locale]`. Each shows a user-friendly error message with retry button and branded styling. The chat error boundary is most critical — should preserve conversation state if possible.
-**Why blocking:** Any unhandled error crashes the entire page with no recovery. A crashed chat page means a lost conversation and a lost potential client. React error boundaries are the only way to prevent this in Next.js.
-**Dependencies:** None.
-**Key files:**
-
-- Create `app/[locale]/error.tsx`
-- Create `app/[locale]/(chat)/chat/error.tsx`
-- Create `app/[locale]/(account)/account/error.tsx`
-- Create `app/[locale]/(marketing)/error.tsx`
+Completed in PR #9. Shared `ErrorFallback` component with i18n support, 4 `error.tsx` files (locale root, chat, account, marketing). Chat boundary uses context-specific messaging. Forward-compatible with conversation persistence (item 10) for state recovery.
 
 ---
 
@@ -381,8 +366,8 @@ Tier 2:
        └──→ 15 Cross-Session Memory (Tier 3)
 
 Independent (no dependencies):
-  1 .env.example
-  2 Error boundaries
+  1 .env.example ✅
+  2 Error boundaries ✅
   6 French translations
   7 Anon signup CTA
   8 Redis rate limiting
@@ -398,8 +383,8 @@ Tier 4:
 
 ### Tier 1 — Weeks 1-2
 
-1. `.env.example` (1) — 10 minutes, do first
-2. Error boundaries (2) — quick, prevents page crashes
+1. ~~`.env.example` (1)~~ DONE
+2. ~~Error boundaries (2)~~ DONE
 3. Legal docs (3) — start content early (needs legal review)
 4. Cookie consent (4) — needs legal docs done
 5. PostHog analytics (5) — needs consent banner
