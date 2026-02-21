@@ -88,6 +88,12 @@
       "title": "How can I help?",
       "subtitle": "Choose a conversation mode"
     },
+    "signupCta": {
+      "title": "Keep your reports",
+      "description": "Create an account to save your conversations and reports. Free, no strings attached.",
+      "remaining": "{remaining, plural, =0 {No conversations remaining today} =1 {1 conversation remaining of {limit} today} other {# conversations remaining of {limit} today}}",
+      "action": "Create a free account"
+    },
     "avatarAlt": "AI assistant"
   },
   "auth": {
