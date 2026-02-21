@@ -39,7 +39,7 @@ export interface CalendlyClickProperties {
 }
 
 export interface CtaClickProperties {
-  source: 'hero'
+  source: 'hero' | 'signup_post_report'
 }
 
 // --- Calendly URL detection ---

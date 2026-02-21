@@ -1,53 +1,53 @@
 {
   "metadata": {
-    "description": "Fullstackhuman - Bient\u00f4t disponible."
+    "description": "Fullstackhuman - Bientôt disponible."
   },
   "hero": {
-    "headline": "EX\u00c9CUTER: full_stack_human.sh",
-    "subheadline": "Un humain. Chaque couche. D\u00e9sormais appelable.",
+    "headline": "EXÉCUTER: full_stack_human.sh",
+    "subheadline": "Un humain. Chaque couche. Désormais appelable.",
     "cta": "> CONNECTER_INSTANCE"
   },
   "about": {
-    "bio": "La vision produit, la profondeur technique et l\u2019instinct de livraison de Fran\u00e7ois \u2014 packag\u00e9s en IA \u00e0 la demande. Pas de blabla. Pas de r\u00e9ponses g\u00e9n\u00e9riques. L\u2019authentique, \u00e0 la vitesse machine."
+    "bio": "La vision produit, la profondeur technique et l\u2019instinct de livraison de François \u2014 packagés en IA à la demande. Pas de blabla. Pas de réponses génériques. L\u2019authentique, à la vitesse machine."
   },
   "hud": {
     "sysId": "SYS.ID: FSH-001",
     "status": "[ACTIF]",
-    "role": "R\u00d4LE: builder / op\u00e9rateur",
+    "role": "RÔLE: builder / opérateur",
     "version": "v1.0.0"
   },
   "localeSwitcher": {
     "ariaLabel": "Basculer vers {locale}"
   },
   "notFound": {
-    "title": "Page introuvable",
-    "description": "La page que vous recherchez n\u2019existe pas.",
-    "backHome": "Retour \u00e0 l\u2019accueil"
+    "title": "404 — Introuvable",
+    "description": "Cette page n\u2019existe pas ou a été déplacée.",
+    "backHome": "Retour à l\u2019accueil"
   },
   "errorBoundary": {
-    "title": "Une erreur est survenue",
-    "description": "Une erreur inattendue s\u2019est produite. Veuillez r\u00e9essayer.",
-    "retry": "R\u00e9essayer",
-    "backHome": "Retour \u00e0 l\u2019accueil",
+    "title": "Quelque chose a planté",
+    "description": "Erreur inattendue. Réessayez, ça devrait passer.",
+    "retry": "Réessayer",
+    "backHome": "Retour à l\u2019accueil",
     "chatTitle": "Conversation interrompue",
-    "chatDescription": "Une erreur est survenue pendant votre conversation. Vous pouvez r\u00e9essayer, mais votre conversation en cours risque d\u2019\u00eatre perdue."
+    "chatDescription": "Un pépin en cours de conversation. Vous pouvez réessayer, mais l\u2019échange en cours risque d\u2019être perdu."
   },
   "chat": {
     "personas": {
       "doctor": {
-        "trigger": "Mon projet est bloqu\u00e9",
-        "description": "Diagnostic de projet \u2014 identifie la cause racine, pas les sympt\u00f4mes",
-        "openingMessage": "Tr\u00e8s bien, voyons ce qui se passe. Pas de jugement \u2014 tous les projets se bloquent. La question, c\u2019est *pourquoi*.\n\nDites-moi ce que vous construisez et o\u00f9 \u00e7a coince."
+        "trigger": "Mon projet est bloqué",
+        "description": "Diagnostic de projet \u2014 identifie la cause racine, pas les symptômes",
+        "openingMessage": "Très bien, voyons ce qui se passe. Pas de jugement \u2014 tous les projets se bloquent. La question, c\u2019est *pourquoi*.\n\nDites-moi ce que vous construisez et où ça coince."
       },
       "critic": {
-        "trigger": "J\u2019ai besoin d\u2019un deuxi\u00e8me avis",
-        "description": "Revue honn\u00eate \u2014 ce qui marche, ce qui ne marche pas, et ce que personne ne vous dit",
-        "openingMessage": "Tr\u00e8s bien, montrez-moi ce que vous avez. \u00c7a peut \u00eatre un pitch deck, un plan produit, un doc d\u2019architecture, un business model \u2014 tout ce qui vous emp\u00eache de dormir en vous demandant \u00ab est-ce que c\u2019est vraiment bien ? \u00bb\n\nCollez-le, d\u00e9crivez-le, ou guidez-moi. Je vous dirai ce qui marche, ce qui ne marche pas, et la chose que personne ne vous dit."
+        "trigger": "J\u2019ai besoin d\u2019un deuxième avis",
+        "description": "Revue honnête \u2014 ce qui marche, ce qui ne marche pas, et ce que personne ne vous dit",
+        "openingMessage": "Très bien, montrez-moi ce que vous avez. Ça peut être un pitch deck, un plan produit, un doc d\u2019architecture, un business model \u2014 tout ce qui vous empêche de dormir en vous demandant \u00ab est-ce que c\u2019est vraiment bien ? \u00bb\n\nCollez-le, décrivez-le, ou guidez-moi. Je vous dirai ce qui marche, ce qui ne marche pas, et la chose que personne ne vous dit."
       },
       "guide": {
         "trigger": "Curieux de voir ce que vous faites",
-        "description": "Cadrage et r\u00e9flexion \u2014 une nouvelle fa\u00e7on de voir votre question",
-        "openingMessage": "Je suis la version IA de Fran\u00e7ois \u2014 15 ans de produit, tech et leadership, compress\u00e9s en une conversation.\n\nJe r\u00e9fl\u00e9chis \u00e0 comment les produits se construisent vraiment, comment les \u00e9quipes fonctionnent (ou pas), et pourquoi la plupart des projets \u00e9chouent pour des raisons dont personne ne parle.\n\nQu\u2019est-ce qui vous occupe l\u2019esprit ? \u00c7a peut \u00eatre une d\u00e9cision que vous pesez, quelque chose auquel vous r\u00e9fl\u00e9chissez, ou juste \u00ab montre-moi comment tu penses \u00bb."
+        "description": "Cadrage et réflexion \u2014 une nouvelle façon de voir votre question",
+        "openingMessage": "Je suis la version IA de François \u2014 15 ans de produit, tech et leadership, compressés en une conversation.\n\nJe réfléchis à comment les produits se construisent vraiment, comment les équipes fonctionnent (ou pas), et pourquoi la plupart des projets échouent pour des raisons dont personne ne parle.\n\nQu\u2019est-ce qui vous occupe l\u2019esprit ? Ça peut être une décision que vous pesez, quelque chose auquel vous réfléchissez, ou juste \u00ab montre-moi comment tu penses \u00bb."
       }
     },
     "header": {
@@ -63,24 +63,24 @@
     "input": {
       "placeholder": "Tapez votre message...",
       "send": "Envoyer",
-      "stop": "Arr\u00eater"
+      "stop": "Arrêter"
     },
     "report": {
       "label": "Rapport",
       "copy": "Copier le rapport",
-      "copied": "Copi\u00e9 !"
+      "copied": "Copié !"
     },
     "errors": {
-      "rateLimitExceeded": "Vous avez atteint la limite de conversations du jour. Revenez demain, ou r\u00e9servez un appel avec le vrai Fran\u00e7ois.",
-      "streamError": "La r\u00e9ponse a \u00e9t\u00e9 interrompue. Votre conversation est toujours l\u00e0 \u2014 essayez d\u2019envoyer un autre message.",
-      "genericError": "Une erreur s\u2019est produite. Veuillez r\u00e9essayer.",
+      "rateLimitExceeded": "Vous avez atteint la limite de conversations du jour. Revenez demain, ou réservez un appel avec le vrai François.",
+      "streamError": "La réponse a été interrompue. Votre conversation est toujours là \u2014 essayez d\u2019envoyer un autre message.",
+      "genericError": "Quelque chose a coincé. Réessayez.",
       "dismiss": "Fermer"
     },
     "quota": {
       "remainingDay": "{remaining} sur {limit} conversations restantes aujourd\u2019hui",
       "remainingMonth": "{remaining} sur {limit} conversations ce mois",
-      "remainingUnlimited": "Conversations illimit\u00e9es",
-      "exhausted": "Limite de conversations atteinte. Revenez plus tard ou am\u00e9liorez votre compte.",
+      "remainingUnlimited": "Conversations illimitées",
+      "exhausted": "Limite de conversations atteinte. Revenez plus tard ou améliorez votre compte.",
       "badge": "{remaining}/{limit}",
       "badgeUnlimited": "\u221e"
     },
@@ -88,130 +88,136 @@
       "title": "Comment puis-je vous aider ?",
       "subtitle": "Choisissez un mode de conversation"
     },
+    "signupCta": {
+      "title": "Gardez vos rapports",
+      "description": "Créez un compte pour retrouver vos conversations et rapports. Gratuit, sans engagement.",
+      "remaining": "{remaining, plural, =0 {Aucune conversation restante aujourd\u2019hui} =1 {1 conversation restante sur {limit} aujourd\u2019hui} other {# conversations restantes sur {limit} aujourd\u2019hui}}",
+      "action": "Créer un compte gratuit"
+    },
     "avatarAlt": "Assistant IA"
   },
   "auth": {
     "login": {
-      "title": "Bon retour",
-      "subtitle": "Connectez-vous pour acc\u00e9der \u00e0 vos conversations",
+      "title": "Content de vous revoir",
+      "subtitle": "Retrouvez vos conversations",
       "email": "Email",
       "password": "Mot de passe",
-      "forgotPassword": "Mot de passe oubli\u00e9 ?",
+      "forgotPassword": "Mot de passe oublié ?",
       "submit": "Se connecter",
       "submitting": "Connexion...",
-      "noAccount": "Pas de compte ?",
-      "signupLink": "Cr\u00e9er un compte",
+      "noAccount": "Pas encore de compte ?",
+      "signupLink": "Créer un compte",
       "google": "Google",
-      "resetSuccess": "Mot de passe r\u00e9initialis\u00e9 avec succ\u00e8s. Vous pouvez maintenant vous connecter."
+      "resetSuccess": "Mot de passe réinitialisé. Vous pouvez maintenant vous connecter."
     },
     "signup": {
-      "title": "Cr\u00e9er un compte",
-      "subtitle": "Commencez vos conversations",
+      "title": "Rejoindre Full Stack Human",
+      "subtitle": "Sauvegardez vos conversations et rapports",
       "displayName": "Nom",
       "email": "Email",
       "password": "Mot de passe",
-      "passwordHint": "Au moins {minLength} caract\u00e8res avec des lettres et des chiffres",
-      "submit": "Cr\u00e9er un compte",
-      "submitting": "Cr\u00e9ation du compte...",
-      "hasAccount": "D\u00e9j\u00e0 un compte ?",
+      "passwordHint": "Au moins {minLength} caractères avec des lettres et des chiffres",
+      "submit": "Créer mon compte",
+      "submitting": "Création du compte...",
+      "hasAccount": "Déjà parmi nous ?",
       "loginLink": "Se connecter",
       "google": "Google"
     },
     "forgotPassword": {
-      "title": "R\u00e9initialiser votre mot de passe",
-      "subtitle": "Nous vous enverrons un lien",
+      "title": "Mot de passe oublié ?",
+      "subtitle": "On vous envoie un lien de réinitialisation",
       "email": "Email",
       "submit": "Envoyer le lien",
       "submitting": "Envoi...",
-      "success": "Si un compte existe avec cet email, vous recevrez un lien de r\u00e9initialisation.",
-      "backToLogin": "Retour \u00e0 la connexion"
+      "success": "Si un compte existe avec cet email, vous recevrez un lien de réinitialisation.",
+      "backToLogin": "Retour à la connexion"
     },
     "resetPassword": {
       "title": "Nouveau mot de passe",
-      "subtitle": "Entrez votre nouveau mot de passe",
+      "subtitle": "Choisissez votre nouveau mot de passe",
       "password": "Nouveau mot de passe",
       "confirmPassword": "Confirmer le mot de passe",
-      "passwordHint": "Au moins {minLength} caract\u00e8res avec des lettres et des chiffres",
-      "submit": "R\u00e9initialiser",
-      "submitting": "R\u00e9initialisation..."
+      "passwordHint": "Au moins {minLength} caractères avec des lettres et des chiffres",
+      "submit": "Réinitialiser",
+      "submitting": "Réinitialisation..."
     },
     "divider": "Ou continuer avec",
     "errors": {
-      "invalidCredentials": "Email ou mot de passe invalide",
+      "invalidCredentials": "Email ou mot de passe incorrect. Réessayez.",
       "passwordsDontMatch": "Les mots de passe ne correspondent pas.",
-      "rateLimited": "Trop de tentatives. Veuillez r\u00e9essayer plus tard.",
-      "generic": "Une erreur s\u2019est produite. Veuillez r\u00e9essayer."
+      "rateLimited": "Trop de tentatives. Patientez un moment.",
+      "generic": "Quelque chose a coincé. Réessayez."
     }
   },
   "userMenu": {
-    "account": "Param\u00e8tres du compte",
-    "logout": "Se d\u00e9connecter",
+    "account": "Mon compte",
+    "logout": "Se déconnecter",
     "login": "Se connecter"
   },
   "account": {
-    "title": "Param\u00e8tres du compte",
+    "title": "Mon compte",
     "profile": {
       "title": "Profil",
       "email": "Email",
       "displayName": "Nom d\u2019affichage"
     },
     "changePassword": {
-      "title": "Changer le mot de passe",
+      "title": "Mot de passe",
       "currentPassword": "Mot de passe actuel",
       "newPassword": "Nouveau mot de passe",
       "confirmPassword": "Confirmer le nouveau mot de passe",
-      "passwordHint": "Au moins {minLength} caract\u00e8res avec des lettres et des chiffres",
-      "submit": "Mettre \u00e0 jour",
-      "submitting": "Mise \u00e0 jour...",
-      "success": "Mot de passe mis \u00e0 jour avec succ\u00e8s."
+      "passwordHint": "Au moins {minLength} caractères avec des lettres et des chiffres",
+      "submit": "Changer le mot de passe",
+      "submitting": "Mise à jour...",
+      "success": "Mot de passe mis à jour."
     },
     "changeEmail": {
-      "title": "Changer l\u2019email",
+      "title": "Adresse email",
       "newEmail": "Nouvelle adresse email",
       "password": "Mot de passe actuel",
-      "submit": "Mettre \u00e0 jour l\u2019email",
-      "submitting": "Mise \u00e0 jour...",
-      "success": "Email de confirmation envoy\u00e9 \u00e0 votre nouvelle adresse."
+      "submit": "Changer l\u2019email",
+      "submitting": "Mise à jour...",
+      "success": "Email de confirmation envoyé à votre nouvelle adresse."
     },
     "oauthOnly": {
-      "title": "Connect\u00e9 avec Google",
-      "description": "Pour modifier votre mot de passe ou email, vous devez d\u2019abord d\u00e9finir un mot de passe.",
-      "setPasswordLink": "D\u00e9finir un mot de passe"
+      "title": "Connecté via Google",
+      "description": "Pour modifier votre mot de passe ou email, définissez d\u2019abord un mot de passe.",
+      "setPasswordLink": "Définir un mot de passe"
     },
     "deleteAccount": {
       "title": "Supprimer le compte",
-      "description": "Supprimer d\u00e9finitivement votre compte et toutes les donn\u00e9es associ\u00e9es. Cette action est irr\u00e9versible.",
+      "description": "Supprime définitivement votre compte et toutes les données associées. Irréversible.",
       "submit": "Supprimer mon compte",
-      "confirmTitle": "\u00cates-vous s\u00fbr ?",
-      "confirmDescription": "Cela supprimera d\u00e9finitivement votre compte et toutes vos donn\u00e9es. Cette action est irr\u00e9versible.",
+      "confirmTitle": "Vous êtes sûr ?",
+      "confirmDescription": "Votre compte et toutes vos données seront supprimés définitivement. Pas de retour en arrière.",
       "passwordLabel": "Mot de passe",
-      "passwordPlaceholder": "Entrez votre mot de passe pour confirmer",
+      "passwordPlaceholder": "Votre mot de passe pour confirmer",
       "confirmSubmit": "Oui, supprimer mon compte",
       "confirming": "Suppression...",
       "cancel": "Annuler",
       "closeLabel": "Fermer"
     },
     "errors": {
-      "wrongPassword": "Le mot de passe actuel est incorrect",
+      "wrongPassword": "Mot de passe actuel incorrect.",
       "passwordsDontMatch": "Les mots de passe ne correspondent pas.",
-      "samePassword": "Le nouveau mot de passe doit \u00eatre diff\u00e9rent du mot de passe actuel.",
-      "rateLimited": "Trop de tentatives. Veuillez r\u00e9essayer plus tard.",
-      "generic": "Une erreur s\u2019est produite. Veuillez r\u00e9essayer."
+      "samePassword": "Le nouveau mot de passe doit être différent du mot de passe actuel.",
+      "rateLimited": "Trop de tentatives. Patientez un moment.",
+      "generic": "Quelque chose a coincé. Réessayez."
     }
   },
   "footer": {
-    "legal": "Mentions l\u00e9gales",
-    "privacy": "Politique de confidentialit\u00e9",
+    "legal": "Mentions légales",
+    "privacy": "Politique de confidentialité",
     "terms": "Conditions d\u2019utilisation",
-    "copyright": "\u00a9 {year} Fullstackhuman. Tous droits r\u00e9serv\u00e9s.",
-    "cookieSettings": "Param\u00e8tres des cookies"
+    "copyright": "© {year} Fullstackhuman. Tous droits réservés.",
+    "cookieSettings": "Paramètres des cookies"
   },
   "cookieConsent": {
-    "title": "Cookies & confidentialit\u00e9",
-    "description": "Nous utilisons des cookies fonctionnels pour suivre votre quota de conversations. Vous pouvez refuser sans impact sur l\u2019acc\u00e8s au service.",
+    "title": "Cookies & confidentialité",
+    "description": "On utilise des cookies fonctionnels pour suivre votre quota de conversations. Vous pouvez refuser sans impact sur l\u2019accès au service.",
     "accept": "Accepter",
     "decline": "Refuser",
-    "privacyLink": "Politique de confidentialit\u00e9",
-    "ariaLabel": "Banni\u00e8re de consentement aux cookies"
+    "privacyLink": "Politique de confidentialité",
+    "ariaLabel": "Bannière de consentement aux cookies"
   }
 }
