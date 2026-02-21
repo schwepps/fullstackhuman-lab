@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { Card, CardContent } from '@/components/ui/card'
@@ -16,14 +17,14 @@ export function SignupCta({ remaining, limit }: SignupCtaProps) {
   const t = useTranslations('chat.signupCta')
   const { trackCtaClick } = useAnalytics()
 
-  function handleClick() {
+  const handleClick = useCallback(() => {
     trackCtaClick({ source: 'signup_post_report' })
-  }
+  }, [trackCtaClick])
 
   const showQuota = remaining !== null && limit !== null
 
   return (
-    <Card className="terminal-border border-primary/20 bg-card/50">
+    <Card className="terminal-border border-primary/30 bg-card/50">
       <CardContent className="flex flex-col items-center gap-3 px-4 py-5 text-center sm:flex-row sm:text-left">
         <div className="flex-1">
           <p className="font-semibold text-primary">{t('title')}</p>
@@ -40,9 +41,8 @@ export function SignupCta({ remaining, limit }: SignupCtaProps) {
           asChild
           variant="outline"
           className="h-12 w-full touch-manipulation border-primary/30 sm:h-10 sm:w-auto"
-          onClick={handleClick}
         >
-          <Link href="/auth/signup">
+          <Link href="/auth/signup" onClick={handleClick}>
             <UserPlus className="size-4" />
             {t('action')}
           </Link>

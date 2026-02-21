@@ -67,6 +67,8 @@ describe('SignupCta', () => {
     expect(link).toHaveAttribute('href', '/auth/signup')
   })
 
+  // Note: Link is mocked as a plain <a>, so this does not test Radix Slot
+  // prop-merging. An E2E test should verify the real click path.
   it('tracks CTA click with correct source', () => {
     render(<SignupCta remaining={2} limit={3} />)
 
