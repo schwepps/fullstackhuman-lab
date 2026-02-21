@@ -198,5 +198,20 @@
       "rateLimited": "Too many attempts. Please try again later.",
       "generic": "Something went wrong. Please try again."
     }
+  },
+  "footer": {
+    "legal": "Legal Notice",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "copyright": "\u00a9 {year} Fullstackhuman. All rights reserved.",
+    "cookieSettings": "Cookie settings"
+  },
+  "cookieConsent": {
+    "title": "Cookies & privacy",
+    "description": "We use functional cookies to track your conversation quota. You can decline without any impact on service access.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "privacyLink": "Privacy Policy",
+    "ariaLabel": "Cookie consent banner"
   }
 }

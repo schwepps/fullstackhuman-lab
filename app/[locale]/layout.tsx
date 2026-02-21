@@ -4,6 +4,7 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { setRequestLocale, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
+import { CookieConsentProvider } from '@/components/layout/cookie-consent-provider'
 import '../globals.css'
 
 const geistSans = Geist({
@@ -81,7 +82,9 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider>
+          <CookieConsentProvider>{children}</CookieConsentProvider>
+        </NextIntlClientProvider>
       </body>
     </html>
   )
