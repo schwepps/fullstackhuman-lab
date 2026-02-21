@@ -78,8 +78,11 @@ app/
   [locale]/
     (marketing)/        # Public marketing pages
       page.tsx          # Homepage
-      layout.tsx        # Marketing layout
+      layout.tsx        # Marketing layout (+ footer)
       error.tsx         # Marketing error boundary
+      privacy/page.tsx  # Privacy Policy (bilingual)
+      terms/page.tsx    # Terms of Service (bilingual)
+      legal/page.tsx    # Mentions Légales (bilingual)
     (chat)/             # Chat experience
       chat/
         page.tsx        # Persona selection → chat
@@ -114,6 +117,7 @@ app/
 i18n/
   routing.ts            # Locale routing config (SSOT)
   request.ts            # Server request config
+  resolve-locale.ts     # DRY locale resolution utility
 messages/
   fr.json               # French translations (default)
   en.json               # English translations
@@ -124,7 +128,7 @@ components/
   chat/                 # Chat components
   auth/                 # Auth form components
   account/              # Account management components
-  layout/               # Shared layout components
+  layout/               # Shared layout components (footer, cookie consent, legal page layout)
   shared/               # Cross-route shared components
 prompts/                # Production prompt files (sent to API)
   system-prompt-core.md
@@ -140,11 +144,11 @@ docs/                   # Design documentation (reference only)
   roadmap.md
 lib/
   utils.ts              # cn() utility
-  constants/            # App constants
+  constants/            # App constants (chat, quotas, legal)
   ai/                   # AI client & prompt assembly
   auth/                 # Auth actions, schemas, types
   supabase/             # Supabase client variants
-  hooks/                # Custom React hooks
+  hooks/                # Custom React hooks (cookie consent, chat, quota)
 types/
 tests/
 ```
@@ -153,17 +157,18 @@ tests/
 
 ## Key Scripts
 
-| Script         | Description              |
-| -------------- | ------------------------ |
-| `dev`          | Start development server |
-| `build`        | Build for production     |
-| `lint`         | Run ESLint checks        |
-| `lint:fix`     | Fix ESLint issues        |
-| `typecheck`    | TypeScript type checking |
-| `format`       | Format with Prettier     |
-| `format:check` | Check formatting         |
-| `test`         | Run tests (watch mode)   |
-| `test:run`     | Run tests once           |
+| Script         | Description                                                                   |
+| -------------- | ----------------------------------------------------------------------------- |
+| `dev`          | Start development server                                                      |
+| `build`        | Build for production                                                          |
+| `lint`         | Run ESLint checks                                                             |
+| `lint:fix`     | Fix ESLint issues                                                             |
+| `typecheck`    | TypeScript type checking                                                      |
+| `format`       | Format with Prettier                                                          |
+| `format:check` | Check formatting                                                              |
+| `test`         | Run tests (watch mode)                                                        |
+| `test:run`     | Run tests once                                                                |
+| `pre-review`   | All quality checks (i18n parity, auth strings, jscpd, lint, typecheck, tests) |
 
 ---
 
