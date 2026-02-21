@@ -4,7 +4,7 @@ Priority-tier roadmap for Full Stack Human commercial launch.
 
 **Context:** France/EU first launch, 1-2 month timeline, primary KPI is consulting bookings (Calendly clicks). The AI is a lead magnet — free tier outputs with branding are distribution.
 
-**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting, quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries.
+**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting, quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer.
 
 **Complexity estimates:** S = hours | M = 1-2 days | L = 3-5 days | XL = 1-2 weeks
 All estimates include writing tests to match the project's existing quality bar.
@@ -29,35 +29,15 @@ Completed in PR #9. Shared `ErrorFallback` component with i18n support, 4 `error
 
 ---
 
-### 3. Legal Documentation
+### ~~3. Legal Documentation~~ DONE
 
-**Complexity:** M
-**What:** Create static pages for Privacy Policy, Terms of Service, and Mentions Legales (required by French law). Add a footer component with links visible on all pages. Content must cover: data collected (email, conversation content), data processing (Anthropic API), cookies used, user rights (access, deletion), data retention policy.
-**Why blocking:** Legal requirement for any commercial website in France/EU. The privacy policy is also required by the cookie consent banner (item 4). French law mandates "mentions legales" with company identification.
-**Dependencies:** None. But content should be ready before cookie consent banner (links to privacy policy).
-**Key files:**
-
-- Create `app/[locale]/(marketing)/privacy/page.tsx`
-- Create `app/[locale]/(marketing)/terms/page.tsx`
-- Create `app/[locale]/(marketing)/legal/page.tsx`
-- Create `components/layout/footer.tsx`
-- Update `app/[locale]/(marketing)/layout.tsx` — add footer
-- Update `messages/fr.json` and `messages/en.json` — add legal namespace
+Completed in PR #10. Bilingual (FR/EN) privacy policy, terms of service, and mentions légales with real FSC Consulting company data. Shared `LegalPageLayout` component, marketing footer with legal links, `resolveLocale` utility for DRY locale resolution. Sitemap updated with legal paths.
 
 ---
 
-### 4. Cookie Consent Banner
+### ~~4. Cookie Consent Banner~~ DONE
 
-**Complexity:** M
-**What:** Implement a GDPR-compliant cookie consent banner. Block non-essential cookies until consent is granted. The rate-limiting cookie (`fsh_rl`) and PostHog cookies require consent. Store consent preference in a strictly-necessary cookie. Provide a way to withdraw consent.
-**Why blocking:** EU launch is impossible without GDPR cookie consent. The existing rate-limiting cookie is functional (not strictly necessary for the service) and requires consent. PostHog (item 5) adds tracking cookies that also need consent gating.
-**Dependencies:** Legal documentation (3) — consent banner links to privacy policy.
-**Key files:**
-
-- Create `components/layout/cookie-consent.tsx`
-- Update `app/layout.tsx` — render consent banner
-- Update `lib/ai/rate-limiter.ts` — gate cookie on consent
-- Update `messages/fr.json` and `messages/en.json`
+Completed in PR #10. GDPR-compliant cookie consent banner using `useSyncExternalStore` for reactive cookie state. `CookieConsentProvider` context for cross-cutting access. Rate-limit cookie (`fsh_conversations`) gated on consent — skipped when consent is absent or denied. Footer "Cookie settings" button for consent withdrawal. `fsh_consent` cookie with ~6-month expiry per CNIL recommendation.
 
 ---
 
@@ -355,7 +335,7 @@ Features for when the product is generating bookings and needs to scale or expan
 
 ```
 Tier 1:
-  3 Legal Docs ──────→ 4 Cookie Consent ──→ 5 PostHog Analytics
+  3 Legal Docs ✅ ────→ 4 Cookie Consent ✅ ──→ 5 PostHog Analytics
 
 Tier 2:
   10 Conversations ──→ 12 Shareable URLs ──→ 13 PDF Export
@@ -368,6 +348,8 @@ Tier 2:
 Independent (no dependencies):
   1 .env.example ✅
   2 Error boundaries ✅
+  3 Legal docs ✅
+  4 Cookie consent ✅
   6 French translations
   7 Anon signup CTA
   8 Redis rate limiting
@@ -385,9 +367,9 @@ Tier 4:
 
 1. ~~`.env.example` (1)~~ DONE
 2. ~~Error boundaries (2)~~ DONE
-3. Legal docs (3) — start content early (needs legal review)
-4. Cookie consent (4) — needs legal docs done
-5. PostHog analytics (5) — needs consent banner
+3. ~~Legal docs (3)~~ DONE
+4. ~~Cookie consent (4)~~ DONE
+5. PostHog analytics (5) — needs consent banner (now ready)
 
 ### Tier 2 — Weeks 3-6
 

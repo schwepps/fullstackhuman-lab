@@ -3,6 +3,7 @@ import {
   RATE_LIMIT_COOKIE_NAME,
   RATE_LIMIT_COOKIE_MAX_AGE_SECONDS,
 } from '@/lib/constants/chat'
+import { CONSENT_COOKIE_NAME } from '@/lib/constants/legal'
 import { consumeFromTimestampMap } from '@/lib/rate-limit-utils'
 import { TIER_QUOTAS, type UserTier, USER_TIERS } from '@/lib/constants/quotas'
 import { createClient } from '@/lib/supabase/server'
@@ -66,6 +67,11 @@ export async function checkAnonymousRateLimit(): Promise<RateLimitResult> {
 
 export async function recordAnonymousConversation(): Promise<void> {
   const cookieStore = await cookies()
+
+  // GDPR: only set the tracking cookie if the user has granted consent
+  const consent = cookieStore.get(CONSENT_COOKIE_NAME)?.value
+  if (consent !== 'granted') return
+
   const cookie = cookieStore.get(RATE_LIMIT_COOKIE_NAME)
   const timestamps = getConversationTimestamps(cookie?.value)
   timestamps.push(Date.now())

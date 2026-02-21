@@ -3,6 +3,7 @@ import {
   RATE_LIMIT_COOKIE_NAME,
   RATE_LIMIT_COOKIE_MAX_AGE_SECONDS,
 } from '@/lib/constants/chat'
+import { CONSENT_COOKIE_NAME } from '@/lib/constants/legal'
 import { TIER_QUOTAS } from '@/lib/constants/quotas'
 
 const MAX_CONVERSATIONS_PER_DAY = TIER_QUOTAS.anonymous.maxConversationsPerDay
@@ -21,6 +22,13 @@ import {
   checkAnonymousRateLimit,
   recordAnonymousConversation,
 } from '@/lib/ai/rate-limiter'
+
+function mockCookies(cookies: Record<string, string | undefined>) {
+  mockCookieStore.get.mockImplementation((name: string) => {
+    const value = cookies[name]
+    return value !== undefined ? { value } : undefined
+  })
+}
 
 describe('consumeIpRequest', () => {
   beforeEach(() => {
@@ -63,7 +71,7 @@ describe('checkAnonymousRateLimit (cookie-based)', () => {
   })
 
   it('allows when no cookie exists', async () => {
-    mockCookieStore.get.mockReturnValue(undefined)
+    mockCookies({})
 
     const result = await checkAnonymousRateLimit()
 
@@ -73,8 +81,8 @@ describe('checkAnonymousRateLimit (cookie-based)', () => {
 
   it('allows when under the limit', async () => {
     const timestamps = [Date.now() - 1000]
-    mockCookieStore.get.mockReturnValue({
-      value: JSON.stringify(timestamps),
+    mockCookies({
+      [RATE_LIMIT_COOKIE_NAME]: JSON.stringify(timestamps),
     })
 
     const result = await checkAnonymousRateLimit()
@@ -85,8 +93,8 @@ describe('checkAnonymousRateLimit (cookie-based)', () => {
 
   it('blocks when at the limit', async () => {
     const timestamps = [Date.now() - 3000, Date.now() - 2000, Date.now() - 1000]
-    mockCookieStore.get.mockReturnValue({
-      value: JSON.stringify(timestamps),
+    mockCookies({
+      [RATE_LIMIT_COOKIE_NAME]: JSON.stringify(timestamps),
     })
 
     const result = await checkAnonymousRateLimit()
@@ -99,8 +107,8 @@ describe('checkAnonymousRateLimit (cookie-based)', () => {
     const oldTimestamp =
       Date.now() - RATE_LIMIT_COOKIE_MAX_AGE_SECONDS * 1000 - 1000
     const recentTimestamp = Date.now() - 1000
-    mockCookieStore.get.mockReturnValue({
-      value: JSON.stringify([oldTimestamp, recentTimestamp]),
+    mockCookies({
+      [RATE_LIMIT_COOKIE_NAME]: JSON.stringify([oldTimestamp, recentTimestamp]),
     })
 
     const result = await checkAnonymousRateLimit()
@@ -110,7 +118,7 @@ describe('checkAnonymousRateLimit (cookie-based)', () => {
   })
 
   it('handles malformed cookie JSON gracefully', async () => {
-    mockCookieStore.get.mockReturnValue({ value: 'not-json' })
+    mockCookies({ [RATE_LIMIT_COOKIE_NAME]: 'not-json' })
 
     const result = await checkAnonymousRateLimit()
 
@@ -119,7 +127,7 @@ describe('checkAnonymousRateLimit (cookie-based)', () => {
   })
 
   it('handles non-array cookie value', async () => {
-    mockCookieStore.get.mockReturnValue({ value: '"string-value"' })
+    mockCookies({ [RATE_LIMIT_COOKIE_NAME]: '"string-value"' })
 
     const result = await checkAnonymousRateLimit()
 
@@ -133,8 +141,8 @@ describe('recordAnonymousConversation', () => {
     vi.clearAllMocks()
   })
 
-  it('sets cookie with correct options', async () => {
-    mockCookieStore.get.mockReturnValue(undefined)
+  it('sets cookie when consent is granted', async () => {
+    mockCookies({ [CONSENT_COOKIE_NAME]: 'granted' })
 
     await recordAnonymousConversation()
 
@@ -150,10 +158,27 @@ describe('recordAnonymousConversation', () => {
     )
   })
 
-  it('appends timestamp to existing conversations', async () => {
+  it('does not set cookie when consent is denied', async () => {
+    mockCookies({ [CONSENT_COOKIE_NAME]: 'denied' })
+
+    await recordAnonymousConversation()
+
+    expect(mockCookieStore.set).not.toHaveBeenCalled()
+  })
+
+  it('does not set cookie when consent cookie is absent', async () => {
+    mockCookies({})
+
+    await recordAnonymousConversation()
+
+    expect(mockCookieStore.set).not.toHaveBeenCalled()
+  })
+
+  it('appends timestamp to existing conversations when consent granted', async () => {
     const existing = [Date.now() - 1000]
-    mockCookieStore.get.mockReturnValue({
-      value: JSON.stringify(existing),
+    mockCookies({
+      [CONSENT_COOKIE_NAME]: 'granted',
+      [RATE_LIMIT_COOKIE_NAME]: JSON.stringify(existing),
     })
 
     await recordAnonymousConversation()

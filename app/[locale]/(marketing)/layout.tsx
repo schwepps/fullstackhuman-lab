@@ -1,6 +1,7 @@
 import { LocaleSwitcher } from '@/components/layout/locale-switcher'
 import { UserMenu } from '@/components/layout/user-menu'
 import { BrandLink } from '@/components/layout/brand-link'
+import { Footer } from '@/components/layout/footer'
 
 export default function MarketingLayout({
   children,
@@ -20,6 +21,7 @@ export default function MarketingLayout({
       <main className="flex flex-1 flex-col items-center justify-center pt-14">
         {children}
       </main>
+      <Footer />
     </div>
   )
 }

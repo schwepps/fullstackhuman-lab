@@ -198,5 +198,20 @@
       "rateLimited": "Trop de tentatives. Veuillez r\u00e9essayer plus tard.",
       "generic": "Une erreur s\u2019est produite. Veuillez r\u00e9essayer."
     }
+  },
+  "footer": {
+    "legal": "Mentions l\u00e9gales",
+    "privacy": "Politique de confidentialit\u00e9",
+    "terms": "Conditions d\u2019utilisation",
+    "copyright": "\u00a9 {year} Fullstackhuman. Tous droits r\u00e9serv\u00e9s.",
+    "cookieSettings": "Param\u00e8tres des cookies"
+  },
+  "cookieConsent": {
+    "title": "Cookies & confidentialit\u00e9",
+    "description": "Nous utilisons des cookies fonctionnels pour suivre votre quota de conversations. Vous pouvez refuser sans impact sur l\u2019acc\u00e8s au service.",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "privacyLink": "Politique de confidentialit\u00e9",
+    "ariaLabel": "Banni\u00e8re de consentement aux cookies"
   }
 }
