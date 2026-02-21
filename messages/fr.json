@@ -24,6 +24,14 @@
     "description": "La page que vous recherchez n\u2019existe pas.",
     "backHome": "Retour \u00e0 l\u2019accueil"
   },
+  "errorBoundary": {
+    "title": "Une erreur est survenue",
+    "description": "Une erreur inattendue s\u2019est produite. Veuillez r\u00e9essayer.",
+    "retry": "R\u00e9essayer",
+    "backHome": "Retour \u00e0 l\u2019accueil",
+    "chatTitle": "Conversation interrompue",
+    "chatDescription": "Une erreur est survenue pendant votre conversation. Vous pouvez r\u00e9essayer, mais votre conversation en cours risque d\u2019\u00eatre perdue."
+  },
   "chat": {
     "personas": {
       "doctor": {
