@@ -1,14 +1,15 @@
 import { Link } from '@/i18n/routing'
-import { BRAND_NAME, BRAND_NAME_SHORT } from '@/lib/constants/brand'
+import { FshIconMark, FshWordmark } from '@/components/layout/fsh-logo'
 
 export function BrandLink() {
   return (
     <Link
       href="/"
-      className="font-mono text-sm font-bold tracking-wider text-primary transition-colors hover:text-primary/80"
+      className="text-primary transition-colors hover:text-primary/80"
+      aria-label="FULL_STACK_HUMAN"
     >
-      <span className="sm:hidden">{BRAND_NAME_SHORT}</span>
-      <span className="hidden sm:inline">{BRAND_NAME}</span>
+      <FshIconMark className="sm:hidden" />
+      <FshWordmark className="hidden sm:block" />
     </Link>
   )
 }

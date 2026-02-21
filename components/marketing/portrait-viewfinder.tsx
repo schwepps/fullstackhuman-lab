@@ -77,13 +77,13 @@ export function PortraitViewfinder() {
         </div>
 
         {/* Portrait image */}
-        <div className="relative h-80 w-60 overflow-hidden sm:h-100 sm:w-75">
+        <div className="relative h-64 w-48 overflow-hidden sm:h-72 sm:w-54">
           <Image
             src="/images/fullstackhuman.png"
             alt="François Schuers"
             fill
             priority
-            sizes="(max-width: 640px) 240px, 300px"
+            sizes="(max-width: 640px) 192px, 216px"
             className={cn(
               'object-cover object-top',
               'contrast-[1.2] brightness-[0.9]',
