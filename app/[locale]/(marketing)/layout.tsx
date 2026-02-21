@@ -17,7 +17,9 @@ export default function MarketingLayout({
           <UserMenu />
         </div>
       </header>
-      <main className="flex-1">{children}</main>
+      <main className="flex flex-1 flex-col items-center justify-center pt-14">
+        {children}
+      </main>
     </div>
   )
 }
