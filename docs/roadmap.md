@@ -4,7 +4,7 @@ Priority-tier roadmap for Full Stack Human commercial launch.
 
 **Context:** France/EU first launch, 1-2 month timeline, primary KPI is consulting bookings (Calendly clicks). The AI is a lead magnet — free tier outputs with branding are distribution.
 
-**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting, quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports.
+**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting with Upstash Redis (durable IP rate limiting), quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports.
 
 **Complexity estimates:** S = hours | M = 1-2 days | L = 3-5 days | XL = 1-2 weeks
 All estimates include writing tests to match the project's existing quality bar.
@@ -65,18 +65,9 @@ Completed in PR #12. `SignupCta` component renders after each report card in cha
 
 ---
 
-### 8. Redis Rate Limiting (Upstash)
+### ~~8. Redis Rate Limiting (Upstash)~~ DONE
 
-**Complexity:** S
-**What:** Replace the in-memory `ipRequestCounts` Map with Upstash Redis. The current implementation resets on serverless cold starts, making IP rate limiting ineffective in production. Use Upstash Redis free tier (10K commands/day) with an EU region (Frankfurt) for GDPR compliance.
-**Why launch:** Defense in depth. Cookie-based rate limiting can be bypassed (incognito mode). Without working IP rate limiting, an attacker could run unlimited anonymous conversations, burning Anthropic API credits. Upstash is free and takes ~1-2 hours.
-**Dependencies:** None.
-**Key files:**
-
-- Install `@upstash/redis`
-- Create `lib/upstash.ts` — Redis client initialization
-- Update `lib/ai/rate-limiter.ts` — replace Map with Redis INCR/EXPIRE
-- Update `.env.example` — add Upstash credentials
+Replaced both in-memory rate limiters (chat IP + auth actions) with Upstash Redis via `@upstash/ratelimit` sliding window. Redis client singleton in `lib/upstash.ts` following the Anthropic client pattern. Graceful degradation: falls back to in-memory when Redis is unavailable (local dev, outages). `consumeIpRequest` changed from sync to async. EU (Frankfurt) region for GDPR. Updated `.env.example` with Upstash credentials. Tests updated with Redis mocks and fallback coverage.
 
 ---
 
@@ -328,7 +319,7 @@ Independent (no dependencies):
   4 Cookie consent ✅
   6 French translations ✅
   7 Anon signup CTA ✅
-  8 Redis rate limiting
+  8 Redis rate limiting ✅
 
 Tier 4:
   10 + 13 + 15 ──→ 20 Stripe (needs stable product + paid differentiators)
@@ -355,7 +346,7 @@ Parallel tracks:
 
 1. ~~French translations (6)~~ DONE
 2. ~~Anon signup CTA (7)~~ DONE
-3. Redis rate limiting (8)
+3. ~~Redis rate limiting (8)~~ DONE
 4. SEO/GEO/WebMCP (9) — can start in parallel
 
 **Track B (the big build):**

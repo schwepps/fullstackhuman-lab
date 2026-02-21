@@ -1,3 +1,6 @@
+import { Ratelimit, type Duration } from '@upstash/ratelimit'
+import { getRedisClient } from '@/lib/upstash'
+
 const DEFAULT_MAX_MAP_ENTRIES = 10_000
 
 /**
@@ -54,4 +57,69 @@ export function consumeFromTimestampMap(
   recent.push(now)
   map.set(key, recent)
   return true
+}
+
+// --- Redis-backed rate limiting ---
+
+interface RateLimiterConfig {
+  maxRequests: number
+  window: Duration
+  prefix: string
+}
+
+/**
+ * Create a lazy-initialized Ratelimit singleton backed by Upstash Redis.
+ * Returns a getter that initializes the limiter on first call.
+ * If Redis is not configured (missing env vars), logs a warning and returns null.
+ */
+export function createLazyRateLimiter(
+  config: RateLimiterConfig
+): () => Ratelimit | null {
+  let limiter: Ratelimit | null = null
+  return () => {
+    if (limiter) return limiter
+    try {
+      limiter = new Ratelimit({
+        redis: getRedisClient(),
+        limiter: Ratelimit.slidingWindow(config.maxRequests, config.window),
+        prefix: config.prefix,
+      })
+      return limiter
+    } catch {
+      console.warn(
+        `[rate-limit] Redis unavailable for ${config.prefix}, using in-memory fallback`
+      )
+      return null
+    }
+  }
+}
+
+/**
+ * Try Redis rate limiting first, fall back to in-memory on failure.
+ *
+ * Design decision: fail-open. If Redis is unreachable, requests are allowed
+ * through the in-memory fallback. In serverless environments, each cold start
+ * resets the in-memory Map, providing reduced but non-zero protection.
+ * This trade-off prioritizes availability over strict rate enforcement —
+ * acceptable for a consulting tool where blocking all users is worse than
+ * temporarily relaxed limits.
+ */
+export async function consumeWithFallback(
+  limiter: Ratelimit | null,
+  key: string,
+  fallbackMap: Map<string, number[]>,
+  windowMs: number,
+  maxPerWindow: number
+): Promise<boolean> {
+  if (limiter) {
+    try {
+      const { success } = await limiter.limit(key)
+      return success
+    } catch {
+      console.warn(
+        '[rate-limit] Redis request failed, falling back to in-memory'
+      )
+    }
+  }
+  return consumeFromTimestampMap(fallbackMap, key, windowMs, maxPerWindow)
 }
