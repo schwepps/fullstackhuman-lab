@@ -32,9 +32,9 @@ export function shutdownPostHog(): void {
   if (typeof document !== 'undefined') {
     document.cookie
       .split('; ')
-      .filter((c) => c.startsWith(POSTHOG_STORAGE_PREFIX))
-      .forEach((c) => {
-        const name = c.split('=')[0]
+      .map((c) => c.split('=')[0])
+      .filter((name) => name.startsWith(POSTHOG_STORAGE_PREFIX))
+      .forEach((name) => {
         document.cookie = `${name}=; Max-Age=0; Path=/`
       })
   }
