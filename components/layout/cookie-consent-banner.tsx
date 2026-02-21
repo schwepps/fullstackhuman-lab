@@ -46,14 +46,14 @@ export function CookieConsentBanner({
             variant="outline"
             size="sm"
             onClick={onDecline}
-            className="h-11 touch-manipulation font-mono text-xs sm:h-9"
+            className="h-12 touch-manipulation font-mono text-xs sm:h-10"
           >
             {t('decline')}
           </Button>
           <Button
             size="sm"
             onClick={onAccept}
-            className="h-11 touch-manipulation font-mono text-xs sm:h-9"
+            className="h-12 touch-manipulation font-mono text-xs sm:h-10"
           >
             {t('accept')}
           </Button>
