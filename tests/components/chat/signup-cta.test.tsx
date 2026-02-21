@@ -4,6 +4,8 @@ import { SignupCta } from '@/components/chat/signup-cta'
 
 const mockTrackCtaClick = vi.fn()
 
+// useTranslations returns raw keys — ICU plural formatting (=0, =1, other)
+// is next-intl's responsibility and should be verified in E2E tests.
 vi.mock('next-intl', () => ({
   useTranslations: () => (key: string) => key,
 }))
