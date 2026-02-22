@@ -54,7 +54,7 @@
     },
     "header": {
       "backLabel": "Back",
-      "backConfirm": "Leave this conversation? Your history will be lost.",
+      "backConfirm": "Start a new conversation? Your current conversation is saved.",
       "newConversation": "New",
       "personaName": {
         "doctor": "The Doctor",
@@ -152,9 +152,38 @@
     }
   },
   "userMenu": {
+    "conversations": "My conversations",
     "account": "Account settings",
     "logout": "Sign out",
     "login": "Sign in"
+  },
+  "conversations": {
+    "recentTitle": "Recent conversations",
+    "viewAll": "View all",
+    "emptyState": "No conversations yet. Start one above!",
+    "libraryTitle": "My conversations",
+    "filterAll": "All",
+    "filterReports": "Reports",
+    "filterDrafts": "Drafts",
+    "status": {
+      "completed": "Report",
+      "active": "In progress",
+      "abandoned": "Draft"
+    },
+    "untitled": "Untitled conversation",
+    "continueConversation": "Continue conversation",
+    "backToConversations": "Back to conversations",
+    "startNew": "Start a new conversation",
+    "deleteConfirm": "Delete this conversation?",
+    "deleteSuccess": "Conversation deleted",
+    "readOnlyNotice": "This is a past conversation (read-only)",
+    "time": {
+      "justNow": "<1m",
+      "minutes": "{count}m",
+      "hours": "{count}h",
+      "days": "{count}d",
+      "months": "{count}mo"
+    }
   },
   "account": {
     "title": "Account settings",

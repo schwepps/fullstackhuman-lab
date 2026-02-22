@@ -86,6 +86,7 @@ app/
     (chat)/             # Chat experience
       chat/
         page.tsx        # Persona selection → chat
+        [id]/page.tsx   # Read-only conversation viewer
         layout.tsx      # Chat layout
         error.tsx       # Chat error boundary
     (account)/          # Account management
@@ -93,6 +94,10 @@ app/
         page.tsx        # Account settings
         layout.tsx      # Account layout
         error.tsx       # Account error boundary
+      conversations/
+        page.tsx        # Conversations library
+        layout.tsx      # Conversations layout (auth gate)
+        loading.tsx     # Library loading skeleton
     (auth)/             # Authentication pages
       auth/
         login/page.tsx
@@ -109,6 +114,9 @@ app/
     chat/               # Chat API
       route.ts          # Assembles system prompt + streams response
       quota/route.ts    # Quota checking endpoint
+    conversations/      # Conversations API
+      route.ts          # GET conversation list
+      [id]/route.ts     # GET single conversation
   layout.tsx
   globals.css
   not-found.tsx
@@ -145,13 +153,16 @@ docs/                   # Design documentation (reference only)
   roadmap.md
 lib/
   utils.ts              # cn() utility
-  constants/            # App constants (chat, quotas, legal)
+  constants/            # App constants (chat, quotas, conversations, legal)
   ai/                   # AI client & prompt assembly
   auth/                 # Auth actions, schemas, types
+  conversations/        # Conversation persistence (actions, queries, migration)
   seo/                  # SEO schema generators (JSON-LD)
   supabase/             # Supabase client variants
-  hooks/                # Custom React hooks (cookie consent, chat, quota)
+  hooks/                # Custom React hooks (cookie consent, chat, quota, conversations)
 types/
+  chat.ts               # ChatState, PersonaId, ChatMessage types
+  conversation.ts       # Conversation, ConversationSummary, ConversationStatus
 tests/
 ```
 

@@ -92,26 +92,20 @@ JSON-LD structured data (Organization, ProfessionalService, WebApplication) on h
 
 ---
 
-### 10. Conversation Persistence and Dashboard
+### ~~10. Conversation Persistence and History~~ DONE
 
-**Complexity:** XL
-**What:** Store conversations in a new `conversations` table (id, user_id, persona, messages JSONB, title, created_at, updated_at) with RLS policies. Build a dashboard page at `/dashboard` showing past conversations as a read-only archive. Currently, `useChat` hook stores everything in `useState` — conversations are lost on page refresh. Also handle anonymous conversation migration: when an anonymous user signs up after a conversation, migrate their current conversation to the new account so the signup CTA (7) delivers on its promise.
-**Why launch:** Core value proposition for signed-in users. Without persistence, there's no reason to create an account. The funnel is: anonymous user gets value → wants to save/revisit → creates account → email captured → nurture funnel. Also required for shareable reports (12) and cross-session memory (15).
-**Dependencies:** None. But many Tier 2/3 features depend on this.
-**Key technical decisions:**
+Completed in PR #16. Conversations table (JSONB messages, RLS, status tracking) consolidated into initial migration. Auto-save on stream completion in `useChat()`. Progressive disclosure UX: recent conversations below persona cards on `/chat`, full library at `/conversations` (protected route), read-only viewer at `/chat/[id]`. Anonymous conversations persist in localStorage and auto-migrate to DB on first authenticated visit. Status badges (Report/In progress/Draft). Server actions with rate limiting, Zod validation, and auth checks. 18 new files, 14 modified.
 
-- Messages stored as JSONB array (conversations are read/written as a unit)
-- Auto-save on stream completion + periodic during long conversations
-- Title: extract from first user message or AI-generated summary
-- Anonymous conversations stored in localStorage, migrated to DB on signup
-  **Key files:**
-- Create `supabase/migrations/YYYYMMDD_conversations.sql` — conversations table + RLS
-- Create `app/[locale]/(account)/dashboard/page.tsx`
-- Create `components/dashboard/conversation-list.tsx`
-- Create `lib/api/conversations.ts` — CRUD operations
-- Update `lib/hooks/use-chat.ts` — save/load from DB
-- Update `app/api/chat/route.ts` — conversation save on completion
-- Update `messages/fr.json` and `messages/en.json` — dashboard namespace
+**Key files:**
+
+- `supabase/migrations/00000000000000_initial_schema.sql` — conversations table consolidated into initial migration
+- `lib/conversations/actions.ts` — server actions (create, save, abandon, delete)
+- `lib/conversations/queries.ts` — server queries (recent, single, paginated with filters)
+- `lib/conversations/migrate.ts` — anonymous → authenticated migration
+- `lib/hooks/use-chat.ts` — persistence integration (create/save/abandon on stream events)
+- `app/[locale]/(chat)/chat/[id]/page.tsx` — read-only conversation viewer
+- `app/[locale]/(account)/conversations/page.tsx` — full conversations library
+- `components/chat/recent-conversations.tsx` — recent conversations section
 
 ---
 
@@ -306,7 +300,7 @@ Tier 1:
   3 Legal Docs ✅ ────→ 4 Cookie Consent ✅ ──→ 5 PostHog Analytics ✅
 
 Tier 2:
-  10 Conversations ──→ 12 Shareable URLs ──→ 13 PDF Export
+  10 Conversations ✅ ──→ 12 Shareable URLs ──→ 13 PDF Export
        │                     │
        │                     └──→ 9 SEO/GEO ✅ (report OG meta deferred to 12)
        │
@@ -356,7 +350,7 @@ Parallel tracks:
 
 **Track B (the big build):**
 
-1. Conversation persistence + dashboard (10) — start early, largest item
+1. ~~Conversation persistence + history (10)~~ DONE
 2. Calendly integration (11) — landing page CTA immediately, others after dashboard
 3. Shareable report URLs (12) — after conversation persistence
 4. HTML templates + PDF export (13) — after shareable URLs

@@ -5,7 +5,7 @@
 set -euo pipefail
 
 # Auth error/success values that must use constants (from lib/auth/types.ts)
-PATTERNS="'validation'\|'invalid_credentials'\|'signup_failed'\|'unauthorized'\|'wrong_password'\|'update_failed'\|'reset_failed'\|'delete_failed'\|'email_update_failed'\|'rate_limited'\|'passwords_dont_match'\|'same_password'\|'sent'\|'password_changed'\|'email_confirmation_sent'"
+PATTERNS="'validation'\|'invalid_credentials'\|'signup_failed'\|'unauthorized'\|'wrong_password'\|'update_failed'\|'reset_failed'\|'delete_failed'\|'email_update_failed'\|'rate_limited'\|'passwords_dont_match'\|'same_password'\|'create_failed'\|'save_failed'\|'migration_failed'\|'sent'\|'password_changed'\|'email_confirmation_sent'"
 
 # Search in source files, exclude the SSOT definition and test files
 FOUND=$(grep -rn "$PATTERNS" \

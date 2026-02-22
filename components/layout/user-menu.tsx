@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogOut, Settings } from 'lucide-react'
+import { LogOut, MessageSquare, Settings } from 'lucide-react'
 
 function getInitials(name: string | null | undefined): string {
   if (!name) return '?'
@@ -71,6 +71,12 @@ export function UserMenu() {
           </p>
         </div>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild className="cursor-pointer">
+          <Link href="/conversations">
+            <MessageSquare className="mr-2 size-4" />
+            {t('conversations')}
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild className="cursor-pointer">
           <Link href="/account">
             <Settings className="mr-2 size-4" />

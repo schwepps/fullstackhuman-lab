@@ -11,6 +11,9 @@ export const AUTH_ERROR = {
   RATE_LIMITED: 'rate_limited',
   PASSWORDS_DONT_MATCH: 'passwords_dont_match',
   SAME_PASSWORD: 'same_password',
+  CREATE_FAILED: 'create_failed',
+  SAVE_FAILED: 'save_failed',
+  MIGRATION_FAILED: 'migration_failed',
 } as const
 
 export type AuthErrorCode = (typeof AUTH_ERROR)[keyof typeof AUTH_ERROR]

@@ -162,3 +162,56 @@ $$ LANGUAGE plpgsql SECURITY DEFINER
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- ============================================================
+-- Conversations table
+-- ============================================================
+
+-- Persists chat sessions. Messages stored as JSONB array (read/written atomically).
+-- Persona CHECK constraint mirrors PERSONA_IDS in lib/constants/personas.ts.
+-- Status CHECK constraint mirrors CONVERSATION_STATUSES in types/conversation.ts.
+CREATE TABLE public.conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  persona TEXT NOT NULL CHECK (persona IN ('doctor', 'critic', 'guide')),
+  title TEXT,
+  messages JSONB NOT NULL DEFAULT '[]'::jsonb,
+  has_report BOOLEAN NOT NULL DEFAULT FALSE,
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'completed', 'abandoned')),
+  message_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Composite index for "recent conversations" list query (user's conversations by date)
+CREATE INDEX idx_conversations_user_updated
+  ON public.conversations(user_id, updated_at DESC);
+
+-- Partial index for report library filter (only conversations with reports)
+CREATE INDEX idx_conversations_user_report
+  ON public.conversations(user_id)
+  WHERE has_report = TRUE;
+
+-- Row Level Security
+ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "conversations_select_own" ON public.conversations
+  FOR SELECT USING ((SELECT auth.uid()) = user_id);
+
+CREATE POLICY "conversations_insert_own" ON public.conversations
+  FOR INSERT WITH CHECK ((SELECT auth.uid()) = user_id);
+
+CREATE POLICY "conversations_update_own" ON public.conversations
+  FOR UPDATE USING ((SELECT auth.uid()) = user_id)
+  WITH CHECK ((SELECT auth.uid()) = user_id);
+
+CREATE POLICY "conversations_delete_own" ON public.conversations
+  FOR DELETE USING ((SELECT auth.uid()) = user_id);
+
+-- Reuse handle_updated_at() trigger function defined above
+CREATE TRIGGER conversations_updated_at
+  BEFORE UPDATE ON public.conversations
+  FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
+
+-- Grants: authenticated users only (no anon access)
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.conversations TO authenticated;
