@@ -4,7 +4,7 @@ export default function ChatLoading() {
   return (
     <>
       {/* Header skeleton — mirrors ChatPageHeader (h-14, border-b) */}
-      <header className="flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 sm:px-6">
+      <header className="flex h-14 items-center justify-between border-b border-border bg-background/80 backdrop-blur-sm px-4 sm:px-6">
         <Skeleton className="h-7 w-10" />
         <div className="flex items-center gap-3">
           <Skeleton className="h-5 w-14 rounded-full" />

@@ -1,3 +1,5 @@
+// next/link used intentionally — this page renders outside [locale] layout
+// where next-intl's Link is unavailable
 import Link from 'next/link'
 import { cookies, headers } from 'next/headers'
 import './globals.css'
@@ -18,6 +20,10 @@ const TEXTS = {
 
 type Locale = keyof typeof TEXTS
 
+/**
+ * Lightweight locale detection for the root 404 page (outside [locale] layout).
+ * Cannot use next-intl here. Keep in sync with i18n/routing.ts.
+ */
 async function detectLocale(): Promise<Locale> {
   const cookieStore = await cookies()
   const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
@@ -37,7 +43,7 @@ export default async function RootNotFound() {
 
   return (
     <html lang={locale}>
-      <body className="bg-background font-sans text-foreground antialiased">
+      <body className="bg-background font-mono text-foreground antialiased">
         <div className="flex min-h-svh flex-col items-center justify-center p-4">
           <div className="mx-auto max-w-md text-center">
             <div className="relative mx-auto mb-8 flex h-32 w-32 items-center justify-center">

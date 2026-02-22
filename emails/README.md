@@ -13,7 +13,7 @@ Reference HTML templates for Supabase Auth emails. These files are the source of
 | File                       | Supabase Slot  | Subject Line                           |
 | -------------------------- | -------------- | -------------------------------------- |
 | `signup-confirmation.html` | Confirm signup | Confirmez votre compte Fullstackhuman  |
-| `password-reset.html`      | Reset password | Reinitialisation de votre mot de passe |
+| `password-reset.html`      | Reset password | Réinitialisation de votre mot de passe |
 | `email-change.html`        | Change email   | Confirmez votre nouvelle adresse email |
 
 ## Template Variables
@@ -26,6 +26,10 @@ Supabase uses Go template syntax. Available variables:
 | `{{ .Token }}`           | OTP token (if OTP mode is enabled) |
 | `{{ .SiteURL }}`         | Base site URL from Supabase config |
 | `{{ .RedirectTo }}`      | Redirect URL after confirmation    |
+
+## Known Limitation — French Only
+
+Supabase Auth does not support per-user locale for email templates. All emails are sent in French regardless of the user's language preference. If bilingual emails become a priority, consider using Supabase Edge Functions to intercept auth hooks and send localized emails via a custom provider.
 
 ## Testing
 
