@@ -4,7 +4,8 @@ export const BRAND_NAME_SHORT = 'FSH'
 /**
  * Brand hex colors for contexts where CSS variables are unavailable
  * (e.g., OG image generation via next/og ImageResponse).
- * Keep in sync with globals.css theme tokens.
+ * BG, FG, PRIMARY mirror globals.css theme tokens — keep in sync.
+ * MUTED is OG-image-only (not defined in globals.css).
  */
 export const BRAND_COLORS = {
   BG: '#0a0a0c',
