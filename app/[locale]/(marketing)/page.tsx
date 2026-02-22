@@ -1,5 +1,22 @@
 import { HeroSection } from '@/components/marketing/hero-section'
+import { MultiJsonLd } from '@/components/seo/json-ld'
+import {
+  getOrganizationSchema,
+  getProfessionalServiceSchema,
+  getWebApplicationSchema,
+} from '@/lib/seo/schemas'
 
 export default function HomePage() {
-  return <HeroSection isVisible />
+  return (
+    <>
+      <MultiJsonLd
+        schemas={[
+          getOrganizationSchema(),
+          getProfessionalServiceSchema(),
+          getWebApplicationSchema(),
+        ]}
+      />
+      <HeroSection isVisible />
+    </>
+  )
 }

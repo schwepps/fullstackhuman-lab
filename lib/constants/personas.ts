@@ -67,3 +67,27 @@ export const PERSONA_NAME_KEYS: Record<
   critic: 'header.personaName.critic',
   guide: 'header.personaName.guide',
 }
+
+/**
+ * SEO persona metadata — English descriptions for JSON-LD, WebMCP, and llms.txt.
+ * These are always English because they target search engines and AI agents.
+ * Keep aligned with messages/en.json persona descriptions — run `pnpm check:seo`.
+ */
+export const SEO_PERSONAS = [
+  {
+    id: 'doctor' as const,
+    name: 'The Doctor',
+    description: 'Project diagnostic — finds the root cause, not the symptoms.',
+  },
+  {
+    id: 'critic' as const,
+    name: 'The Critic',
+    description:
+      "Honest review — what works, what doesn't, and what nobody's telling you.",
+  },
+  {
+    id: 'guide' as const,
+    name: 'The Guide',
+    description: 'Framework and thinking — a new way to see your question.',
+  },
+] as const

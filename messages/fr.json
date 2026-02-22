@@ -1,6 +1,8 @@
 {
   "metadata": {
-    "description": "Fullstackhuman - Bientôt disponible."
+    "title": "Fullstackhuman — Conseil IA, sans filtre",
+    "description": "Vision produit, profondeur technique et instinct de livraison — packagés en IA à la demande. Trois personas pour diagnostiquer, challenger ou recadrer vos défis.",
+    "ogImageAlt": "Fullstackhuman — Conseil IA"
   },
   "hero": {
     "headline": "EXÉCUTER: full_stack_human.sh",
