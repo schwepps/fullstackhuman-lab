@@ -1,5 +1,4 @@
 import { Skeleton } from '@/components/ui/skeleton'
-import { Separator } from '@/components/ui/separator'
 
 export default function AccountLoading() {
   return (
@@ -22,7 +21,7 @@ export default function AccountLoading() {
         </div>
       </section>
 
-      <Separator />
+      <div className="h-px w-full bg-border" />
 
       {/* Change password form (3 inputs + button) */}
       <section className="space-y-4">
@@ -38,7 +37,7 @@ export default function AccountLoading() {
         </div>
       </section>
 
-      <Separator />
+      <div className="h-px w-full bg-border" />
 
       {/* Change email form (2 inputs + button) */}
       <section className="space-y-4">
@@ -54,7 +53,7 @@ export default function AccountLoading() {
         </div>
       </section>
 
-      <Separator />
+      <div className="h-px w-full bg-border" />
 
       {/* Delete account section */}
       <section className="space-y-4">
