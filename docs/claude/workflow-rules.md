@@ -198,8 +198,33 @@ Run `pnpm pre-review` before opening any PR. This runs:
 
 - `check:i18n` — Verifies en.json and fr.json have identical key structures
 - `check:auth-strings` — Catches magic auth string literals (must use AUTH_ERROR/AUTH_SUCCESS constants)
+- `check:seo` — SEO/discovery data consistency (personas, URLs, schemas)
 - `check:duplicates` — Copy-paste detection via jscpd
 - `lint` + `typecheck` + `test:run`
+
+---
+
+## SEO/Discovery Data Consistency
+
+When modifying personas, public URLs, or product descriptions, update ALL discovery surfaces:
+
+**Checklist for content changes:**
+
+1. `messages/en.json` + `messages/fr.json` — i18n translations (source of truth for persona names/descriptions)
+2. `lib/seo/schemas.ts` — JSON-LD structured data
+3. `public/llms.txt` — LLM-readable site description
+4. `components/seo/webmcp-registration.tsx` — WebMCP tool descriptions
+5. `app/robots.ts` — if new public routes added, update AI bot allow rules
+6. `app/sitemap.ts` — if new public pages added
+
+**Checklist for URL changes:**
+
+1. `app/robots.ts` — allow/disallow rules
+2. `app/sitemap.ts` — sitemap entries
+3. `public/llms.txt` — all hardcoded URLs
+4. `lib/seo/schemas.ts` — schema URLs
+
+Run `pnpm check:seo` to verify consistency before PR.
 
 ---
 

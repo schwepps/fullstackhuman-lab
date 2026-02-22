@@ -129,6 +129,7 @@ components/
   auth/                 # Auth form components
   account/              # Account management components
   layout/               # Shared layout components (footer, cookie consent, legal page layout)
+  seo/                  # SEO components (JSON-LD, WebMCP registration)
   shared/               # Cross-route shared components
 prompts/                # Production prompt files (sent to API)
   system-prompt-core.md
@@ -147,6 +148,7 @@ lib/
   constants/            # App constants (chat, quotas, legal)
   ai/                   # AI client & prompt assembly
   auth/                 # Auth actions, schemas, types
+  seo/                  # SEO schema generators (JSON-LD)
   supabase/             # Supabase client variants
   hooks/                # Custom React hooks (cookie consent, chat, quota)
 types/
@@ -157,18 +159,19 @@ tests/
 
 ## Key Scripts
 
-| Script         | Description                                                                   |
-| -------------- | ----------------------------------------------------------------------------- |
-| `dev`          | Start development server                                                      |
-| `build`        | Build for production                                                          |
-| `lint`         | Run ESLint checks                                                             |
-| `lint:fix`     | Fix ESLint issues                                                             |
-| `typecheck`    | TypeScript type checking                                                      |
-| `format`       | Format with Prettier                                                          |
-| `format:check` | Check formatting                                                              |
-| `test`         | Run tests (watch mode)                                                        |
-| `test:run`     | Run tests once                                                                |
-| `pre-review`   | All quality checks (i18n parity, auth strings, jscpd, lint, typecheck, tests) |
+| Script         | Description                                                                        |
+| -------------- | ---------------------------------------------------------------------------------- |
+| `dev`          | Start development server                                                           |
+| `build`        | Build for production                                                               |
+| `lint`         | Run ESLint checks                                                                  |
+| `lint:fix`     | Fix ESLint issues                                                                  |
+| `typecheck`    | TypeScript type checking                                                           |
+| `format`       | Format with Prettier                                                               |
+| `format:check` | Check formatting                                                                   |
+| `test`         | Run tests (watch mode)                                                             |
+| `test:run`     | Run tests once                                                                     |
+| `check:seo`    | SEO/discovery data consistency (personas, URLs, schemas)                           |
+| `pre-review`   | All quality checks (i18n parity, auth strings, SEO, jscpd, lint, typecheck, tests) |
 
 ---
 

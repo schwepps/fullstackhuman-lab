@@ -22,6 +22,7 @@
     "check:i18n": "bash scripts/check-i18n-parity.sh",
     "check:auth-strings": "bash scripts/check-no-magic-auth.sh",
     "check:duplicates": "jscpd lib/ components/ app/ --config .jscpd.json",
+    "check:seo": "bash scripts/check-seo-consistency.sh",
     "pre-review": "bash scripts/pre-review.sh"
   },
   "dependencies": {

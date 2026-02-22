@@ -1,0 +1,25 @@
+# Full Stack Human
+
+> AI consulting tool by François Schuers — 15+ years of product & tech leadership, packaged as an on-demand AI.
+
+Three interactive personas for structured consulting conversations:
+- The Doctor: Diagnoses stuck projects — finds root causes, not symptoms
+- The Critic: Honest review — what works, what doesn't, what nobody's telling you
+- The Guide: Reframes your question with frameworks and strategic thinking
+
+Each conversation generates a structured report with actionable recommendations.
+
+## Pages
+
+- [Homepage](https://fullstackhuman.com): Main landing page (French)
+- [English](https://fullstackhuman.com/en): English version
+- [Start a Consultation](https://fullstackhuman.com/chat): Choose a persona and begin
+
+## Legal
+
+- [Privacy Policy](https://fullstackhuman.com/privacy)
+- [Privacy Policy (English)](https://fullstackhuman.com/en/privacy)
+- [Terms of Service](https://fullstackhuman.com/terms)
+- [Terms of Service (English)](https://fullstackhuman.com/en/terms)
+- [Mentions Légales](https://fullstackhuman.com/legal)
+- [Mentions Légales (English)](https://fullstackhuman.com/en/legal)

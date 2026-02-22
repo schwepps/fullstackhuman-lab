@@ -4,7 +4,9 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { setRequestLocale, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
+import { APP_URL } from '@/lib/constants/app'
 import { CookieConsentProvider } from '@/components/layout/cookie-consent-provider'
+import { WebMcpRegistration } from '@/components/seo/webmcp-registration'
 import '../globals.css'
 
 const geistSans = Geist({
@@ -16,8 +18,6 @@ const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
 })
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://fullstackhuman.com'
 
 type Props = {
   children: React.ReactNode
@@ -38,13 +38,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     namespace: 'metadata',
   })
 
+  const localeUrl =
+    validLocale === routing.defaultLocale
+      ? APP_URL
+      : `${APP_URL}/${validLocale}`
+
   return {
     metadataBase: new URL(APP_URL),
     title: {
-      default: 'Fullstackhuman',
+      default: t('title'),
       template: '%s | Fullstackhuman',
     },
     description: t('description'),
+    keywords: [
+      'AI consulting',
+      'product strategy',
+      'tech leadership',
+      'project diagnostic',
+      'product review',
+      'conseil IA',
+      'stratégie produit',
+    ],
+    authors: [{ name: 'François Schuers' }],
+    creator: 'Fullstackhuman',
+    category: 'technology',
     robots: {
       index: true,
       follow: true,
@@ -55,6 +72,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         'max-image-preview': 'large',
         'max-snippet': -1,
       },
+    },
+    openGraph: {
+      type: 'website',
+      locale: validLocale === 'fr' ? 'fr_FR' : 'en_US',
+      url: localeUrl,
+      siteName: 'Fullstackhuman',
+      title: t('title'),
+      description: t('description'),
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: t('title'),
+      description: t('description'),
+    },
+    alternates: {
+      canonical: localeUrl,
+      languages: Object.fromEntries(
+        routing.locales.map((l) => [
+          l,
+          l === routing.defaultLocale ? APP_URL : `${APP_URL}/${l}`,
+        ])
+      ),
     },
   }
 }
@@ -84,6 +123,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       >
         <NextIntlClientProvider>
           <CookieConsentProvider>{children}</CookieConsentProvider>
+          <WebMcpRegistration />
         </NextIntlClientProvider>
       </body>
     </html>

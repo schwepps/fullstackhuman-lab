@@ -1,6 +1,8 @@
 {
   "metadata": {
-    "description": "Fullstackhuman - Coming soon."
+    "title": "Fullstackhuman — AI Consulting, Straight Talk",
+    "description": "Product thinking, tech depth, and delivery instinct — packaged as an on-demand AI. Three personas to diagnose, review, or reframe your challenges.",
+    "ogImageAlt": "Fullstackhuman — AI-powered consulting"
   },
   "hero": {
     "headline": "EXECUTE: full_stack_human.sh",

@@ -13,6 +13,10 @@ echo "=== Magic auth strings ==="
 bash scripts/check-no-magic-auth.sh
 
 echo ""
+echo "=== SEO consistency ==="
+bash scripts/check-seo-consistency.sh
+
+echo ""
 echo "=== Copy-paste detection ==="
 pnpm check:duplicates
 

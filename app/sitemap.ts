@@ -1,12 +1,11 @@
 import type { MetadataRoute } from 'next'
 import { routing } from '@/i18n/routing'
+import { APP_URL } from '@/lib/constants/app'
 import { LEGAL_PATHS } from '@/lib/constants/legal'
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://fullstackhuman.com'
 
 function localeUrl(locale: string, path = ''): string {
   const prefix = locale === routing.defaultLocale ? '' : `/${locale}`
-  return `${BASE_URL}${prefix}${path}`
+  return `${APP_URL}${prefix}${path}`
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

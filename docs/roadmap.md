@@ -71,19 +71,24 @@ Replaced both in-memory rate limiters (chat IP + auth actions) with Upstash Redi
 
 ---
 
-### 9. SEO, GEO, and WebMCP
+### ~~9. SEO, GEO, and WebMCP~~ DONE
 
-**Complexity:** M
-**What:** Implement structured data (JSON-LD) for the landing page. Add Open Graph and Twitter Card meta for social sharing (especially report pages). Implement GEO (Generative Engine Optimization) for AI search engines (Perplexity, ChatGPT browse). Integrate WebMCP standard from Google/Microsoft for AI agent discoverability. Example codebase available for reference.
-**Why launch:** Low effort with example codebase. Positions the product for organic discovery from both traditional and AI search. The current site has basic SEO (sitemap.ts, robots.ts) but no structured data or AI search optimization.
-**Dependencies:** Shareable report URLs (12) for OG meta on report pages.
+JSON-LD structured data (Organization, ProfessionalService, WebApplication) on homepage via `MultiJsonLd` component. Dynamic OG image generation via `next/og` ImageResponse with locale-aware text (FR/EN). Twitter Card meta. Enhanced root layout metadata with OpenGraph, Twitter, canonical URLs, and hreflang alternates. AI bot rules in `robots.ts` for GPTBot, ClaudeBot, PerplexityBot, ChatGPT-User, Google-Extended, and anthropic-ai. `llms.txt` for LLM discoverability. WebMCP tool registration (`get_personas`, `start_consultation`) via `navigator.modelContext` with feature detection (Chrome 146+ early preview). SEO consistency check script (`pnpm check:seo`) added to pre-review pipeline. Report page OG meta deferred to shareable report URLs (item 12).
+
 **Key files:**
 
+- Create `lib/seo/schemas.ts` — JSON-LD schema generators
+- Create `components/seo/json-ld.tsx` — JsonLd rendering components
+- Create `app/[locale]/opengraph-image.tsx` — Dynamic OG image (locale-aware)
+- Create `app/[locale]/twitter-image.tsx` — Twitter card image
+- Create `public/llms.txt` — LLM-readable site description
+- Create `components/seo/webmcp-registration.tsx` — WebMCP tool registration
+- Create `types/webmcp.d.ts` — TypeScript declarations for WebMCP API
+- Create `scripts/check-seo-consistency.sh` — SEO consistency check
+- Update `app/[locale]/layout.tsx` — OG, Twitter, alternates, keywords, WebMCP
 - Update `app/[locale]/(marketing)/page.tsx` — JSON-LD structured data
-- Update `app/[locale]/layout.tsx` — OG/Twitter meta
-- Create `public/.well-known/webmcp.json` (or equivalent WebMCP manifest)
-- Update `app/robots.ts` — AI crawler directives
-- Update `app/sitemap.ts` — extend for new pages
+- Update `app/robots.ts` — AI bot crawler rules
+- Update `messages/en.json` and `messages/fr.json` — SEO metadata keys
 
 ---
 
@@ -307,7 +312,7 @@ Tier 1:
 Tier 2:
   10 Conversations ──→ 12 Shareable URLs ──→ 13 PDF Export
        │                     │
-       │                     └──→ 9 SEO/GEO (OG meta)
+       │                     └──→ 9 SEO/GEO ✅ (report OG meta deferred to 12)
        │
        ├──→ 11 Calendly (dashboard CTA)
        └──→ 15 Cross-Session Memory (Tier 3)
@@ -320,6 +325,7 @@ Independent (no dependencies):
   6 French translations ✅
   7 Anon signup CTA ✅
   8 Redis rate limiting ✅
+  9 SEO/GEO/WebMCP ✅ (core done; report OG meta depends on 12)
 
 Tier 4:
   10 + 13 + 15 ──→ 20 Stripe (needs stable product + paid differentiators)
@@ -347,7 +353,7 @@ Parallel tracks:
 1. ~~French translations (6)~~ DONE
 2. ~~Anon signup CTA (7)~~ DONE
 3. ~~Redis rate limiting (8)~~ DONE
-4. SEO/GEO/WebMCP (9) — can start in parallel
+4. ~~SEO/GEO/WebMCP (9)~~ DONE
 
 **Track B (the big build):**
 
