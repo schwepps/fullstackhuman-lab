@@ -92,26 +92,38 @@ JSON-LD structured data (Organization, ProfessionalService, WebApplication) on h
 
 ---
 
-### 10. Conversation Persistence and Dashboard
+### 10. Conversation Persistence and History ✅
 
 **Complexity:** XL
-**What:** Store conversations in a new `conversations` table (id, user_id, persona, messages JSONB, title, created_at, updated_at) with RLS policies. Build a dashboard page at `/dashboard` showing past conversations as a read-only archive. Currently, `useChat` hook stores everything in `useState` — conversations are lost on page refresh. Also handle anonymous conversation migration: when an anonymous user signs up after a conversation, migrate their current conversation to the new account so the signup CTA (7) delivers on its promise.
+**What:** Store conversations in a `conversations` table (id, user_id, persona, messages JSONB, title, status, has_report, message_count, timestamps) with RLS policies. Instead of a separate `/dashboard` page, conversations are surfaced via progressive disclosure: recent conversations appear below persona cards on `/chat`, and a full conversations library lives at `/conversations` (protected route). Read-only conversation viewer at `/chat/[id]`. Anonymous conversations stored in localStorage and migrated to DB on first authenticated visit.
 **Why launch:** Core value proposition for signed-in users. Without persistence, there's no reason to create an account. The funnel is: anonymous user gets value → wants to save/revisit → creates account → email captured → nurture funnel. Also required for shareable reports (12) and cross-session memory (15).
 **Dependencies:** None. But many Tier 2/3 features depend on this.
 **Key technical decisions:**
 
 - Messages stored as JSONB array (conversations are read/written as a unit)
-- Auto-save on stream completion + periodic during long conversations
-- Title: extract from first user message or AI-generated summary
-- Anonymous conversations stored in localStorage, migrated to DB on signup
+- Auto-save on stream completion only (no periodic saves — conversations are short)
+- Title extracted from first user message (truncated to 100 chars)
+- Status tracking: active → completed (has report) or abandoned (reset without report)
+- Anonymous conversations stored in localStorage, migrated to DB on first authenticated visit
+- UX: progressive disclosure (recent on `/chat`) + full library at `/conversations` — no separate dashboard
   **Key files:**
-- Create `supabase/migrations/YYYYMMDD_conversations.sql` — conversations table + RLS
-- Create `app/[locale]/(account)/dashboard/page.tsx`
-- Create `components/dashboard/conversation-list.tsx`
-- Create `lib/api/conversations.ts` — CRUD operations
-- Update `lib/hooks/use-chat.ts` — save/load from DB
-- Update `app/api/chat/route.ts` — conversation save on completion
-- Update `messages/fr.json` and `messages/en.json` — dashboard namespace
+- `supabase/migrations/00000000000000_initial_schema.sql` — conversations table consolidated into initial migration
+- `types/conversation.ts` — ConversationStatus, Conversation, ConversationSummary types
+- `lib/constants/conversations.ts` — limits, localStorage keys, page sizes
+- `lib/conversations/actions.ts` — server actions (create, save, abandon, delete)
+- `lib/conversations/queries.ts` — server queries (recent, single, paginated with filters)
+- `lib/conversations/migrate.ts` — anonymous → authenticated migration
+- `lib/hooks/use-conversations.ts` — client hook for conversation list
+- `lib/hooks/use-anonymous-conversations.ts` — localStorage persistence for anonymous users
+- `app/api/conversations/route.ts` — GET conversation list endpoint
+- `app/api/conversations/[id]/route.ts` — GET single conversation endpoint
+- `app/[locale]/(chat)/chat/[id]/page.tsx` — read-only conversation viewer
+- `app/[locale]/(account)/conversations/page.tsx` — full conversations library
+- `components/chat/conversation-card.tsx` — compact conversation card
+- `components/chat/conversation-status-badge.tsx` — status badge (Report/In progress/Draft)
+- `components/chat/recent-conversations.tsx` — recent conversations section
+- `components/chat/conversations-library.tsx` — library with filters
+- Updated: `lib/hooks/use-chat.ts`, `app/[locale]/(chat)/chat/page.tsx`, `components/layout/user-menu.tsx`, `components/chat/chat-page-header.tsx`, `components/chat/chat-container.tsx`, `proxy.ts`, `messages/en.json`, `messages/fr.json`
 
 ---
 

@@ -5,7 +5,7 @@ import { updateSession } from '@/lib/supabase/middleware'
 
 const intlMiddleware = createIntlMiddleware(routing)
 
-const PROTECTED_PREFIXES = ['/account']
+const PROTECTED_PREFIXES = ['/account', '/conversations']
 
 // Build locale prefix regex dynamically from routing config
 const localePattern = routing.locales

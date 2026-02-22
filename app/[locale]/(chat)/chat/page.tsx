@@ -5,15 +5,23 @@ import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { useChat } from '@/lib/hooks/use-chat'
 import { useQuota } from '@/lib/hooks/use-quota'
+import { useConversations } from '@/lib/hooks/use-conversations'
 import { ChatPageHeader } from '@/components/chat/chat-page-header'
 import { PersonaSelector } from '@/components/chat/persona-selector'
 import { ChatContainer } from '@/components/chat/chat-container'
+import { RecentConversations } from '@/components/chat/recent-conversations'
 import {
   PERSONA_IDS,
   PERSONA_TRIGGER_KEYS,
   PERSONA_OPENING_MESSAGE_KEYS,
 } from '@/lib/constants/personas'
+import { useAuth } from '@/lib/hooks/use-auth'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
+import { migrateAnonymousConversations } from '@/lib/conversations/migrate'
+import {
+  ANONYMOUS_CONVERSATIONS_KEY,
+  MIGRATION_DONE_KEY,
+} from '@/lib/constants/conversations'
 import type { PersonaId } from '@/types/chat'
 
 function ChatPageContent() {
@@ -21,18 +29,53 @@ function ChatPageContent() {
   const searchParams = useSearchParams()
   const chat = useChat()
   const quota = useQuota()
+  const { isAuthenticated } = useAuth()
+  const {
+    conversations,
+    isLoading: conversationsLoading,
+    refetch: refetchConversations,
+  } = useConversations()
   const { trackPersonaSelected } = useAnalytics()
   const { refetch: refetchQuota } = quota
   const { isStreaming, phase } = chat
 
-  // Refetch quota when streaming ends (conversation may have been recorded)
+  // Refetch quota and conversations when streaming ends
   const prevStreamingRef = useRef(false)
   useEffect(() => {
     if (prevStreamingRef.current && !isStreaming) {
       refetchQuota()
+      refetchConversations()
     }
     prevStreamingRef.current = isStreaming
-  }, [isStreaming, refetchQuota])
+  }, [isStreaming, refetchQuota, refetchConversations])
+
+  // Migrate anonymous conversations to DB on first authenticated visit
+  const hasMigrated = useRef(false)
+  useEffect(() => {
+    if (!isAuthenticated || hasMigrated.current) return
+    hasMigrated.current = true
+
+    try {
+      const migrationDone = localStorage.getItem(MIGRATION_DONE_KEY)
+      if (migrationDone) return
+
+      const raw = localStorage.getItem(ANONYMOUS_CONVERSATIONS_KEY)
+      if (!raw) return
+
+      const conversations = JSON.parse(raw)
+      if (!Array.isArray(conversations) || conversations.length === 0) return
+
+      migrateAnonymousConversations(conversations).then((result) => {
+        if (result.success) {
+          localStorage.removeItem(ANONYMOUS_CONVERSATIONS_KEY)
+          localStorage.setItem(MIGRATION_DONE_KEY, '1')
+          refetchConversations()
+        }
+      })
+    } catch {
+      // localStorage unavailable — fail silently
+    }
+  }, [isAuthenticated, refetchConversations])
 
   function handleSelectPersona(id: PersonaId) {
     trackPersonaSelected({ persona: id })
@@ -71,16 +114,25 @@ function ChatPageContent() {
         limit={quota.limit}
         period={quota.period}
         isLoading={quota.isLoading}
+        isReadOnly={chat.isReadOnly}
       />
 
       {chat.phase === 'selection' ? (
-        <PersonaSelector
-          onSelect={handleSelectPersona}
-          remaining={quota.remaining}
-          limit={quota.limit}
-          period={quota.period}
-          isLoading={quota.isLoading}
-        />
+        <>
+          <PersonaSelector
+            onSelect={handleSelectPersona}
+            remaining={quota.remaining}
+            limit={quota.limit}
+            period={quota.period}
+            isLoading={quota.isLoading}
+          />
+          <div className="flex justify-center">
+            <RecentConversations
+              conversations={conversations}
+              isLoading={conversationsLoading}
+            />
+          </div>
+        </>
       ) : persona ? (
         <ChatContainer
           messages={chat.messages}
@@ -93,6 +145,7 @@ function ChatPageContent() {
           quotaTier={quota.tier}
           quotaRemaining={quota.remaining}
           quotaLimit={quota.limit}
+          isReadOnly={chat.isReadOnly}
         />
       ) : null}
     </>

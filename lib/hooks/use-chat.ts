@@ -7,9 +7,16 @@ import type {
   PersonaId,
   MessageRole,
 } from '@/types/chat'
+import type { Conversation } from '@/types/conversation'
 import { PERSONAS } from '@/lib/constants/personas'
 import { readSSEStream } from '@/lib/ai/sse-reader'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
+import { useAuth } from '@/lib/hooks/use-auth'
+import {
+  createConversation,
+  saveMessages,
+  abandonConversation,
+} from '@/lib/conversations/actions'
 
 function createMessage(
   role: MessageRole,
@@ -49,11 +56,14 @@ const INITIAL_STATE: ChatState = {
   messages: [],
   isStreaming: false,
   error: null,
+  conversationId: null,
+  isReadOnly: false,
 }
 
 export function useChat() {
   const [state, setState] = useState<ChatState>(INITIAL_STATE)
   const { trackReportGenerated } = useAnalytics()
+  const { isAuthenticated } = useAuth()
   const abortRef = useRef<AbortController | null>(null)
   const stateRef = useRef(state)
   stateRef.current = state
@@ -69,15 +79,35 @@ export function useChat() {
         messages: [opening],
         isStreaming: false,
         error: null,
+        conversationId: null,
+        isReadOnly: false,
       })
     },
     []
   )
 
+  // Persist conversation after stream completion (fire and forget)
+  const persistAfterStream = useCallback(
+    async (persona: PersonaId, messages: ChatMessage[], isReport: boolean) => {
+      if (!isAuthenticated) return
+
+      const currentId = stateRef.current.conversationId
+      if (currentId) {
+        await saveMessages(currentId, messages, isReport)
+      } else {
+        const result = await createConversation(persona, messages)
+        if (result.success) {
+          setState((prev) => ({ ...prev, conversationId: result.id }))
+        }
+      }
+    },
+    [isAuthenticated]
+  )
+
   const sendMessage = useCallback(
     async (content: string) => {
-      const { persona, isStreaming, messages } = stateRef.current
-      if (!persona || isStreaming) return
+      const { persona, isStreaming, messages, isReadOnly } = stateRef.current
+      if (!persona || isStreaming || isReadOnly) return
 
       const userMsg = createMessage('user', content)
       const apiMessages = buildApiMessages(
@@ -165,6 +195,10 @@ export function useChat() {
             message_count: stateRef.current.messages.length,
           })
         }
+        // Compute updated messages for both state and persistence
+        const updatedMessages = stateRef.current.messages.map((m) =>
+          m.id === assistantId ? { ...m, content: accumulated, isReport } : m
+        )
         setState((prev) => ({
           ...prev,
           isStreaming: false,
@@ -172,6 +206,8 @@ export function useChat() {
             m.id === assistantId ? { ...m, content: accumulated, isReport } : m
           ),
         }))
+        // Persist after state update (fire and forget, don't block UI)
+        persistAfterStream(persona, updatedMessages, isReport)
       } catch (error) {
         if ((error as Error).name === 'AbortError') {
           setState((prev) => ({
@@ -190,12 +226,29 @@ export function useChat() {
         }))
       }
     },
-    [trackReportGenerated]
+    [trackReportGenerated, persistAfterStream]
   )
 
   const resetChat = useCallback(() => {
     abortRef.current?.abort()
+    const { conversationId } = stateRef.current
+    const hasReport = stateRef.current.messages.some((m) => m.isReport)
+    if (conversationId && !hasReport) {
+      abandonConversation(conversationId)
+    }
     setState(INITIAL_STATE)
+  }, [])
+
+  const loadConversation = useCallback((conversation: Conversation) => {
+    setState({
+      phase: 'chatting',
+      persona: conversation.persona,
+      messages: conversation.messages,
+      isStreaming: false,
+      error: null,
+      conversationId: conversation.id,
+      isReadOnly: true,
+    })
   }, [])
 
   const stopStreaming = useCallback(() => {
@@ -213,9 +266,18 @@ export function useChat() {
       selectPersona,
       sendMessage,
       resetChat,
+      loadConversation,
       stopStreaming,
       dismissError,
     }),
-    [state, selectPersona, sendMessage, resetChat, stopStreaming, dismissError]
+    [
+      state,
+      selectPersona,
+      sendMessage,
+      resetChat,
+      loadConversation,
+      stopStreaming,
+      dismissError,
+    ]
   )
 }

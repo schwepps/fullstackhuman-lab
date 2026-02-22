@@ -20,6 +20,7 @@ interface ChatContainerProps {
   quotaTier: TierKey
   quotaRemaining: number | null
   quotaLimit: number | null
+  isReadOnly?: boolean
 }
 
 export function ChatContainer({
@@ -33,8 +34,10 @@ export function ChatContainer({
   quotaTier,
   quotaRemaining,
   quotaLimit,
+  isReadOnly = false,
 }: ChatContainerProps) {
   const t = useTranslations('chat.errors')
+  const tConv = useTranslations('conversations')
 
   return (
     <div className="flex flex-1 flex-col">
@@ -65,11 +68,19 @@ export function ChatContainer({
         quotaLimit={quotaLimit}
       />
 
-      <ChatInput
-        onSendMessage={onSendMessage}
-        isStreaming={isStreaming}
-        onStopStreaming={onStopStreaming}
-      />
+      {isReadOnly ? (
+        <div className="border-t border-border bg-muted/50 px-4 py-3 text-center">
+          <p className="font-mono text-xs text-muted-foreground">
+            {tConv('readOnlyNotice')}
+          </p>
+        </div>
+      ) : (
+        <ChatInput
+          onSendMessage={onSendMessage}
+          isStreaming={isStreaming}
+          onStopStreaming={onStopStreaming}
+        />
+      )}
     </div>
   )
 }

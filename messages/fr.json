@@ -54,7 +54,7 @@
     },
     "header": {
       "backLabel": "Retour",
-      "backConfirm": "Quitter cette conversation ? Votre historique sera perdu.",
+      "backConfirm": "Nouvelle conversation ? Votre conversation actuelle est sauvegardée.",
       "newConversation": "Nouveau",
       "personaName": {
         "doctor": "Le Docteur",
@@ -152,9 +152,31 @@
     }
   },
   "userMenu": {
+    "conversations": "Mes conversations",
     "account": "Mon compte",
     "logout": "Se déconnecter",
     "login": "Se connecter"
+  },
+  "conversations": {
+    "recentTitle": "Conversations récentes",
+    "viewAll": "Voir tout",
+    "emptyState": "Aucune conversation pour l\u2019instant. Lancez-vous !",
+    "libraryTitle": "Mes conversations",
+    "filterAll": "Toutes",
+    "filterReports": "Rapports",
+    "filterDrafts": "Brouillons",
+    "status": {
+      "completed": "Rapport",
+      "active": "En cours",
+      "abandoned": "Brouillon"
+    },
+    "untitled": "Conversation sans titre",
+    "continueConversation": "Reprendre la conversation",
+    "backToConversations": "Retour aux conversations",
+    "startNew": "Nouvelle conversation",
+    "deleteConfirm": "Supprimer cette conversation ?",
+    "deleteSuccess": "Conversation supprimée",
+    "readOnlyNotice": "Conversation passée (lecture seule)"
   },
   "account": {
     "title": "Mon compte",

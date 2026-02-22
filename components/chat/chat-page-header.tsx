@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { ArrowLeft, Plus } from 'lucide-react'
 import { LocaleSwitcher } from '@/components/layout/locale-switcher'
 import { UserMenu } from '@/components/layout/user-menu'
 import { BrandLink } from '@/components/layout/brand-link'
@@ -39,6 +39,7 @@ interface ChatPageHeaderProps {
   limit: number | null
   period: QuotaPeriod
   isLoading: boolean
+  isReadOnly?: boolean
 }
 
 export function ChatPageHeader({
@@ -49,11 +50,13 @@ export function ChatPageHeader({
   limit,
   period,
   isLoading,
+  isReadOnly = false,
 }: ChatPageHeaderProps) {
   const t = useTranslations('chat')
 
   function handleNewConversation() {
-    if (hasMessages && !window.confirm(t('header.backConfirm'))) return
+    if (hasMessages && !isReadOnly && !window.confirm(t('header.backConfirm')))
+      return
     onReset()
   }
 
@@ -77,17 +80,31 @@ export function ChatPageHeader({
 
       <div className="flex items-center gap-3">
         {persona ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleNewConversation}
-            className="cursor-pointer gap-1 touch-manipulation font-mono text-xs"
-          >
-            <Plus className="size-3.5" />
-            <span className="hidden sm:inline">
-              {t('header.newConversation')}
-            </span>
-          </Button>
+          isReadOnly ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleNewConversation}
+              className="cursor-pointer gap-1 touch-manipulation font-mono text-xs"
+            >
+              <ArrowLeft className="size-3.5" />
+              <span className="hidden sm:inline">
+                {t('header.newConversation')}
+              </span>
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleNewConversation}
+              className="cursor-pointer gap-1 touch-manipulation font-mono text-xs"
+            >
+              <Plus className="size-3.5" />
+              <span className="hidden sm:inline">
+                {t('header.newConversation')}
+              </span>
+            </Button>
+          )
         ) : null}
         {!isLoading && (
           <span

@@ -31,4 +31,6 @@ export interface ChatState {
   readonly messages: ChatMessage[]
   readonly isStreaming: boolean
   readonly error: string | null
+  readonly conversationId: string | null
+  readonly isReadOnly: boolean
 }
