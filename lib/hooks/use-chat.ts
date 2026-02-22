@@ -207,7 +207,11 @@ export function useChat() {
           ),
         }))
         // Persist after state update (fire and forget, don't block UI)
-        persistAfterStream(persona, updatedMessages, isReport)
+        void persistAfterStream(persona, updatedMessages, isReport).catch(
+          () => {
+            // Suppress unhandled promise rejection — persistence is best-effort
+          }
+        )
       } catch (error) {
         if ((error as Error).name === 'AbortError') {
           setState((prev) => ({

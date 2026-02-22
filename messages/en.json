@@ -176,7 +176,14 @@
     "startNew": "Start a new conversation",
     "deleteConfirm": "Delete this conversation?",
     "deleteSuccess": "Conversation deleted",
-    "readOnlyNotice": "This is a past conversation (read-only)"
+    "readOnlyNotice": "This is a past conversation (read-only)",
+    "time": {
+      "justNow": "<1m",
+      "minutes": "{count}m",
+      "hours": "{count}h",
+      "days": "{count}d",
+      "months": "{count}mo"
+    }
   },
   "account": {
     "title": "Account settings",

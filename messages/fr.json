@@ -176,7 +176,14 @@
     "startNew": "Nouvelle conversation",
     "deleteConfirm": "Supprimer cette conversation ?",
     "deleteSuccess": "Conversation supprimée",
-    "readOnlyNotice": "Conversation passée (lecture seule)"
+    "readOnlyNotice": "Conversation passée (lecture seule)",
+    "time": {
+      "justNow": "<1m",
+      "minutes": "{count}min",
+      "hours": "{count}h",
+      "days": "{count}j",
+      "months": "{count}mo"
+    }
   },
   "account": {
     "title": "Mon compte",

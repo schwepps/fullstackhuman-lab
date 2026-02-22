@@ -12,32 +12,37 @@ interface ConversationCardProps {
   conversation: ConversationSummary
 }
 
-function formatRelativeTime(dateString: string): string {
-  const now = Date.now()
-  const date = new Date(dateString).getTime()
-  const diffMs = now - date
+type TimeKey = 'justNow' | 'minutes' | 'hours' | 'days' | 'months'
+
+function getRelativeTimeKey(dateString: string): {
+  key: TimeKey
+  count?: number
+} {
+  const diffMs = Date.now() - new Date(dateString).getTime()
 
   const minutes = Math.floor(diffMs / 60_000)
-  if (minutes < 1) return '<1m'
-  if (minutes < 60) return `${minutes}m`
+  if (minutes < 1) return { key: 'justNow' }
+  if (minutes < 60) return { key: 'minutes', count: minutes }
 
   const hours = Math.floor(diffMs / 3_600_000)
-  if (hours < 24) return `${hours}h`
+  if (hours < 24) return { key: 'hours', count: hours }
 
   const days = Math.floor(diffMs / 86_400_000)
-  if (days < 30) return `${days}d`
+  if (days < 30) return { key: 'days', count: days }
 
   const months = Math.floor(days / 30)
-  return `${months}mo`
+  return { key: 'months', count: months }
 }
 
 export function ConversationCard({ conversation }: ConversationCardProps) {
   const t = useTranslations('chat')
   const tConv = useTranslations('conversations')
+  const tTime = useTranslations('conversations.time')
 
   const persona = PERSONAS[conversation.persona]
   const title = conversation.title ?? tConv('untitled')
-  const relativeTime = formatRelativeTime(conversation.updatedAt)
+  const { key, count } = getRelativeTimeKey(conversation.updatedAt)
+  const relativeTime = count !== undefined ? tTime(key, { count }) : tTime(key)
 
   return (
     <Link href={`/chat/${conversation.id}`}>

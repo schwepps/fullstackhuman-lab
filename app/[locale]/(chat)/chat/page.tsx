@@ -65,13 +65,19 @@ function ChatPageContent() {
       const conversations = JSON.parse(raw)
       if (!Array.isArray(conversations) || conversations.length === 0) return
 
-      migrateAnonymousConversations(conversations).then((result) => {
-        if (result.success) {
-          localStorage.removeItem(ANONYMOUS_CONVERSATIONS_KEY)
+      migrateAnonymousConversations(conversations)
+        .then((result) => {
+          if (result.success) {
+            localStorage.removeItem(ANONYMOUS_CONVERSATIONS_KEY)
+          }
+          // Mark as done regardless — prevent repeated failed DB calls
           localStorage.setItem(MIGRATION_DONE_KEY, '1')
-          refetchConversations()
-        }
-      })
+          if (result.success) refetchConversations()
+        })
+        .catch(() => {
+          // Mark as done to prevent retry loop on persistent failures
+          localStorage.setItem(MIGRATION_DONE_KEY, '1')
+        })
     } catch {
       // localStorage unavailable — fail silently
     }

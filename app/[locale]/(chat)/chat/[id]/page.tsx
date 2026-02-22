@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useChat } from '@/lib/hooks/use-chat'
 import { useQuota } from '@/lib/hooks/use-quota'
@@ -17,6 +17,11 @@ export default function ConversationViewPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [isLoadingConversation, setIsLoadingConversation] = useState(true)
   const [loadError, setLoadError] = useState(false)
+
+  const handleReset = useCallback(() => {
+    chat.resetChat()
+    router.push('/chat')
+  }, [chat, router])
 
   useEffect(() => {
     if (authLoading) return
@@ -63,7 +68,7 @@ export default function ConversationViewPage() {
     <>
       <ChatPageHeader
         persona={chat.persona}
-        onReset={chat.resetChat}
+        onReset={handleReset}
         hasMessages={chat.messages.length > 1}
         remaining={quota.remaining}
         limit={quota.limit}

@@ -66,7 +66,7 @@ export async function createConversation(
       user_id: user.id,
       persona: parsed.data.persona,
       title,
-      messages: JSON.parse(JSON.stringify(parsed.data.messages)),
+      messages: parsed.data.messages,
       has_report: hasReport,
       status,
       message_count: parsed.data.messages.length,
@@ -108,7 +108,7 @@ export async function saveMessages(
   const { error } = await supabase
     .from('conversations')
     .update({
-      messages: JSON.parse(JSON.stringify(parsed.data.messages)),
+      messages: parsed.data.messages,
       has_report: parsed.data.hasReport,
       status,
       title,

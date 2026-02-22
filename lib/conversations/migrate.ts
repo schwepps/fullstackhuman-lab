@@ -58,7 +58,7 @@ export async function migrateAnonymousConversations(
     user_id: user.id,
     persona: conv.persona as PersonaId,
     title: conv.title ?? extractTitle(conv.messages),
-    messages: JSON.parse(JSON.stringify(conv.messages)),
+    messages: conv.messages,
     has_report: conv.hasReport,
     status: conv.status as ConversationStatus,
     message_count: conv.messages.length,
