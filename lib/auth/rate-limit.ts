@@ -1,26 +1,34 @@
 import { headers } from 'next/headers'
 import { getClientIp } from '@/lib/utils'
-import { consumeFromTimestampMap } from '@/lib/rate-limit-utils'
+import {
+  consumeWithFallback,
+  createLazyRateLimiter,
+} from '@/lib/rate-limit-utils'
 
 export const AUTH_MAX_ATTEMPTS = 10
 const AUTH_WINDOW_MS = 15 * 60 * 1000 // 15 minutes
 
-// Known limitation: in-memory Map resets on serverless cold starts.
-// Supabase GoTrue rate limits (auth.rate_limit in config.toml) provide a backstop.
-// For production hardening, migrate to a durable store (Upstash Redis / Vercel KV).
+// In-memory fallback for when Redis is unavailable (local dev, Upstash outage)
 const authAttempts = new Map<string, number[]>()
+
+const getAuthLimiter = createLazyRateLimiter({
+  maxRequests: AUTH_MAX_ATTEMPTS,
+  window: '15 m',
+  prefix: 'ratelimit:auth:ip',
+})
 
 /**
  * Per-IP rate limiter for auth server actions.
  * Returns true if the request is allowed, false if rate-limited.
- * Uses a sliding window of AUTH_WINDOW_MS with AUTH_MAX_ATTEMPTS max.
+ * Uses Upstash Redis with in-memory fallback.
  */
 export async function checkAuthRateLimit(): Promise<boolean> {
   const headerList = await headers()
   const ip = getClientIp(headerList)
-  return consumeFromTimestampMap(
-    authAttempts,
+  return consumeWithFallback(
+    getAuthLimiter(),
     ip,
+    authAttempts,
     AUTH_WINDOW_MS,
     AUTH_MAX_ATTEMPTS
   )

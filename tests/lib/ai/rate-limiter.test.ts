@@ -2,20 +2,44 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   RATE_LIMIT_COOKIE_NAME,
   RATE_LIMIT_COOKIE_MAX_AGE_SECONDS,
+  MAX_REQUESTS_PER_IP_PER_HOUR,
 } from '@/lib/constants/chat'
 import { CONSENT_COOKIE_NAME } from '@/lib/constants/legal'
 import { TIER_QUOTAS } from '@/lib/constants/quotas'
 
 const MAX_CONVERSATIONS_PER_DAY = TIER_QUOTAS.anonymous.maxConversationsPerDay
 
-// Mock next/headers before importing rate-limiter
-const mockCookieStore = {
-  get: vi.fn(),
-  set: vi.fn(),
-}
+// Hoist mock state so it's available inside vi.mock() factories.
+// NOTE: This Ratelimit/Upstash mock block is duplicated in rate-limit.test.ts.
+// vi.mock() and vi.hoisted() are Vitest transforms that must be at the top level
+// of each test file — they cannot be extracted into shared helpers.
+const { mockLimit, mockCookieStore, redisState } = vi.hoisted(() => ({
+  mockLimit: vi.fn(),
+  mockCookieStore: { get: vi.fn(), set: vi.fn() },
+  redisState: { available: true },
+}))
 
 vi.mock('next/headers', () => ({
   cookies: vi.fn(async () => mockCookieStore),
+}))
+
+vi.mock('@upstash/ratelimit', () => {
+  class MockRatelimit {
+    limit(...args: unknown[]) {
+      return mockLimit(...args)
+    }
+    static slidingWindow() {
+      return {}
+    }
+  }
+  return { Ratelimit: MockRatelimit }
+})
+
+vi.mock('@/lib/upstash', () => ({
+  getRedisClient: vi.fn(() => {
+    if (!redisState.available) throw new Error('Redis not configured')
+    return {}
+  }),
 }))
 
 import {
@@ -33,35 +57,95 @@ function mockCookies(cookies: Record<string, string | undefined>) {
 describe('consumeIpRequest', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Reset module to clear in-memory IP store
     vi.resetModules()
+    redisState.available = true
+    mockLimit.mockResolvedValue({
+      success: true,
+      limit: MAX_REQUESTS_PER_IP_PER_HOUR,
+      remaining: MAX_REQUESTS_PER_IP_PER_HOUR - 1,
+      reset: 0,
+    })
   })
 
-  it('allows requests under the limit', async () => {
-    const { consumeIpRequest: consume } = await import('@/lib/ai/rate-limiter')
-    expect(consume('1.2.3.4')).toBe(true)
+  it('allows requests when Redis returns success', async () => {
+    const { consumeIpRequest } = await import('@/lib/ai/rate-limiter')
+
+    const result = await consumeIpRequest('1.2.3.4')
+
+    expect(result).toBe(true)
+    expect(mockLimit).toHaveBeenCalledWith('1.2.3.4')
   })
 
-  it('blocks requests at the limit (60/hour)', async () => {
-    const { consumeIpRequest: consume } = await import('@/lib/ai/rate-limiter')
+  it('blocks requests when Redis returns failure', async () => {
+    mockLimit.mockResolvedValue({
+      success: false,
+      limit: MAX_REQUESTS_PER_IP_PER_HOUR,
+      remaining: 0,
+      reset: 0,
+    })
+    const { consumeIpRequest } = await import('@/lib/ai/rate-limiter')
 
-    // Consume 60 requests
-    for (let i = 0; i < 60; i++) {
-      expect(consume('1.2.3.4')).toBe(true)
+    const result = await consumeIpRequest('1.2.3.4')
+
+    expect(result).toBe(false)
+  })
+
+  it('tracks IPs independently via Redis', async () => {
+    const { consumeIpRequest } = await import('@/lib/ai/rate-limiter')
+
+    await consumeIpRequest('1.2.3.4')
+    await consumeIpRequest('5.6.7.8')
+
+    expect(mockLimit).toHaveBeenCalledWith('1.2.3.4')
+    expect(mockLimit).toHaveBeenCalledWith('5.6.7.8')
+  })
+
+  it('falls back to in-memory when Redis request fails', async () => {
+    mockLimit.mockRejectedValue(new Error('Connection refused'))
+    const { consumeIpRequest } = await import('@/lib/ai/rate-limiter')
+
+    const result = await consumeIpRequest('1.2.3.4')
+
+    expect(result).toBe(true)
+  })
+
+  it('falls back to in-memory when Redis is not configured', async () => {
+    redisState.available = false
+    const { consumeIpRequest } = await import('@/lib/ai/rate-limiter')
+
+    const result = await consumeIpRequest('1.2.3.4')
+
+    expect(result).toBe(true)
+  })
+
+  it('in-memory fallback blocks at the limit', async () => {
+    redisState.available = false
+    const { consumeIpRequest } = await import('@/lib/ai/rate-limiter')
+
+    for (let i = 0; i < MAX_REQUESTS_PER_IP_PER_HOUR; i++) {
+      await consumeIpRequest('1.2.3.4')
     }
 
-    expect(consume('1.2.3.4')).toBe(false)
+    const result = await consumeIpRequest('1.2.3.4')
+
+    expect(result).toBe(false)
   })
 
-  it('tracks IPs independently', async () => {
-    const { consumeIpRequest: consume } = await import('@/lib/ai/rate-limiter')
+  it('transitions to in-memory fallback when Redis fails mid-session', async () => {
+    const { consumeIpRequest } = await import('@/lib/ai/rate-limiter')
 
-    for (let i = 0; i < 60; i++) {
-      consume('1.2.3.4')
-    }
+    // First call succeeds via Redis
+    const first = await consumeIpRequest('1.2.3.4')
+    expect(first).toBe(true)
+    expect(mockLimit).toHaveBeenCalledTimes(1)
 
-    expect(consume('1.2.3.4')).toBe(false)
-    expect(consume('5.6.7.8')).toBe(true)
+    // Redis starts failing mid-session
+    mockLimit.mockRejectedValue(new Error('Connection lost'))
+
+    // Falls back to in-memory, still allows (first in-memory attempt)
+    const second = await consumeIpRequest('1.2.3.4')
+    expect(second).toBe(true)
+    expect(mockLimit).toHaveBeenCalledTimes(2)
   })
 })
 

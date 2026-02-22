@@ -2,9 +2,14 @@ import { cookies } from 'next/headers'
 import {
   RATE_LIMIT_COOKIE_NAME,
   RATE_LIMIT_COOKIE_MAX_AGE_SECONDS,
+  MAX_REQUESTS_PER_IP_PER_HOUR,
+  IP_WINDOW_MS,
 } from '@/lib/constants/chat'
 import { CONSENT_COOKIE_NAME } from '@/lib/constants/legal'
-import { consumeFromTimestampMap } from '@/lib/rate-limit-utils'
+import {
+  consumeWithFallback,
+  createLazyRateLimiter,
+} from '@/lib/rate-limit-utils'
 import { TIER_QUOTAS, type UserTier, USER_TIERS } from '@/lib/constants/quotas'
 import { createClient } from '@/lib/supabase/server'
 import type { QuotaInfo } from '@/types/user'
@@ -17,11 +22,14 @@ export interface RateLimitResult extends QuotaInfo {
 // Trade-off: cookie-based quota can be bypassed by clearing cookies / incognito.
 // The IP rate limiter below provides a secondary defense layer.
 
-// Known limitation: in-memory Map resets on serverless cold starts.
-// For production hardening, migrate to a durable store (Upstash Redis / Vercel KV).
+// In-memory fallback for when Redis is unavailable (local dev, Upstash outage)
 const ipRequestCounts = new Map<string, number[]>()
-const MAX_REQUESTS_PER_IP_PER_HOUR = 60
-const IP_WINDOW_MS = 60 * 60 * 1000
+
+const getChatIpLimiter = createLazyRateLimiter({
+  maxRequests: MAX_REQUESTS_PER_IP_PER_HOUR,
+  window: '1 h',
+  prefix: 'ratelimit:chat:ip',
+})
 
 function getConversationTimestamps(cookieValue: string | undefined): number[] {
   if (!cookieValue) return []
@@ -38,13 +46,15 @@ function getConversationTimestamps(cookieValue: string | undefined): number[] {
 }
 
 /**
- * Atomically check and record an IP request.
+ * Check and record an IP request.
  * Returns true if the request is allowed, false if rate-limited.
+ * Uses Upstash Redis with in-memory fallback.
  */
-export function consumeIpRequest(ip: string): boolean {
-  return consumeFromTimestampMap(
-    ipRequestCounts,
+export async function consumeIpRequest(ip: string): Promise<boolean> {
+  return consumeWithFallback(
+    getChatIpLimiter(),
     ip,
+    ipRequestCounts,
     IP_WINDOW_MS,
     MAX_REQUESTS_PER_IP_PER_HOUR
   )

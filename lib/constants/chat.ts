@@ -15,6 +15,10 @@ export const NEW_CONVERSATION_MESSAGE_COUNT = 3
 
 export const VALID_MESSAGE_ROLES = ['user', 'assistant'] as const
 
+// IP rate limiting (chat API protection)
+export const MAX_REQUESTS_PER_IP_PER_HOUR = 60
+export const IP_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+
 export { BRAND_NAME, BRAND_NAME_SHORT } from '@/lib/constants/brand'
 
 // Error code → i18n key mapping for chat error messages

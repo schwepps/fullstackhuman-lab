@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
 
   // Server-side IP rate limiting (defense in depth)
   const clientIp = getClientIp(request.headers)
-  if (!consumeIpRequest(clientIp)) {
+  if (!(await consumeIpRequest(clientIp))) {
     return Response.json({ error: 'rate_limit_exceeded' }, { status: 429 })
   }
 
