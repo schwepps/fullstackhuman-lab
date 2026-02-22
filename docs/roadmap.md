@@ -4,7 +4,7 @@ Priority-tier roadmap for Full Stack Human commercial launch.
 
 **Context:** France/EU first launch, 1-2 month timeline, primary KPI is consulting bookings (Calendly clicks). The AI is a lead magnet — free tier outputs with branding are distribution.
 
-**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting with Upstash Redis (durable IP rate limiting), quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports.
+**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting with Upstash Redis (durable IP rate limiting), quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports, SEO/GEO/WebMCP for AI and search discoverability, loading skeletons (chat + account), branded email templates (Supabase Auth), locale-aware root 404 page.
 
 **Complexity estimates:** S = hours | M = 1-2 days | L = 3-5 days | XL = 1-2 weeks
 All estimates include writing tests to match the project's existing quality bar.
@@ -201,42 +201,38 @@ Important features to ship within the first month after launch. The product can 
 
 ---
 
-### 16. Loading Skeletons and Suspense Boundaries
+### ~~16. Loading Skeletons and Suspense Boundaries~~ DONE
 
-**Complexity:** S
-**What:** Add `loading.tsx` files for key route segments (chat, dashboard, account). Implement skeleton components for persona selector, chat messages, and dashboard. Use React Suspense boundaries for async server components.
-**Why post-launch:** Improves perceived performance and prevents CLS (layout shift). Not a launch blocker since current pages load fast, but affects Core Web Vitals (important for SEO).
-**Dependencies:** None.
+Completed in PR #15. Added shadcn `Skeleton` component (customized with `bg-primary/10` for brand-consistent cyan shimmer). Chat loading skeleton mirrors `PersonaSelector` layout (header bar + 3-card grid). Account loading skeleton mirrors form sections (profile, password, email, delete) with mobile-first input sizing (`h-12 sm:h-10`). Dashboard skeleton deferred to item 10 (route doesn't exist yet).
+
 **Key files:**
 
-- Create `app/[locale]/(chat)/chat/loading.tsx`
-- Create `app/[locale]/(account)/dashboard/loading.tsx`
-- Create `components/ui/skeleton.tsx` (if not already from shadcn)
+- Create `components/ui/skeleton.tsx` — shadcn skeleton with brand-adjusted base color
+- Create `app/[locale]/(chat)/chat/loading.tsx` — chat route loading skeleton
+- Create `app/[locale]/(account)/account/loading.tsx` — account route loading skeleton
 
 ---
 
-### 17. Branded Email Templates
+### ~~17. Branded Email Templates~~ DONE
 
-**Complexity:** S
-**What:** Replace Supabase default email templates (signup confirmation, password reset, email change) with FSH-branded templates. Include logo, brand colors, and consistent tone.
-**Why post-launch:** Default Supabase emails look generic and undermine brand credibility. Users see "Supabase" branding on password reset, which is confusing. Important for trust but not a launch blocker.
-**Dependencies:** None.
+Completed in PR #15. Three French HTML email templates (signup confirmation, password reset, email change) with light professional theme — white background, clean card layout, Electric Cyan CTA buttons, warm tone matching François's voice. Table-based layout for email client compatibility. Reference files in `emails/` with deployment README for Supabase dashboard configuration.
+
 **Key files:**
 
-- Supabase dashboard configuration (email templates)
-- Create HTML email templates with inline CSS
+- Create `emails/signup-confirmation.html` — signup confirmation template
+- Create `emails/password-reset.html` — password reset template
+- Create `emails/email-change.html` — email change template
+- Create `emails/README.md` — Supabase deployment instructions
 
 ---
 
-### 18. Root 404 Page Fix
+### ~~18. Root 404 Page Fix~~ DONE
 
-**Complexity:** S
-**What:** The root `app/not-found.tsx` is French-only with hardcoded strings and raw Tailwind colors. Should detect locale from request, use theme tokens, and match the site's visual identity.
-**Why post-launch:** Minor UX issue. The root 404 only triggers for requests outside the `[locale]` segment (rare). The locale-aware `app/[locale]/not-found.tsx` handles most 404s correctly.
-**Dependencies:** None.
+Completed in PR #15. Root `app/not-found.tsx` now detects locale from `NEXT_LOCALE` cookie and `Accept-Language` header (defaults to French). Uses theme tokens (`text-muted-foreground`, `bg-primary`, `text-primary-foreground`) instead of hardcoded Tailwind colors. Visual parity with locale-aware 404 (decorative circles, cyan 404 number). Bilingual inline strings matching `notFound` i18n namespace.
+
 **Key files:**
 
-- Update `app/not-found.tsx`
+- Update `app/not-found.tsx` — locale-aware themed root 404
 
 ---
 
@@ -326,6 +322,9 @@ Independent (no dependencies):
   7 Anon signup CTA ✅
   8 Redis rate limiting ✅
   9 SEO/GEO/WebMCP ✅ (core done; report OG meta depends on 12)
+  16 Loading skeletons ✅
+  17 Branded emails ✅
+  18 Root 404 fix ✅
 
 Tier 4:
   10 + 13 + 15 ──→ 20 Stripe (needs stable product + paid differentiators)
@@ -366,7 +365,7 @@ Parallel tracks:
 
 - Prompt improvements (14) — ongoing based on tester feedback
 - Cross-session memory (15) — major post-launch feature
-- Loading skeletons (16), branded emails (17), 404 fix (18) — parallel quick wins
+- ~~Loading skeletons (16), branded emails (17), 404 fix (18)~~ DONE
 - Accessibility audit (19) — when other polish is done
 
 ### Tier 4 — Month 2+
