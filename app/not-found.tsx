@@ -1,26 +1,62 @@
 import Link from 'next/link'
+import { cookies, headers } from 'next/headers'
+import './globals.css'
 
-export default function RootNotFound() {
+const TEXTS = {
+  fr: {
+    title: '404 \u2014 Introuvable',
+    description:
+      'Cette page n\u2019existe pas ou a \u00e9t\u00e9 d\u00e9plac\u00e9e.',
+    backHome: 'Retour \u00e0 l\u2019accueil',
+  },
+  en: {
+    title: 'Page not found',
+    description: 'The page you are looking for does not exist.',
+    backHome: 'Back to Home',
+  },
+} as const
+
+type Locale = keyof typeof TEXTS
+
+async function detectLocale(): Promise<Locale> {
+  const cookieStore = await cookies()
+  const cookieLocale = cookieStore.get('NEXT_LOCALE')?.value
+  if (cookieLocale === 'en') return 'en'
+
+  const headersList = await headers()
+  const acceptLang = headersList.get('accept-language') ?? ''
+  if (/(?:^|,\s*)en(?:[;,_-]|$)/i.test(acceptLang)) return 'en'
+
+  return 'fr'
+}
+
+export default async function RootNotFound() {
+  const locale = await detectLocale()
+  const t = TEXTS[locale]
+  const homeHref = locale === 'fr' ? '/' : '/en'
+
   return (
-    <html lang="fr">
-      <body>
+    <html lang={locale}>
+      <body className="bg-background font-sans text-foreground antialiased">
         <div className="flex min-h-svh flex-col items-center justify-center p-4">
           <div className="mx-auto max-w-md text-center">
             <div className="relative mx-auto mb-8 flex h-32 w-32 items-center justify-center">
-              <span className="text-5xl font-bold">404</span>
+              <div className="absolute inset-0 rounded-full bg-primary/10" />
+              <div className="absolute inset-2 rounded-full bg-primary/5" />
+              <span className="relative text-5xl font-bold text-primary">
+                404
+              </span>
             </div>
             <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-              Page introuvable
+              {t.title}
             </h1>
-            <p className="mt-4 text-gray-500">
-              La page que vous recherchez n&apos;existe pas.
-            </p>
+            <p className="mt-4 text-muted-foreground">{t.description}</p>
             <div className="mt-8">
               <Link
-                href="/"
-                className="inline-flex items-center justify-center rounded-md bg-black px-6 py-3 text-sm font-medium text-white hover:bg-gray-800"
+                href={homeHref}
+                className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
-                Retour &agrave; l&apos;accueil
+                {t.backHome}
               </Link>
             </div>
           </div>
