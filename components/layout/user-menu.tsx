@@ -63,7 +63,7 @@ export function UserMenu() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
+      <DropdownMenuContent align="end" className="w-56">
         <div className="px-2 py-1.5">
           <p className="text-sm font-medium">{displayName}</p>
           <p className="truncate text-xs text-muted-foreground">
