@@ -66,6 +66,7 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 | Styling   | Tailwind CSS v4 + shadcn/ui      |
 | AI        | Claude API                       |
 | i18n      | next-intl v4                     |
+| PDF       | @react-pdf/renderer              |
 | Testing   | Vitest + Testing Library         |
 | Git Hooks | Husky + lint-staged + commitlint |
 
@@ -121,6 +122,9 @@ app/
     conversations/      # Conversations API
       route.ts          # GET conversation list
       [id]/route.ts     # GET single conversation
+    report/             # Report API
+      [token]/
+        pdf/route.ts    # PDF generation endpoint (@react-pdf/renderer)
   layout.tsx
   globals.css
   not-found.tsx
@@ -142,7 +146,10 @@ components/
   account/              # Account management components
   layout/               # Shared layout components (footer, cookie consent, legal page layout)
   seo/                  # SEO components (JSON-LD, WebMCP registration)
-  report/              # Report sharing components (share button, branding footer, report view)
+  report/              # Report template, sections, header/footer, share button, report view
+  visuals/             # SVG visual components (web + PDF renderers)
+    web/               # 7 web SVG visual components
+    pdf/               # 7 react-pdf SVG visual components
   shared/               # Cross-route shared components
 prompts/                # Production prompt files (sent to API)
   system-prompt-core.md
@@ -162,7 +169,10 @@ lib/
   ai/                   # AI client & prompt assembly
   auth/                 # Auth actions, schemas, types
   conversations/        # Conversation persistence (actions, queries, migration)
+  report-parser.ts      # Two-pass report parser (sections, visuals)
   reports/              # Report persistence (actions, queries)
+  visuals/              # Visual data types, validators, geometry, constants
+  pdf/                  # PDF document assembly, styles, markdown renderer
   seo/                  # SEO schema generators (JSON-LD)
   supabase/             # Supabase client variants
   hooks/                # Custom React hooks (cookie consent, chat, quota, conversations)

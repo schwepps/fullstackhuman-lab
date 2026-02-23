@@ -1,0 +1,83 @@
+import { renderToBuffer } from '@react-pdf/renderer'
+import { headers } from 'next/headers'
+import { getReportByToken } from '@/lib/reports/queries'
+import { ReportPdfDocument } from '@/lib/pdf/report-pdf-document'
+import { SHARE_TOKEN_REGEX } from '@/lib/constants/reports'
+import { PERSONA_PDF_PREFIX } from '@/lib/constants/report-templates'
+import {
+  consumeWithFallback,
+  createLazyRateLimiter,
+} from '@/lib/rate-limit-utils'
+
+const MAX_PDF_REQUESTS_PER_IP = 20
+const PDF_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+
+const getPdfIpLimiter = createLazyRateLimiter({
+  maxRequests: MAX_PDF_REQUESTS_PER_IP,
+  window: '1 h',
+  prefix: 'ratelimit:pdf:ip',
+})
+
+const pdfIpFallback = new Map<string, number[]>()
+
+function jsonError(message: string, status: number) {
+  return Response.json({ error: message }, { status })
+}
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ token: string }> }
+) {
+  const { token } = await params
+
+  // Validate token format
+  if (!SHARE_TOKEN_REGEX.test(token)) {
+    return jsonError('Invalid token', 400)
+  }
+
+  // Rate limit by IP
+  const headerList = await headers()
+  const ip =
+    headerList.get('x-forwarded-for')?.split(',')[0]?.trim() ?? '127.0.0.1'
+  const allowed = await consumeWithFallback(
+    getPdfIpLimiter(),
+    ip,
+    pdfIpFallback,
+    PDF_WINDOW_MS,
+    MAX_PDF_REQUESTS_PER_IP
+  )
+  if (!allowed) {
+    return jsonError('Too many requests', 429)
+  }
+
+  // Fetch report
+  const report = await getReportByToken(token)
+  if (!report) {
+    return jsonError('Report not found', 404)
+  }
+
+  // Generate PDF
+  try {
+    const buffer = await renderToBuffer(
+      <ReportPdfDocument
+        content={report.content}
+        persona={report.persona}
+        createdAt={report.createdAt}
+      />
+    )
+
+    const prefix = PERSONA_PDF_PREFIX[report.persona] ?? 'Report'
+    const filename = `${prefix}-FullStackHuman.pdf`
+
+    return new Response(new Uint8Array(buffer), {
+      headers: {
+        'Content-Type': 'application/pdf',
+        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'private, max-age=3600',
+      },
+    })
+  } catch (error) {
+    console.error('[pdf] renderToBuffer failed:', error)
+    return jsonError('PDF generation failed', 500)
+  }
+}
