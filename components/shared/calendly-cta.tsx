@@ -2,11 +2,12 @@
 
 import { useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Calendar } from 'lucide-react'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
 import { CALENDLY_URL } from '@/lib/constants/app'
+import { cn } from '@/lib/utils'
 import type { CalendlyClickProperties } from '@/lib/constants/analytics'
 
 interface CalendlyCtaProps {
@@ -29,7 +30,7 @@ export function CalendlyCta({ variant, source, className }: CalendlyCtaProps) {
         asChild
         variant="outline"
         size="sm"
-        className={`touch-manipulation ${className ?? ''}`}
+        className={cn('touch-manipulation', className)}
       >
         <a
           href={CALENDLY_URL}
@@ -46,7 +47,7 @@ export function CalendlyCta({ variant, source, className }: CalendlyCtaProps) {
 
   return (
     <Card
-      className={`terminal-border border-primary/30 bg-card/50 ${className ?? ''}`}
+      className={cn('terminal-border border-primary/30 bg-card/50', className)}
     >
       <CardContent className="flex flex-col items-center gap-3 px-4 py-5 text-center sm:flex-row sm:text-left">
         <div className="flex-1">
@@ -57,7 +58,8 @@ export function CalendlyCta({ variant, source, className }: CalendlyCtaProps) {
         </div>
         <Button
           asChild
-          className="h-12 w-full touch-manipulation sm:h-10 sm:w-auto"
+          variant="outline"
+          className="h-12 w-full border-primary/30 touch-manipulation sm:h-10 sm:w-auto"
         >
           <a
             href={CALENDLY_URL}
