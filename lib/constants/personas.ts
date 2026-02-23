@@ -1,22 +1,28 @@
 import type { PersonaConfig, PersonaId } from '@/types/chat'
 
+// Optional emoji prefix for backward compat with existing reports (🩺🔍🧭)
+const EMOJI_PREFIX = '(?:[\\u{1FA7A}\\u{1F50D}\\u{1F9ED}]\\s*)?'
+
 export const PERSONAS: Record<PersonaId, PersonaConfig> = {
   doctor: {
     id: 'doctor',
-    emoji: '\u{1FA7A}',
-    reportDetectPattern: /^#\s*\u{1FA7A}/mu,
+    reportDetectPattern: new RegExp(
+      `^#\\s*${EMOJI_PREFIX}Project Diagnostic Report`,
+      'mu'
+    ),
     promptFile: 'prompt-doctor.md',
   },
   critic: {
     id: 'critic',
-    emoji: '\u{1F50D}',
-    reportDetectPattern: /^#\s*\u{1F50D}/mu,
+    reportDetectPattern: new RegExp(`^#\\s*${EMOJI_PREFIX}Review Brief`, 'mu'),
     promptFile: 'prompt-critic.md',
   },
   guide: {
     id: 'guide',
-    emoji: '\u{1F9ED}',
-    reportDetectPattern: /^#\s*\u{1F9ED}/mu,
+    reportDetectPattern: new RegExp(
+      `^#\\s*${EMOJI_PREFIX}Framework Brief`,
+      'mu'
+    ),
     promptFile: 'prompt-guide.md',
   },
 } as const

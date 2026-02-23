@@ -1,6 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
+import { FileCheck } from 'lucide-react'
 import type { ConversationStatus } from '@/types/conversation'
 
 interface ConversationStatusBadgeProps {
@@ -41,11 +42,13 @@ export function ConversationStatusBadge({
 }: ConversationStatusBadgeProps) {
   const t = useTranslations('conversations.status')
   const variant = getVariant(status, hasReport)
+  const isReport = status === 'completed' && hasReport
 
   return (
     <span
-      className={`inline-flex items-center rounded-sm border px-1.5 py-0.5 font-mono text-[10px] leading-tight ${variant.className}`}
+      className={`inline-flex items-center gap-0.5 rounded-sm border px-1.5 py-0.5 font-mono text-[10px] leading-tight ${variant.className}`}
     >
+      {isReport && <FileCheck className="size-2.5 shrink-0" />}
       {t(variant.key)}
     </span>
   )

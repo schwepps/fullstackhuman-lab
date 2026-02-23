@@ -92,7 +92,8 @@
     "report": {
       "label": "Rapport",
       "copy": "Copier le rapport",
-      "copied": "Copié !"
+      "copied": "Copié !",
+      "viewReport": "Voir le rapport"
     },
     "errors": {
       "rateLimitExceeded": "Vous avez atteint la limite de conversations du jour. Revenez demain, ou réservez un appel avec le vrai François.",
@@ -205,6 +206,8 @@
     "deleteError": "Impossible de supprimer la conversation. Veuillez réessayer.",
     "deleteSuccess": "Conversation supprimée",
     "actions": "Actions",
+    "viewReport": "Voir le rapport",
+    "downloadPdf": "Télécharger le PDF",
     "readOnlyNotice": "Conversation passée (lecture seule)",
     "time": {
       "justNow": "<1m",

@@ -2,16 +2,18 @@
 
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
-import { MoreVertical, Trash2 } from 'lucide-react'
+import { Download, ExternalLink, MoreVertical, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { PERSONAS, PERSONA_NAME_KEYS } from '@/lib/constants/personas'
+import { PERSONA_NAME_KEYS } from '@/lib/constants/personas'
+import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
 import { ConversationStatusBadge } from '@/components/chat/conversation-status-badge'
 import type { ConversationSummary } from '@/types/conversation'
 
@@ -50,7 +52,7 @@ export function ConversationCard({
   const tConv = useTranslations('conversations')
   const tTime = useTranslations('conversations.time')
 
-  const persona = PERSONAS[conversation.persona]
+  const Illustration = PERSONA_ILLUSTRATIONS[conversation.persona]
   const title = conversation.title ?? tConv('untitled')
   const { key, count } = getRelativeTimeKey(conversation.updatedAt)
   const relativeTime = count !== undefined ? tTime(key, { count }) : tTime(key)
@@ -59,23 +61,25 @@ export function ConversationCard({
     <Link href={`/chat/${conversation.id}`}>
       <Card className="cursor-pointer border-primary/10 transition-all touch-manipulation hover:border-primary/30 active:scale-[0.98]">
         <CardContent className="flex items-center gap-3 p-3">
-          <span className="text-xl" aria-hidden="true">
-            {persona.emoji}
-          </span>
+          <Illustration
+            className="size-10 shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-foreground">
               {title}
             </p>
-            <p className="text-xs text-muted-foreground">
-              {t(PERSONA_NAME_KEYS[conversation.persona])}
-              <span className="mx-1.5">&middot;</span>
-              {relativeTime}
+            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <span>{t(PERSONA_NAME_KEYS[conversation.persona])}</span>
+              <span>&middot;</span>
+              <span>{relativeTime}</span>
+              <span>&middot;</span>
+              <ConversationStatusBadge
+                status={conversation.status}
+                hasReport={conversation.hasReport}
+              />
             </p>
           </div>
-          <ConversationStatusBadge
-            status={conversation.status}
-            hasReport={conversation.hasReport}
-          />
           {onDeleteRequest && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -99,6 +103,31 @@ export function ConversationCard({
                   e.stopPropagation()
                 }}
               >
+                {conversation.shareToken && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        href={`/report/${conversation.shareToken}`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <ExternalLink className="size-4" />
+                        {tConv('viewReport')}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      {/* Raw <a>: API routes are not locale-prefixed */}
+                      <a
+                        href={`/api/report/${conversation.shareToken}/pdf`}
+                        download
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Download className="size-4" />
+                        {tConv('downloadPdf')}
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
                 <DropdownMenuItem
                   variant="destructive"
                   onClick={(e) => {

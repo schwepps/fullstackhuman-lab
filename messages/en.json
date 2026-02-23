@@ -92,7 +92,8 @@
     "report": {
       "label": "Report",
       "copy": "Copy report",
-      "copied": "Copied!"
+      "copied": "Copied!",
+      "viewReport": "View report"
     },
     "errors": {
       "rateLimitExceeded": "You\u2019ve reached the daily conversation limit. Come back tomorrow, or book a call with the real Fran\u00e7ois.",
@@ -205,6 +206,8 @@
     "deleteError": "Failed to delete conversation. Please try again.",
     "deleteSuccess": "Conversation deleted",
     "actions": "Actions",
+    "viewReport": "View report",
+    "downloadPdf": "Download PDF",
     "readOnlyNotice": "This is a past conversation (read-only)",
     "time": {
       "justNow": "<1m",

@@ -30,6 +30,7 @@ export interface ConversationSummary {
   readonly persona: PersonaId
   readonly title: string | null
   readonly hasReport: boolean
+  readonly shareToken: string | null
   readonly status: ConversationStatus
   readonly messageCount: number
   readonly createdAt: string
