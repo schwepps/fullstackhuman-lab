@@ -46,7 +46,7 @@ export default function ConversationViewPage() {
         }
         const data = (await response.json()) as Conversation
         setHasReport(data.hasReport)
-        chat.loadConversation(data)
+        await chat.loadConversation(data)
       } catch {
         setLoadError(true)
       } finally {

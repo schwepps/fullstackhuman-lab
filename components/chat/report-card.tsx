@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Copy, Check } from 'lucide-react'
@@ -21,6 +21,7 @@ interface ReportCardProps {
 
 export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
   const t = useTranslations('chat.report')
+  const locale = useLocale()
   const [copied, setCopied] = useState(false)
   const { trackReportCopied } = useAnalytics()
   const Illustration = PERSONA_ILLUSTRATIONS[persona]
@@ -70,7 +71,7 @@ export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
         </Button>
         {shareToken && (
           <ShareButton
-            shareUrl={buildReportShareUrl(shareToken)}
+            shareUrl={buildReportShareUrl(shareToken, locale)}
             persona={persona}
           />
         )}

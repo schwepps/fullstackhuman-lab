@@ -46,11 +46,16 @@ export async function createReport(
   if (!user) return { success: false, error: AUTH_ERROR.UNAUTHORIZED }
 
   // Idempotency: return existing report if already created
-  const { data: existing } = await supabase
+  const { data: existing, error: selectError } = await supabase
     .from('reports')
     .select('share_token')
     .eq('conversation_id', parsed.data.conversationId)
     .single()
+
+  // If SELECT failed for a reason other than "no rows", surface a deterministic failure
+  if (selectError && selectError.code !== 'PGRST116') {
+    return { success: false, error: AUTH_ERROR.CREATE_FAILED }
+  }
 
   if (existing) {
     return { success: true, shareToken: existing.share_token }
@@ -76,18 +81,50 @@ export async function createReport(
     is_branded: isBranded,
   })
 
-  if (error) return { success: false, error: AUTH_ERROR.CREATE_FAILED }
+  if (error) {
+    // Handle concurrent race: if unique constraint violated, re-select existing token
+    if (error.code === '23505') {
+      const { data: raceExisting } = await supabase
+        .from('reports')
+        .select('share_token')
+        .eq('conversation_id', parsed.data.conversationId)
+        .single()
+
+      if (raceExisting) {
+        return { success: true, shareToken: raceExisting.share_token }
+      }
+    }
+
+    return { success: false, error: AUTH_ERROR.CREATE_FAILED }
+  }
   return { success: true, shareToken }
 }
 
 /**
  * Fetch the share_token for a conversation's report (if one exists).
- * Server action callable from client components (unlike queries.ts which uses cookies()).
+ * Server action callable from client components.
+ * Requires authentication and verifies conversation ownership.
  */
 export async function getShareTokenForConversation(
   conversationId: string
 ): Promise<string | null> {
+  if (!UUID_REGEX.test(conversationId)) return null
+
   const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  // Verify the conversation belongs to this user
+  const { data: conversation } = await supabase
+    .from('conversations')
+    .select('id')
+    .eq('id', conversationId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!conversation) return null
 
   const { data, error } = await supabase
     .from('reports')

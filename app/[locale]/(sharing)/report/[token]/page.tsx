@@ -32,6 +32,8 @@ function getMetaTitle(
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, token } = await params
+  if (!SHARE_TOKEN_REGEX.test(token)) return {}
+
   const report = await getReportByToken(token)
   if (!report) return {}
 

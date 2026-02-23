@@ -272,26 +272,68 @@ describe('createReport', () => {
 describe('getShareTokenForConversation', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockSingle.mockResolvedValue({ data: null, error: null })
-    mockEq.mockReturnValue({ single: mockSingle })
-    mockSelect.mockReturnValue({ eq: mockEq })
-    mockFrom.mockReturnValue({ select: mockSelect })
+    mockSupabaseAuth.getUser.mockResolvedValue({
+      data: { user: MOCK_USER },
+    })
   })
 
-  it('returns null when no report exists for conversation', async () => {
-    mockSingle.mockResolvedValue({ data: null, error: { code: 'PGRST116' } })
-
-    const result = await getShareTokenForConversation('some-uuid')
+  it('returns null for invalid UUID', async () => {
+    const result = await getShareTokenForConversation('not-a-uuid')
     expect(result).toBeNull()
   })
 
-  it('returns share_token when report exists', async () => {
-    mockSingle.mockResolvedValue({
-      data: { share_token: 'abc123' },
-      error: null,
+  it('returns null when user is not authenticated', async () => {
+    mockSupabaseAuth.getUser.mockResolvedValue({ data: { user: null } })
+
+    const result = await getShareTokenForConversation(VALID_CONVERSATION_ID)
+    expect(result).toBeNull()
+  })
+
+  it('returns null when conversation does not belong to user', async () => {
+    mockFrom.mockReturnValue({
+      select: () => ({
+        eq: () => ({
+          eq: () => ({
+            single: () =>
+              Promise.resolve({ data: null, error: { code: 'PGRST116' } }),
+          }),
+        }),
+      }),
     })
 
-    const result = await getShareTokenForConversation('some-uuid')
+    const result = await getShareTokenForConversation(VALID_CONVERSATION_ID)
+    expect(result).toBeNull()
+  })
+
+  it('returns share_token when report exists and user owns conversation', async () => {
+    const callCount = { from: 0 }
+    mockFrom.mockImplementation(() => {
+      callCount.from++
+      if (callCount.from === 1) {
+        // Conversation ownership check
+        return {
+          select: () => ({
+            eq: () => ({
+              eq: () => ({
+                single: () =>
+                  Promise.resolve({ data: { id: VALID_CONVERSATION_ID } }),
+              }),
+            }),
+          }),
+        }
+      }
+      // Report share_token lookup
+      return {
+        select: () => ({
+          eq: () => ({
+            single: () =>
+              Promise.resolve({ data: { share_token: 'abc123' }, error: null }),
+          }),
+        }),
+      }
+    })
+
+    const result = await getShareTokenForConversation(VALID_CONVERSATION_ID)
     expect(result).toBe('abc123')
   })
 })

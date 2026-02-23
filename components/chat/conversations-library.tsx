@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/routing'
@@ -31,6 +31,12 @@ export function ConversationsLibrary({
   const router = useRouter()
   const searchParams = useSearchParams()
   const [conversations, setConversations] = useState(initialConversations)
+
+  // Sync local state when server re-renders with new data (e.g. filter change)
+  useEffect(() => {
+    setConversations(initialConversations)
+  }, [initialConversations])
+
   const [deleteTarget, setDeleteTarget] = useState<{
     id: string
     hasReport: boolean
