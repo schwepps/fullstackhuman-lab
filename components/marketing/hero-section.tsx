@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { Link } from '@/i18n/routing'
 import { PortraitViewfinder } from '@/components/marketing/portrait-viewfinder'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
+import { CalendlyCta } from '@/components/shared/calendly-cta'
 import type { HeroSectionProps } from '@/types/marketing'
 
 const containerVariants = {
@@ -74,6 +75,11 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
         <p className="text-center text-sm leading-relaxed text-foreground/50 sm:text-base">
           {tAbout('bio')}
         </p>
+      </motion.div>
+
+      {/* Calendly CTA */}
+      <motion.div variants={itemVariants} className="mt-6">
+        <CalendlyCta variant="inline" source="hero" />
       </motion.div>
     </motion.section>
   )

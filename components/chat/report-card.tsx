@@ -8,6 +8,7 @@ import { Copy, Check } from 'lucide-react'
 import { MarkdownRenderer } from '@/components/chat/markdown-renderer'
 import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
+import { CalendlyCta } from '@/components/shared/calendly-cta'
 import type { PersonaId } from '@/types/chat'
 
 interface ReportCardProps {
@@ -45,7 +46,7 @@ export function ReportCard({ content, persona }: ReportCardProps) {
       <CardContent>
         <MarkdownRenderer content={content} />
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex flex-wrap gap-2">
         <Button
           variant="outline"
           size="sm"
@@ -64,6 +65,7 @@ export function ReportCard({ content, persona }: ReportCardProps) {
             </>
           )}
         </Button>
+        <CalendlyCta variant="inline" source="report_card" />
       </CardFooter>
     </Card>
   )

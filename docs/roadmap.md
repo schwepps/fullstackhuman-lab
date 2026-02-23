@@ -4,7 +4,7 @@ Priority-tier roadmap for Full Stack Human commercial launch.
 
 **Context:** France/EU first launch, 1-2 month timeline, primary KPI is consulting bookings (Calendly clicks). The AI is a lead magnet — free tier outputs with branding are distribution.
 
-**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting with Upstash Redis (durable IP rate limiting), quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports, SEO/GEO/WebMCP for AI and search discoverability, loading skeletons (chat + account), branded email templates (Supabase Auth), locale-aware root 404 page.
+**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting with Upstash Redis (durable IP rate limiting), quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports, SEO/GEO/WebMCP for AI and search discoverability, loading skeletons (chat + account), branded email templates (Supabase Auth), locale-aware root 404 page, conversation persistence and history, explicit Calendly CTAs at key conversion moments (landing page, report card, conversations dashboard).
 
 **Complexity estimates:** S = hours | M = 1-2 days | L = 3-5 days | XL = 1-2 weeks
 All estimates include writing tests to match the project's existing quality bar.
@@ -109,19 +109,20 @@ Completed in PR #16. Conversations table (JSONB messages, RLS, status tracking) 
 
 ---
 
-### 11. Calendly Integration Outside Chat
+### ~~11. Calendly Integration Outside Chat~~ DONE
 
-**Complexity:** M
-**What:** Currently Calendly links only appear inside AI-generated report markdown. Add explicit Calendly CTAs at key conversion moments: (a) landing page, (b) public report page, (c) dashboard, and (d) floating/sticky element during chat after report is generated. Use Calendly's embed widget or popup for seamless booking without leaving the page.
-**Why launch:** Primary KPI is bookings. Relying solely on the AI including a Calendly link in markdown is fragile — the AI might format it differently, user might not scroll to the footer. Explicit, designed CTAs at key moments will directly increase bookings.
-**Dependencies:** Shareable report URLs (12) for report page CTA. Dashboard (10) for dashboard CTA. Landing page CTA has no dependencies.
+Reusable `CalendlyCta` component with two variants (banner card and inline button) placed at three key conversion moments: landing page hero (secondary CTA below bio), report card footer (alongside copy button), and conversations dashboard (banner above library). Simple styled links opening Calendly in new tab — no embed widget, no CSP changes needed. `CALENDLY_URL` constant added as SSOT in `lib/constants/app.ts`, SEO schema updated to use it. Analytics `CalendlyClickProperties.source` expanded for new placements. Public report page CTA deferred to item 12.
+
 **Key files:**
 
-- Create `components/shared/calendly-cta.tsx` — reusable CTA component
-- Update `app/[locale]/(marketing)/page.tsx` — landing page CTA
-- Update `components/chat/report-card.tsx` — post-report CTA
-- Update `next.config.ts` — CSP header update for Calendly iframe/script
-- Update `messages/fr.json` and `messages/en.json`
+- Create `components/shared/calendly-cta.tsx` — reusable CTA with banner and inline variants
+- Update `lib/constants/app.ts` — `CALENDLY_URL` constant (SSOT)
+- Update `lib/constants/analytics.ts` — expanded `CalendlyClickProperties.source` union
+- Update `lib/seo/schemas.ts` — uses `CALENDLY_URL` from SSOT
+- Update `components/chat/report-card.tsx` — CTA button in footer
+- Update `components/marketing/hero-section.tsx` — secondary CTA below bio
+- Update `app/[locale]/(account)/conversations/page.tsx` — banner above library
+- Update `messages/fr.json` and `messages/en.json` — `calendlyCta` namespace
 
 ---
 
@@ -304,7 +305,7 @@ Tier 2:
        │                     │
        │                     └──→ 9 SEO/GEO ✅ (report OG meta deferred to 12)
        │
-       ├──→ 11 Calendly (dashboard CTA)
+       ├──→ 11 Calendly ✅ (dashboard CTA)
        └──→ 15 Cross-Session Memory (Tier 3)
 
 Independent (no dependencies):
@@ -351,7 +352,7 @@ Parallel tracks:
 **Track B (the big build):**
 
 1. ~~Conversation persistence + history (10)~~ DONE
-2. Calendly integration (11) — landing page CTA immediately, others after dashboard
+2. ~~Calendly integration (11)~~ DONE
 3. Shareable report URLs (12) — after conversation persistence
 4. HTML templates + PDF export (13) — after shareable URLs
 

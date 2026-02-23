@@ -1,4 +1,5 @@
 import type { PersonaId } from '@/types/chat'
+import { CALENDLY_URL } from '@/lib/constants/app'
 
 // --- PostHog configuration ---
 export const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY ?? ''
@@ -35,12 +36,12 @@ export interface ReportCopiedProperties {
 }
 
 export interface CalendlyClickProperties {
-  source: 'report' | 'chat'
+  source: 'report' | 'report_card' | 'hero' | 'conversations_dashboard'
 }
 
 export interface CtaClickProperties {
   source: 'hero' | 'signup_post_report'
 }
 
-// --- Calendly URL detection ---
-export const CALENDLY_URL_PATTERN = 'calendly.com/fullstackhuman'
+// --- Calendly URL detection (derived from SSOT) ---
+export const CALENDLY_URL_PATTERN = CALENDLY_URL.replace(/^https?:\/\//, '')
