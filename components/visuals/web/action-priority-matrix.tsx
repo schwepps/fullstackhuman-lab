@@ -128,7 +128,7 @@ export function ActionPriorityMatrix({
               cy={pos.y}
               r={DOT_R}
               fill={accentHex}
-              fillOpacity={0.15}
+              fillOpacity={0.2}
               stroke={accentHex}
               strokeWidth={1.5}
             />

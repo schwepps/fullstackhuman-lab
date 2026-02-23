@@ -36,7 +36,7 @@ export function RootCauseFlow({ data, accentHex }: RootCauseFlowProps) {
         x={leftX + BOX_WIDTH / 2}
         y={PADDING_Y - 2}
         textAnchor="middle"
-        className="fill-gray-400 font-mono text-[9px] uppercase tracking-wider"
+        className="fill-gray-400 font-mono text-[10px] uppercase tracking-wider"
       >
         Symptom
       </text>
@@ -44,7 +44,7 @@ export function RootCauseFlow({ data, accentHex }: RootCauseFlowProps) {
         x={rightX + BOX_WIDTH / 2}
         y={PADDING_Y - 2}
         textAnchor="middle"
-        className="font-mono text-[9px] uppercase tracking-wider"
+        className="font-mono text-[10px] uppercase tracking-wider"
         fill={accentHex}
       >
         Root Cause
@@ -99,7 +99,7 @@ export function RootCauseFlow({ data, accentHex }: RootCauseFlowProps) {
               height={BOX_HEIGHT}
               rx={0}
               fill={accentHex}
-              fillOpacity={0.08}
+              fillOpacity={0.15}
               stroke={accentHex}
               strokeWidth={1}
               strokeOpacity={0.3}

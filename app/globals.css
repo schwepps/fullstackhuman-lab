@@ -353,4 +353,18 @@ summary,
   .report-template svg {
     break-inside: avoid;
   }
+
+  /* Report template: preserve accent colors in print */
+  .report-template h2,
+  .report-template strong {
+    color: inherit !important;
+  }
+
+  .report-template a {
+    color: inherit !important;
+  }
+
+  .report-template thead {
+    background: inherit !important;
+  }
 }

@@ -55,7 +55,7 @@ export function ConceptSpectrum({ data, accentHex }: ConceptSpectrumProps) {
         x={TRACK_X}
         y={TRACK_Y - 8}
         textAnchor="start"
-        className="fill-gray-500 font-mono text-[9px]"
+        className="fill-gray-500 font-mono text-[10px]"
       >
         {data.leftLabel}
       </text>
@@ -63,7 +63,7 @@ export function ConceptSpectrum({ data, accentHex }: ConceptSpectrumProps) {
         x={TRACK_X + TRACK_WIDTH}
         y={TRACK_Y - 8}
         textAnchor="end"
-        className="fill-gray-500 font-mono text-[9px]"
+        className="fill-gray-500 font-mono text-[10px]"
       >
         {data.rightLabel}
       </text>
@@ -74,7 +74,7 @@ export function ConceptSpectrum({ data, accentHex }: ConceptSpectrumProps) {
           x={TRACK_X + TRACK_WIDTH / 2}
           y={TRACK_Y - 8}
           textAnchor="middle"
-          className="fill-gray-400 font-mono text-[8px]"
+          className="fill-gray-400 font-mono text-[9px]"
         >
           {data.midLabel}
         </text>

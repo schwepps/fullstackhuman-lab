@@ -58,7 +58,7 @@ export async function ReportTemplateHeader({
           style={{ color: accentHex }}
         >
           <Illustration className="size-5" />
-          <span className="font-mono text-xs font-medium uppercase tracking-wider">
+          <span className="font-mono text-sm font-semibold uppercase tracking-wider">
             {personaEmoji} {t(`personaName.${persona}`)}
           </span>
         </div>

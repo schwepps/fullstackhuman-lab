@@ -30,19 +30,20 @@ export function ReportSectionBlock({
   const accentHex = config.accentHex
 
   return (
-    <section className="px-6 py-2 sm:px-8">
+    <section className="px-6 py-6 sm:px-8 sm:py-8">
       {/* Section heading */}
       <h2
-        className={`mb-3 mt-4 text-lg font-semibold ${
+        className={`mb-3 text-lg font-semibold ${
           isSignature ? 'text-gray-900' : ''
         }`}
+        style={isSignature ? undefined : { color: accentHex }}
       >
         {section.heading}
       </h2>
 
       {/* Visual component — renders above prose */}
       {section.visual && (
-        <div className="my-4">
+        <div className="my-4 border border-gray-100 p-3">
           <VisualRenderer visual={section.visual} accentHex={accentHex} />
         </div>
       )}
@@ -112,9 +113,9 @@ const SIGNATURE_BORDER: Record<string, string> = {
 }
 
 const SIGNATURE_BG: Record<string, string> = {
-  cyan: 'bg-cyan-50/50',
-  amber: 'bg-amber-50/50',
-  emerald: 'bg-emerald-50/50',
+  cyan: 'bg-cyan-50',
+  amber: 'bg-amber-50',
+  emerald: 'bg-emerald-50',
 }
 
 function SignatureWrapper({

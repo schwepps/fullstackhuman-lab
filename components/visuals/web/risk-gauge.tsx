@@ -60,7 +60,7 @@ export function RiskGauge({ data }: RiskGaugeProps) {
             x={labelPos.x}
             y={labelPos.y}
             textAnchor="middle"
-            className="fill-gray-400 font-mono text-[8px]"
+            className="fill-gray-400 font-mono text-[9px]"
           >
             {GAUGE_LEVEL_LABELS[seg.level as RiskLevel]}
           </text>

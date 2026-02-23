@@ -18,7 +18,7 @@ export async function ReportTemplateFooter({
     <footer className="px-6 pb-6 sm:px-8">
       {/* AI-authored CTA from report markdown */}
       {ctaFooter && (
-        <div className="border-t border-gray-100 pt-4">
+        <div className="mt-6 border-t-2 border-gray-200 pt-6">
           <ProfessionalMarkdown content={ctaFooter} accentColor={accentColor} />
         </div>
       )}

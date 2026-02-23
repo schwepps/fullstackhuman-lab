@@ -72,7 +72,7 @@ export function PriorityRoadmap({ data, accentHex }: PriorityRoadmapProps) {
               textAnchor="middle"
               className="fill-gray-600 font-mono text-[9px]"
             >
-              {truncateLabel(item.label, 14)}
+              {truncateLabel(item.label, 18)}
             </text>
           </g>
         )

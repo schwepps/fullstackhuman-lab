@@ -63,7 +63,7 @@ export function AssessmentRadar({ data, accentHex }: AssessmentRadarProps) {
       <polygon
         points={pointsToSvgString(scorePoints)}
         fill={accentHex}
-        fillOpacity={0.12}
+        fillOpacity={0.2}
         stroke={accentHex}
         strokeWidth={2}
       />
@@ -87,7 +87,7 @@ export function AssessmentRadar({ data, accentHex }: AssessmentRadarProps) {
               x={labelPos.x}
               y={labelPos.y - 4}
               textAnchor={anchor}
-              className="fill-gray-600 font-mono text-[9px]"
+              className="fill-gray-600 font-mono text-[10px]"
             >
               {dim.name}
             </text>

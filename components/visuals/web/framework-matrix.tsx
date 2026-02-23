@@ -97,7 +97,7 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
             x={q.bounds.centerX}
             y={q.bounds.centerY + 8}
             textAnchor="middle"
-            className="fill-gray-400 font-mono text-[8px]"
+            className="fill-gray-400 font-mono text-[9px]"
           >
             {truncateLabel(q.data.description, 28)}
           </text>
@@ -117,7 +117,7 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
         x={PLOT_X - 4}
         y={PLOT_Y + PLOT_HEIGHT + 16}
         textAnchor="start"
-        className="fill-gray-400 font-mono text-[8px]"
+        className="fill-gray-400 font-mono text-[9px]"
       >
         {data.xAxisLow}
       </text>
@@ -125,7 +125,7 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
         x={PLOT_X + PLOT_WIDTH + 4}
         y={PLOT_Y + PLOT_HEIGHT + 16}
         textAnchor="end"
-        className="fill-gray-400 font-mono text-[8px]"
+        className="fill-gray-400 font-mono text-[9px]"
       >
         {data.xAxisHigh}
       </text>
@@ -145,7 +145,7 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
         y={PLOT_Y + PLOT_HEIGHT + 4}
         textAnchor="middle"
         transform={`rotate(-90, ${PLOT_X - 8}, ${PLOT_Y + PLOT_HEIGHT + 4})`}
-        className="fill-gray-400 font-mono text-[8px]"
+        className="fill-gray-400 font-mono text-[9px]"
       >
         {data.yAxisLow}
       </text>
@@ -154,7 +154,7 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
         y={PLOT_Y - 4}
         textAnchor="middle"
         transform={`rotate(-90, ${PLOT_X - 8}, ${PLOT_Y - 4})`}
-        className="fill-gray-400 font-mono text-[8px]"
+        className="fill-gray-400 font-mono text-[9px]"
       >
         {data.yAxisHigh}
       </text>
@@ -167,7 +167,7 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
             cy={userPos.y}
             r={8}
             fill={accentHex}
-            fillOpacity={0.2}
+            fillOpacity={0.25}
             stroke={accentHex}
             strokeWidth={2}
           />

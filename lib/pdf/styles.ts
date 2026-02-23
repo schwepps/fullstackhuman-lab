@@ -11,7 +11,7 @@ export const pdfStyles = StyleSheet.create({
     color: '#374151', // gray-700
     paddingTop: 60,
     paddingBottom: 60,
-    paddingHorizontal: 50,
+    paddingHorizontal: 55,
   },
   // ─── Header / Footer ───
   headerBar: {
@@ -19,19 +19,19 @@ export const pdfStyles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    height: 3,
+    height: 4,
   },
   pageHeader: {
     position: 'absolute',
     top: 15,
-    left: 50,
-    right: 50,
+    left: 55,
+    right: 55,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   pageHeaderText: {
-    fontSize: 7,
+    fontSize: 8,
     color: '#9ca3af', // gray-400
     fontFamily: 'Helvetica',
     textTransform: 'uppercase',
@@ -40,14 +40,14 @@ export const pdfStyles = StyleSheet.create({
   pageFooter: {
     position: 'absolute',
     bottom: 20,
-    left: 50,
-    right: 50,
+    left: 55,
+    right: 55,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   pageFooterText: {
-    fontSize: 7,
+    fontSize: 8,
     color: '#9ca3af',
   },
   // ─── Title area ───
@@ -77,12 +77,12 @@ export const pdfStyles = StyleSheet.create({
   sectionHeading: {
     fontSize: 14,
     fontFamily: 'Helvetica-Bold',
-    marginBottom: 6,
-    marginTop: 14,
+    marginBottom: 8,
+    marginTop: 20,
   },
   // ─── Markdown elements ───
   paragraph: {
-    fontSize: 10,
+    fontSize: 10.5,
     lineHeight: 1.6,
     marginBottom: 8,
     color: '#374151',
@@ -106,7 +106,7 @@ export const pdfStyles = StyleSheet.create({
   },
   listContent: {
     flex: 1,
-    fontSize: 10,
+    fontSize: 10.5,
     lineHeight: 1.6,
     color: '#374151',
   },
