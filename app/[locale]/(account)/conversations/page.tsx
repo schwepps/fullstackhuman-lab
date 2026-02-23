@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import { getUserConversations } from '@/lib/conversations/queries'
 import { ConversationsLibrary } from '@/components/chat/conversations-library'
+import { CalendlyCta } from '@/components/shared/calendly-cta'
 
 export default async function ConversationsPage({
   params,
@@ -30,6 +31,7 @@ export default async function ConversationsPage({
       <h1 className="terminal-text-glow text-2xl font-bold text-primary">
         {t('libraryTitle')}
       </h1>
+      <CalendlyCta variant="banner" source="conversations_dashboard" />
       <ConversationsLibrary
         initialConversations={items}
         initialFilter={validFilter}

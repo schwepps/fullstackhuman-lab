@@ -6,7 +6,7 @@
  * Keep aligned with translations — run `pnpm check:seo`.
  */
 
-import { APP_URL } from '@/lib/constants/app'
+import { APP_URL, CALENDLY_URL } from '@/lib/constants/app'
 import { SEO_PERSONAS } from '@/lib/constants/personas'
 
 /**
@@ -30,7 +30,7 @@ export function getOrganizationSchema() {
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'consulting',
-      url: 'https://calendly.com/fullstackhuman',
+      url: CALENDLY_URL,
     },
   }
 }

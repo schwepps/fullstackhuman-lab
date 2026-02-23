@@ -35,7 +35,7 @@ export interface ReportCopiedProperties {
 }
 
 export interface CalendlyClickProperties {
-  source: 'report' | 'chat'
+  source: 'report' | 'chat' | 'report_card' | 'hero' | 'conversations_dashboard'
 }
 
 export interface CtaClickProperties {
