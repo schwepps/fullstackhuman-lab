@@ -152,6 +152,7 @@ function ChatPageContent() {
           quotaRemaining={quota.remaining}
           quotaLimit={quota.limit}
           isReadOnly={chat.isReadOnly}
+          shareToken={chat.shareToken}
         />
       ) : null}
     </>

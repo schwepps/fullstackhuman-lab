@@ -2,23 +2,30 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useTranslations } from 'next-intl'
+import { Trash2 } from 'lucide-react'
 import { useChat } from '@/lib/hooks/use-chat'
 import { useQuota } from '@/lib/hooks/use-quota'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { ChatPageHeader } from '@/components/chat/chat-page-header'
 import { ChatContainer } from '@/components/chat/chat-container'
+import { DeleteConversationDialog } from '@/components/chat/delete-conversation-dialog'
+import { Button } from '@/components/ui/button'
 import type { Conversation } from '@/types/conversation'
 
 export default function ConversationViewPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
+  const t = useTranslations('conversations')
   const chat = useChat()
   const quota = useQuota()
   const { isAuthenticated, isLoading: authLoading } = useAuth()
   const [isLoadingConversation, setIsLoadingConversation] = useState(true)
   const [loadError, setLoadError] = useState(false)
+  const [hasReport, setHasReport] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
-  const handleReset = useCallback(() => {
+  const handleLeave = useCallback(() => {
     chat.resetChat()
     router.push('/chat')
   }, [chat, router])
@@ -38,6 +45,7 @@ export default function ConversationViewPage() {
           return
         }
         const data = (await response.json()) as Conversation
+        setHasReport(data.hasReport)
         chat.loadConversation(data)
       } catch {
         setLoadError(true)
@@ -68,13 +76,26 @@ export default function ConversationViewPage() {
     <>
       <ChatPageHeader
         persona={chat.persona}
-        onReset={handleReset}
+        onReset={handleLeave}
         hasMessages={chat.messages.length > 1}
         remaining={quota.remaining}
         limit={quota.limit}
         period={quota.period}
         isLoading={quota.isLoading}
         isReadOnly={chat.isReadOnly}
+        actions={
+          chat.isReadOnly ? (
+            <Button
+              variant="destructive"
+              size="icon-xs"
+              onClick={() => setDeleteOpen(true)}
+              className="touch-manipulation"
+              aria-label={t('deleteSubmit')}
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          ) : undefined
+        }
       />
 
       {chat.persona && (
@@ -90,8 +111,17 @@ export default function ConversationViewPage() {
           quotaRemaining={quota.remaining}
           quotaLimit={quota.limit}
           isReadOnly={chat.isReadOnly}
+          shareToken={chat.shareToken}
         />
       )}
+
+      <DeleteConversationDialog
+        conversationId={params.id}
+        hasReport={hasReport}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onDeleted={handleLeave}
+      />
     </>
   )
 }

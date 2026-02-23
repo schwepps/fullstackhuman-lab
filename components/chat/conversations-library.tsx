@@ -1,10 +1,12 @@
 'use client'
 
+import { useCallback, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Link } from '@/i18n/routing'
 import { Button } from '@/components/ui/button'
 import { ConversationCard } from '@/components/chat/conversation-card'
+import { DeleteConversationDialog } from '@/components/chat/delete-conversation-dialog'
 import type { ConversationSummary } from '@/types/conversation'
 import type { ConversationFilter } from '@/lib/conversations/queries'
 
@@ -28,6 +30,11 @@ export function ConversationsLibrary({
   const t = useTranslations('conversations')
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [conversations, setConversations] = useState(initialConversations)
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string
+    hasReport: boolean
+  } | null>(null)
 
   function handleFilterChange(filter: ConversationFilter) {
     const params = new URLSearchParams(searchParams.toString())
@@ -39,6 +46,18 @@ export function ConversationsLibrary({
     const query = params.toString()
     router.push(query ? `?${query}` : '/conversations')
   }
+
+  const handleDeleteRequest = useCallback((id: string, hasReport: boolean) => {
+    setDeleteTarget({ id, hasReport })
+  }, [])
+
+  const handleDeleted = useCallback(() => {
+    if (deleteTarget) {
+      setConversations((prev) => prev.filter((c) => c.id !== deleteTarget.id))
+    }
+    setDeleteTarget(null)
+    router.refresh()
+  }, [deleteTarget, router])
 
   return (
     <>
@@ -56,7 +75,7 @@ export function ConversationsLibrary({
         ))}
       </div>
 
-      {initialConversations.length === 0 ? (
+      {conversations.length === 0 ? (
         <div className="py-16 text-center">
           <p className="text-sm text-muted-foreground">{t('emptyState')}</p>
           <Button asChild variant="outline" size="sm" className="mt-4">
@@ -65,13 +84,26 @@ export function ConversationsLibrary({
         </div>
       ) : (
         <div className="space-y-2">
-          {initialConversations.map((conversation) => (
+          {conversations.map((conversation) => (
             <ConversationCard
               key={conversation.id}
               conversation={conversation}
+              onDeleteRequest={handleDeleteRequest}
             />
           ))}
         </div>
+      )}
+
+      {deleteTarget && (
+        <DeleteConversationDialog
+          conversationId={deleteTarget.id}
+          hasReport={deleteTarget.hasReport}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setDeleteTarget(null)
+          }}
+          onDeleted={handleDeleted}
+        />
       )}
     </>
   )

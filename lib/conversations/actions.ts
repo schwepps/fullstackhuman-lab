@@ -5,18 +5,13 @@ import { createClient } from '@/lib/supabase/server'
 import { AUTH_ERROR } from '@/lib/auth/types'
 import { checkAuthRateLimit } from '@/lib/auth/rate-limit'
 import { PERSONA_IDS } from '@/lib/constants/personas'
+import { UUID_REGEX } from '@/lib/constants/validation'
 import { extractTitle } from '@/lib/conversations/utils'
 import type { ChatMessage } from '@/types/chat'
 import type { ConversationStatus } from '@/types/conversation'
-
-type ActionResult<T = void> =
-  | ({ success: true } & (T extends void ? object : T))
-  | { success: false; error: string }
+import type { ActionResult } from '@/types/action'
 
 // --- Validation schemas ---
-
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const messageSchema = z.object({
   id: z.string(),

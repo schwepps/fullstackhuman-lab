@@ -16,6 +16,7 @@ export const ANALYTICS_EVENTS = {
   REPORT_COPIED: 'report_copied',
   CALENDLY_CLICK: 'calendly_click',
   CTA_CLICK: 'cta_click',
+  REPORT_LINK_COPIED: 'report_link_copied',
 } as const
 
 export type AnalyticsEventName =
@@ -35,8 +36,17 @@ export interface ReportCopiedProperties {
   persona: PersonaId
 }
 
+export interface ReportLinkCopiedProperties {
+  persona: PersonaId
+}
+
 export interface CalendlyClickProperties {
-  source: 'report' | 'report_card' | 'hero' | 'conversations_dashboard'
+  source:
+    | 'report'
+    | 'report_card'
+    | 'hero'
+    | 'conversations_dashboard'
+    | 'public_report'
 }
 
 export interface CtaClickProperties {

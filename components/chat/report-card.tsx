@@ -9,14 +9,17 @@ import { MarkdownRenderer } from '@/components/chat/markdown-renderer'
 import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
 import { CalendlyCta } from '@/components/shared/calendly-cta'
+import { ShareButton } from '@/components/report/share-button'
+import { buildReportShareUrl } from '@/lib/constants/reports'
 import type { PersonaId } from '@/types/chat'
 
 interface ReportCardProps {
   content: string
   persona: PersonaId
+  shareToken: string | null
 }
 
-export function ReportCard({ content, persona }: ReportCardProps) {
+export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
   const t = useTranslations('chat.report')
   const [copied, setCopied] = useState(false)
   const { trackReportCopied } = useAnalytics()
@@ -65,6 +68,12 @@ export function ReportCard({ content, persona }: ReportCardProps) {
             </>
           )}
         </Button>
+        {shareToken && (
+          <ShareButton
+            shareUrl={buildReportShareUrl(shareToken)}
+            persona={persona}
+          />
+        )}
         <CalendlyCta variant="inline" source="report_card" />
       </CardFooter>
     </Card>

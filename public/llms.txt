@@ -15,6 +15,14 @@ Each conversation generates a structured report with actionable recommendations.
 - [English](https://fullstackhuman.com/en): English version
 - [Start a Consultation](https://fullstackhuman.com/chat): Choose a persona and begin
 
+## Shared Reports
+
+Public consulting reports are accessible without authentication at:
+- `https://fullstackhuman.com/report/{token}` (French)
+- `https://fullstackhuman.com/en/report/{token}` (English)
+
+Each report includes the persona's structured analysis, actionable recommendations, and a booking CTA.
+
 ## Legal
 
 - [Privacy Policy](https://fullstackhuman.com/privacy)

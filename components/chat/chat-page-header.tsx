@@ -40,6 +40,7 @@ interface ChatPageHeaderProps {
   period: QuotaPeriod
   isLoading: boolean
   isReadOnly?: boolean
+  actions?: React.ReactNode
 }
 
 export function ChatPageHeader({
@@ -51,6 +52,7 @@ export function ChatPageHeader({
   period,
   isLoading,
   isReadOnly = false,
+  actions,
 }: ChatPageHeaderProps) {
   const t = useTranslations('chat')
 
@@ -106,6 +108,7 @@ export function ChatPageHeader({
             </Button>
           )
         ) : null}
+        {actions}
         {!isLoading && (
           <span
             className={`rounded-full border px-2 py-0.5 font-mono text-xs ${isUnlimited ? 'border-border text-muted-foreground' : getQuotaBadgeColor(remaining)}`}

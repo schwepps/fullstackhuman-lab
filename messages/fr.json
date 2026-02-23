@@ -175,7 +175,14 @@
     "backToConversations": "Retour aux conversations",
     "startNew": "Nouvelle conversation",
     "deleteConfirm": "Supprimer cette conversation ?",
+    "deleteDescription": "Cette action est irréversible. La conversation et toutes ses données seront définitivement supprimées.",
+    "deleteSharedWarning": "Cette conversation a un rapport partagé. La supprimer cassera le lien de partage public.",
+    "deleteCancel": "Annuler",
+    "deleteSubmit": "Supprimer",
+    "deleting": "Suppression...",
+    "deleteError": "Impossible de supprimer la conversation. Veuillez réessayer.",
     "deleteSuccess": "Conversation supprimée",
+    "actions": "Actions",
     "readOnlyNotice": "Conversation passée (lecture seule)",
     "time": {
       "justNow": "<1m",
@@ -255,5 +262,17 @@
     "title": "Envie d'aller plus loin ?",
     "description": "Réservez un appel avec le vrai François — 30 minutes pour débloquer votre situation.",
     "action": "Réserver un appel"
+  },
+  "report": {
+    "label": "Rapport",
+    "shareLink": "Partager le rapport",
+    "linkCopied": "Lien copié !",
+    "metaTitleDoctor": "Rapport Diagnostic Projet | Full Stack Human",
+    "metaTitleCritic": "Brief de Review | Full Stack Human",
+    "metaTitleGuide": "Brief Framework | Full Stack Human",
+    "brandingPrefix": "Généré par",
+    "brandingLink": "Full Stack Human",
+    "notFound": "Ce rapport n'existe pas ou a été supprimé.",
+    "backHome": "Retour à Full Stack Human"
   }
 }

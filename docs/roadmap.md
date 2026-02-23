@@ -4,7 +4,7 @@ Priority-tier roadmap for Full Stack Human commercial launch.
 
 **Context:** France/EU first launch, 1-2 month timeline, primary KPI is consulting bookings (Calendly clicks). The AI is a lead magnet — free tier outputs with branding are distribution.
 
-**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting with Upstash Redis (durable IP rate limiting), quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports, SEO/GEO/WebMCP for AI and search discoverability, loading skeletons (chat + account), branded email templates (Supabase Auth), locale-aware root 404 page, conversation persistence and history, explicit Calendly CTAs at key conversion moments (landing page, report card, conversations dashboard).
+**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting with Upstash Redis (durable IP rate limiting), quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports, SEO/GEO/WebMCP for AI and search discoverability, loading skeletons (chat + account), branded email templates (Supabase Auth), locale-aware root 404 page, conversation persistence and history, explicit Calendly CTAs at key conversion moments (landing page, report card, conversations dashboard), shareable report URLs with public pages, OG meta, branding watermark, and Calendly CTAs.
 
 **Complexity estimates:** S = hours | M = 1-2 days | L = 3-5 days | XL = 1-2 weeks
 All estimates include writing tests to match the project's existing quality bar.
@@ -73,7 +73,7 @@ Replaced both in-memory rate limiters (chat IP + auth actions) with Upstash Redi
 
 ### ~~9. SEO, GEO, and WebMCP~~ DONE
 
-JSON-LD structured data (Organization, ProfessionalService, WebApplication) on homepage via `MultiJsonLd` component. Dynamic OG image generation via `next/og` ImageResponse with locale-aware text (FR/EN). Twitter Card meta. Enhanced root layout metadata with OpenGraph, Twitter, canonical URLs, and hreflang alternates. AI bot rules in `robots.ts` for GPTBot, ClaudeBot, PerplexityBot, ChatGPT-User, Google-Extended, and anthropic-ai. `llms.txt` for LLM discoverability. WebMCP tool registration (`get_personas`, `start_consultation`) via `navigator.modelContext` with feature detection (Chrome 146+ early preview). SEO consistency check script (`pnpm check:seo`) added to pre-review pipeline. Report page OG meta deferred to shareable report URLs (item 12).
+JSON-LD structured data (Organization, ProfessionalService, WebApplication) on homepage via `MultiJsonLd` component. Dynamic OG image generation via `next/og` ImageResponse with locale-aware text (FR/EN). Twitter Card meta. Enhanced root layout metadata with OpenGraph, Twitter, canonical URLs, and hreflang alternates. AI bot rules in `robots.ts` for GPTBot, ClaudeBot, PerplexityBot, ChatGPT-User, Google-Extended, and anthropic-ai. `llms.txt` for LLM discoverability. WebMCP tool registration (`get_personas`, `start_consultation`) via `navigator.modelContext` with feature detection (Chrome 146+ early preview). SEO consistency check script (`pnpm check:seo`) added to pre-review pipeline. Report page OG meta fulfilled in shareable report URLs (item 12).
 
 **Key files:**
 
@@ -111,7 +111,7 @@ Completed in PR #16. Conversations table (JSONB messages, RLS, status tracking) 
 
 ### ~~11. Calendly Integration Outside Chat~~ DONE
 
-Reusable `CalendlyCta` component with two variants (banner card and inline button) placed at three key conversion moments: landing page hero (secondary CTA below bio), report card footer (alongside copy button), and conversations dashboard (banner above library). Simple styled links opening Calendly in new tab — no embed widget, no CSP changes needed. `CALENDLY_URL` constant added as SSOT in `lib/constants/app.ts`, SEO schema updated to use it. Analytics `CalendlyClickProperties.source` expanded for new placements. Public report page CTA deferred to item 12.
+Reusable `CalendlyCta` component with two variants (banner card and inline button) placed at three key conversion moments: landing page hero (secondary CTA below bio), report card footer (alongside copy button), and conversations dashboard (banner above library). Simple styled links opening Calendly in new tab — no embed widget, no CSP changes needed. `CALENDLY_URL` constant added as SSOT in `lib/constants/app.ts`, SEO schema updated to use it. Analytics `CalendlyClickProperties.source` expanded for new placements. Public report page CTA fulfilled in item 12.
 
 **Key files:**
 
@@ -126,20 +126,30 @@ Reusable `CalendlyCta` component with two variants (banner card and inline butto
 
 ---
 
-### 12. Shareable Report URLs
+### ~~12. Shareable Report URLs~~ DONE
 
-**Complexity:** L
-**What:** When a report is generated, save it to a `reports` table (id, conversation_id, persona, content, share_token, created_at). Generate a public shareable URL like `/report/{share_token}`. The public page renders the report with FSH branding, persona badge, and Calendly CTA. No auth required to view. Free tier reports include branding watermark.
-**Why launch:** Every shared report is organic distribution. The product concept explicitly states: free tier outputs with branding are more valuable than paid outputs without it. A report shared in Slack or forwarded to a CTO is a lead magnet with a built-in CTA. This is the viral loop.
-**Dependencies:** Conversation persistence (10) — reports are linked to conversations.
+Reports table (`reports`) with public read RLS (anon access via share_token). Auto-persisted on stream completion in `useChat()` — idempotent insert keyed on `conversation_id`. Public page at `/report/{share_token}` renders report with persona badge, Calendly CTA (inline + banner), and conditional branding footer (free tier). Persona-specific OG meta (title, description, OpenGraph, Twitter Card). Share button in chat report card copies public URL with analytics tracking. `(sharing)` route group with minimal branded layout (no auth required). `robots.ts` updated for AI bot indexing. Report page OG meta from item 9 fulfilled here.
+
 **Key files:**
 
-- Create `supabase/migrations/YYYYMMDD_reports.sql` — reports table + public read policy
-- Create `app/[locale]/report/[token]/page.tsx` — public report page
-- Create `components/report/report-view.tsx` — branded report renderer
-- Update `components/chat/report-card.tsx` — add "Share" button with copy-to-clipboard
-- Update `lib/hooks/use-chat.ts` — save report on detection
-- Update `messages/fr.json` and `messages/en.json`
+- Update `supabase/migrations/00000000000000_initial_schema.sql` — reports table consolidated into initial migration
+- Create `types/report.ts` — Report and ReportRow interfaces
+- Create `lib/constants/reports.ts` — report-specific constants (SHARE_TOKEN_LENGTH, OG_DESCRIPTION_MAX_LENGTH)
+- Create `lib/reports/actions.ts` — `createReport()` server action (rate limit, validation, auth, idempotency, tier→branding)
+- Create `lib/reports/queries.ts` — `getReportByToken()`, `getShareTokenForConversation()`
+- Create `components/report/share-button.tsx` — copy share URL with analytics
+- Create `components/report/report-branding-footer.tsx` — "Generated by Full Stack Human" watermark
+- Create `components/report/report-view.tsx` — branded report renderer (server component)
+- Create `app/[locale]/(sharing)/layout.tsx` — minimal branded shell for sharing
+- Create `app/[locale]/(sharing)/report/[token]/page.tsx` — public report page with OG meta
+- Update `lib/hooks/use-chat.ts` — auto-persist report on stream completion, load share token for past conversations
+- Update `lib/constants/analytics.ts` — `REPORT_LINK_COPIED` event, extended `CalendlyClickProperties.source`
+- Update `lib/hooks/use-analytics.ts` — `trackReportLinkCopied` callback
+- Update `components/chat/report-card.tsx` — share button in footer
+- Update `components/chat/chat-bubble.tsx`, `chat-message-list.tsx`, `chat-container.tsx` — thread `shareToken` prop
+- Update `app/robots.ts` — `/report/` in AI bot allow rules
+- Update `public/llms.txt` — document public report URLs
+- Update `messages/fr.json` and `messages/en.json` — `report` namespace
 
 ---
 
@@ -301,9 +311,9 @@ Tier 1:
   3 Legal Docs ✅ ────→ 4 Cookie Consent ✅ ──→ 5 PostHog Analytics ✅
 
 Tier 2:
-  10 Conversations ✅ ──→ 12 Shareable URLs ──→ 13 PDF Export
+  10 Conversations ✅ ──→ 12 Shareable URLs ✅ ──→ 13 PDF Export
        │                     │
-       │                     └──→ 9 SEO/GEO ✅ (report OG meta deferred to 12)
+       │                     └──→ 9 SEO/GEO ✅ (report OG meta fulfilled in 12)
        │
        ├──→ 11 Calendly ✅ (dashboard CTA)
        └──→ 15 Cross-Session Memory (Tier 3)
@@ -316,7 +326,7 @@ Independent (no dependencies):
   6 French translations ✅
   7 Anon signup CTA ✅
   8 Redis rate limiting ✅
-  9 SEO/GEO/WebMCP ✅ (core done; report OG meta depends on 12)
+  9 SEO/GEO/WebMCP ✅ (core done; report OG meta fulfilled in 12 ✅)
   16 Loading skeletons ✅
   17 Branded emails ✅
   18 Root 404 fix ✅
@@ -353,7 +363,7 @@ Parallel tracks:
 
 1. ~~Conversation persistence + history (10)~~ DONE
 2. ~~Calendly integration (11)~~ DONE
-3. Shareable report URLs (12) — after conversation persistence
+3. ~~Shareable report URLs (12)~~ DONE
 4. HTML templates + PDF export (13) — after shareable URLs
 
 ### Tier 3 — Weeks 6-8 (post-launch)
