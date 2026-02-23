@@ -12,10 +12,32 @@
   "about": {
     "bio": "La vision produit, la profondeur technique et l\u2019instinct de livraison de François \u2014 packagés en IA à la demande. Pas de blabla. Pas de réponses génériques. L\u2019authentique, à la vitesse machine."
   },
+  "aboutSection": {
+    "title": "QUI EST FRAN\u00c7OIS ?",
+    "intro": "Ingénieur devenu leader produit. 15+ ans à construire, livrer et piloter dans la finance, l\u2019énergie, le sport, la blockchain et l\u2019IA. Le système d\u2019exploitation est toujours le même : comprendre le contexte, cartographier la réalité, installer juste assez de structure, responsabiliser les gens.",
+    "expertise": {
+      "leadership": {
+        "title": "Leadership d\u2019équipe",
+        "description": "De junior à mentor. Le micromanagement tue les équipes \u2014 la responsabilisation et la confiance font grandir les gens."
+      },
+      "product": {
+        "title": "Management Produit",
+        "description": "→ Business canvas\n→ Parcours utilisateur\n→ Objectifs SMART.\nSe concentrer sur l\u2019essentiel, itérer vite."
+      },
+      "tech": {
+        "title": "Architecture Technique",
+        "description": "Rester simple. SOLID, DRY, SSOT. Préférer les boucles de feedback et l\u2019amélioration continue aux refontes massives."
+      },
+      "ai": {
+        "title": "IA & Stratégie",
+        "description": "Partir d\u2019un vrai problème qu\u2019on résout déjà à la main, puis automatiser. L\u2019IA n\u2019est pas une feature \u2014 c\u2019est une interface."
+      }
+    }
+  },
   "hud": {
     "sysId": "SYS.ID: FSH-001",
     "status": "[ACTIF]",
-    "role": "RÔLE: builder / opérateur",
+    "role": "RÔLE: builder",
     "version": "v1.0.0"
   },
   "localeSwitcher": {
@@ -248,7 +270,8 @@
     "privacy": "Politique de confidentialité",
     "terms": "Conditions d\u2019utilisation",
     "copyright": "© {year} Fullstackhuman. Tous droits réservés.",
-    "cookieSettings": "Paramètres des cookies"
+    "cookieSettings": "Paramètres des cookies",
+    "linkedin": "LinkedIn"
   },
   "cookieConsent": {
     "title": "Cookies & confidentialité",

@@ -12,10 +12,32 @@
   "about": {
     "bio": "Fran\u00e7ois\u2019s product thinking, technical depth, and delivery instinct \u2014 packaged as an on-demand AI. No fluff. No generic answers. Just the real thing, at machine speed."
   },
+  "aboutSection": {
+    "title": "WHO IS FRAN\u00c7OIS?",
+    "intro": "Engineer turned product leader. 15+ years building, shipping, and leading across finance, energy, sports, blockchain, and AI. The operating system is always the same: understand context, map reality, install just enough structure, empower people to own the outcome.",
+    "expertise": {
+      "leadership": {
+        "title": "Team Leadership",
+        "description": "From mentee to mentor. Micromanagement kills teams \u2014 accountability and trust are how people grow."
+      },
+      "product": {
+        "title": "Product Management",
+        "description": "→ Business canvas\n→ User journeys\n→ SMART goals.\nFocus on the few things that matter, get feedback fast."
+      },
+      "tech": {
+        "title": "Technical Architecture",
+        "description": "Keep it simple. SOLID, DRY, SSOT. Prefer feedback loops and continuous enhancement over big-bang rewrites."
+      },
+      "ai": {
+        "title": "AI & Strategy",
+        "description": "Start from a real problem you already solve manually, then automate. AI is not a feature \u2014 it\u2019s an interface."
+      }
+    }
+  },
   "hud": {
     "sysId": "SYS.ID: FSH-001",
     "status": "[ACTIVE]",
-    "role": "ROLE: builder / operator",
+    "role": "ROLE: builder",
     "version": "v1.0.0"
   },
   "localeSwitcher": {
@@ -248,7 +270,8 @@
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
     "copyright": "\u00a9 {year} Fullstackhuman. All rights reserved.",
-    "cookieSettings": "Cookie settings"
+    "cookieSettings": "Cookie settings",
+    "linkedin": "LinkedIn"
   },
   "cookieConsent": {
     "title": "Cookies & privacy",

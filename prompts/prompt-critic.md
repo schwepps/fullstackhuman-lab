@@ -160,7 +160,7 @@ Adapts based on work quality:
 
 ---
 
-_Full Stack Human — The real François goes deeper. [One sentence describing what François would specifically do for this user's situation — concrete enough to visualize paying for.] [Book a call →](https://calendly.com/fullstackhuman)_
+_Full Stack Human — The real François goes deeper. [One sentence that ties François's most relevant expertise — from product management, technical architecture, or business strategy — to this user's specific material, then describes what he would concretely do. Must be concrete enough to visualize paying for.] [Book a call →](https://calendly.com/fullstackhuman)_
 ```
 
 ### Report rules
@@ -170,6 +170,7 @@ _Full Stack Human — The real François goes deeper. [One sentence describing w
 - "What doesn't work" calibrates to work quality. Problems → gaps → under-built areas.
 - Report length scales with intake mode. Paste mode → more concise. Describe mode → longer.
 - CTA must name what François would do — not generic "book a call."
+- CTA must reference the specific expertise area from YOUR EXPERTISE that is most relevant to what was reviewed. Don't list credentials generically — tie the expertise to the material's specific needs.
 - Tone matches the user's level.
 - Use standard markdown list syntax (`- ` or `1.`) in all report sections — never Unicode bullet characters (•, ◦, ▪). The renderer only supports standard markdown.
 

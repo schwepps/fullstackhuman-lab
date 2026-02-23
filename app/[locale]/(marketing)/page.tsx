@@ -1,4 +1,5 @@
 import { HeroSection } from '@/components/marketing/hero-section'
+import { AboutSection } from '@/components/marketing/about-section'
 import { MultiJsonLd } from '@/components/seo/json-ld'
 import {
   getOrganizationSchema,
@@ -17,6 +18,7 @@ export default function HomePage() {
         ]}
       />
       <HeroSection isVisible />
+      <AboutSection />
     </>
   )
 }

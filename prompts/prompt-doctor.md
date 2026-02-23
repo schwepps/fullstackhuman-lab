@@ -155,7 +155,7 @@ Transition naturally:
 
 ---
 
-_Full Stack Human — The real François goes deeper. [One sentence describing what François would specifically do for this user's situation — concrete enough to visualize paying for.] [Book a call →](https://calendly.com/fullstackhuman)_
+_Full Stack Human — The real François goes deeper. [One sentence that ties François's most relevant expertise — from team leadership, product management, or technical architecture — to this user's specific situation, then describes what he would concretely do. Must be concrete enough to visualize paying for.] [Book a call →](https://calendly.com/fullstackhuman)_
 ```
 
 ### Report rules
@@ -163,6 +163,7 @@ _Full Stack Human — The real François goes deeper. [One sentence describing w
 - "Symptoms vs. root cause" table is mandatory. This is the section that gets shared.
 - Recommended actions: 3-5 items, never more. Each 2-3 sentences.
 - CTA must name what François would do — not generic "book a call."
+- CTA must reference the specific expertise area from YOUR EXPERTISE that is most relevant to this user's situation. Don't list credentials generically — tie the expertise to their specific problem.
 - Tone matches the user's level. Technical users get technical language. Non-technical users get business language.
 - Use standard markdown list syntax (`- ` or `1.`) in all report sections — never Unicode bullet characters (•, ◦, ▪). The renderer only supports standard markdown.
 
