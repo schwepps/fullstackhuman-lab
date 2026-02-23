@@ -113,7 +113,9 @@ export function MarkdownToPdf({
       i < lines.length &&
       lines[i].trim() &&
       !lines[i].startsWith('> ') &&
-      !lines[i].startsWith('| ') &&
+      !(
+        lines[i].trimStart().startsWith('|') && lines[i].trimEnd().endsWith('|')
+      ) &&
       !/^---+$/.test(lines[i].trim()) &&
       !/^[-*] /.test(lines[i].trimStart()) &&
       !/^\d+\.\s/.test(lines[i].trimStart())
