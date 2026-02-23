@@ -89,7 +89,7 @@ export function ConversationsLibrary({
           </Button>
         </div>
       ) : (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-3">
           {conversations.map((conversation) => (
             <ConversationCard
               key={conversation.id}
