@@ -43,7 +43,7 @@ export function ReportSectionBlock({
 
       {/* Visual component — renders above prose */}
       {section.visual && (
-        <div className="my-4 border border-gray-100 p-3">
+        <div className="mt-4 mb-8 border border-gray-100 p-3">
           <VisualRenderer visual={section.visual} accentHex={accentHex} />
         </div>
       )}

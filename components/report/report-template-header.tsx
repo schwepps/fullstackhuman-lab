@@ -1,7 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { FshIconMark } from '@/components/layout/fsh-logo'
 import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
-import { PERSONAS } from '@/lib/constants/personas'
 import type { PersonaId } from '@/types/chat'
 
 interface ReportTemplateHeaderProps {
@@ -21,7 +20,6 @@ export async function ReportTemplateHeader({
 }: ReportTemplateHeaderProps) {
   const t = await getTranslations('reportTemplate')
   const Illustration = PERSONA_ILLUSTRATIONS[persona]
-  const personaEmoji = PERSONAS[persona].emoji
 
   const date = new Date(createdAt)
   const formattedDate = date.toLocaleDateString(undefined, {
@@ -35,7 +33,7 @@ export async function ReportTemplateHeader({
       {/* Accent top border */}
       <div className="h-[3px] w-full" style={{ backgroundColor: accentHex }} />
 
-      <div className="px-6 pt-6 pb-4 sm:px-8">
+      <div className="px-6 pt-6 pb-6 sm:px-8">
         {/* Brand + date row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-gray-400">
@@ -59,7 +57,7 @@ export async function ReportTemplateHeader({
         >
           <Illustration className="size-5" />
           <span className="font-mono text-sm font-semibold uppercase tracking-wider">
-            {personaEmoji} {t(`personaName.${persona}`)}
+            {t(`personaName.${persona}`)}
           </span>
         </div>
 

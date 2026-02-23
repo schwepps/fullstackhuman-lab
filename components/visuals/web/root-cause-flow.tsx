@@ -4,11 +4,12 @@ import type { RootCauseFlowData } from '@/lib/visuals/types'
 
 const BOX_WIDTH = 170
 const BOX_HEIGHT = 36
-const ROW_GAP = 12
+const ROW_GAP = 20
 const ARROW_LENGTH = 60
 const ARROW_Y_OFFSET = BOX_HEIGHT / 2
 const PADDING_X = 16
 const PADDING_Y = 12
+const HEADER_HEIGHT = 20
 
 interface RootCauseFlowProps {
   data: RootCauseFlowData
@@ -18,7 +19,10 @@ interface RootCauseFlowProps {
 export function RootCauseFlow({ data, accentHex }: RootCauseFlowProps) {
   const rows = data.rows
   const totalHeight =
-    PADDING_Y * 2 + rows.length * BOX_HEIGHT + (rows.length - 1) * ROW_GAP
+    PADDING_Y * 2 +
+    HEADER_HEIGHT +
+    rows.length * BOX_HEIGHT +
+    (rows.length - 1) * ROW_GAP
   const totalWidth = PADDING_X * 2 + BOX_WIDTH * 2 + ARROW_LENGTH
 
   const leftX = PADDING_X
@@ -51,7 +55,7 @@ export function RootCauseFlow({ data, accentHex }: RootCauseFlowProps) {
       </text>
 
       {rows.map((row, i) => {
-        const y = PADDING_Y + i * (BOX_HEIGHT + ROW_GAP)
+        const y = PADDING_Y + HEADER_HEIGHT + i * (BOX_HEIGHT + ROW_GAP)
         const arrowStartX = leftX + BOX_WIDTH
         const arrowEndX = rightX
         const arrowY = y + ARROW_Y_OFFSET

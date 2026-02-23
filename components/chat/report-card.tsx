@@ -1,16 +1,18 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Copy, Check } from 'lucide-react'
+import { Copy, Check, ExternalLink } from 'lucide-react'
+import { Link } from '@/i18n/routing'
 import { MarkdownRenderer } from '@/components/chat/markdown-renderer'
 import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
-import { CalendlyCta } from '@/components/shared/calendly-cta'
 import { ShareButton } from '@/components/report/share-button'
+import { DownloadPdfButton } from '@/components/report/download-pdf-button'
 import { buildReportShareUrl } from '@/lib/constants/reports'
+import { stripVisualBlocks, PERSONA_EMOJI_REGEX } from '@/lib/visuals/parser'
 import type { PersonaId } from '@/types/chat'
 
 interface ReportCardProps {
@@ -25,6 +27,15 @@ export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
   const [copied, setCopied] = useState(false)
   const { trackReportCopied } = useAnalytics()
   const Illustration = PERSONA_ILLUSTRATIONS[persona]
+
+  const cleanContent = useMemo(
+    () =>
+      stripVisualBlocks(content).replace(
+        new RegExp(`^(# )${PERSONA_EMOJI_REGEX.source}`, 'mu'),
+        '$1'
+      ),
+    [content]
+  )
 
   const handleCopy = useCallback(async () => {
     try {
@@ -48,7 +59,7 @@ export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
         </div>
       </CardHeader>
       <CardContent>
-        <MarkdownRenderer content={content} />
+        <MarkdownRenderer content={cleanContent} />
       </CardContent>
       <CardFooter className="flex flex-wrap gap-2">
         <Button
@@ -75,7 +86,20 @@ export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
             persona={persona}
           />
         )}
-        <CalendlyCta variant="inline" source="report_card" />
+        {shareToken && (
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="touch-manipulation"
+          >
+            <Link href={`/report/${shareToken}`}>
+              <ExternalLink className="size-3.5" />
+              {t('viewReport')}
+            </Link>
+          </Button>
+        )}
+        {shareToken && <DownloadPdfButton shareToken={shareToken} />}
       </CardFooter>
     </Card>
   )

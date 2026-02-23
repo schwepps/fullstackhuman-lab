@@ -19,7 +19,11 @@ export async function ReportView({ report, locale }: ReportViewProps) {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <ShareButton shareUrl={shareUrl} persona={report.persona} />
         <DownloadPdfButton shareToken={report.shareToken} />
-        <CalendlyCta variant="inline" source="public_report" />
+        <CalendlyCta
+          variant="inline"
+          source="public_report"
+          buttonVariant="default"
+        />
       </div>
 
       {/* Professional report template */}

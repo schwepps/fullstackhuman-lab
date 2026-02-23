@@ -39,14 +39,30 @@ function toConversation(row: ConversationRow): Conversation {
   }
 }
 
-function toSummary(
-  row: Omit<ConversationRow, 'messages' | 'user_id'>
-): ConversationSummary {
+interface ReportRef {
+  share_token: string
+}
+
+interface SummaryRow extends Omit<ConversationRow, 'messages' | 'user_id'> {
+  // PostgREST returns object for 1-to-1 (UNIQUE FK) but TS client infers array
+  reports: ReportRef | ReportRef[] | null
+}
+
+function extractShareToken(
+  reports: ReportRef | ReportRef[] | null
+): string | null {
+  if (!reports) return null
+  if (Array.isArray(reports)) return reports[0]?.share_token ?? null
+  return reports.share_token ?? null
+}
+
+function toSummary(row: SummaryRow): ConversationSummary {
   return {
     id: row.id,
     persona: row.persona,
     title: row.title,
     hasReport: row.has_report,
+    shareToken: extractShareToken(row.reports),
     status: row.status,
     messageCount: row.message_count,
     createdAt: row.created_at,
@@ -55,7 +71,7 @@ function toSummary(
 }
 
 const SUMMARY_COLUMNS =
-  'id, persona, title, has_report, status, message_count, created_at, updated_at' as const
+  'id, persona, title, has_report, status, message_count, created_at, updated_at, reports(share_token)' as const
 
 export async function getRecentConversations(
   limit = RECENT_CONVERSATIONS_LIMIT

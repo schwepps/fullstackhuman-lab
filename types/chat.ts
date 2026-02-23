@@ -4,7 +4,6 @@ export type PersonaId = 'doctor' | 'critic' | 'guide'
 
 export interface PersonaConfig {
   readonly id: PersonaId
-  readonly emoji: string
   readonly reportDetectPattern: RegExp
   readonly promptFile: string
 }

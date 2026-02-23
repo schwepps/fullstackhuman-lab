@@ -16,7 +16,6 @@ import {
   PERSONA_TEMPLATE_CONFIGS,
   PERSONA_DISPLAY_NAMES,
 } from '@/lib/constants/report-templates'
-import { PERSONAS } from '@/lib/constants/personas'
 import type { PersonaId } from '@/types/chat'
 import type { VisualData } from '@/lib/visuals/types'
 
@@ -33,7 +32,6 @@ export function ReportPdfDocument({
 }: ReportPdfDocumentProps) {
   const config = PERSONA_TEMPLATE_CONFIGS[persona]
   const parsed = parseReport(content, persona)
-  const personaEmoji = PERSONAS[persona].emoji
   const date = new Date(createdAt)
   const dateStr = date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -58,9 +56,7 @@ export function ReportPdfDocument({
 
         {/* Running footer */}
         <View style={s.pageFooter} fixed>
-          <Text style={s.pageFooterText}>
-            {personaEmoji} {PERSONA_DISPLAY_NAMES[persona]}
-          </Text>
+          <Text style={s.pageFooterText}>{PERSONA_DISPLAY_NAMES[persona]}</Text>
           <Text
             style={s.pageFooterText}
             render={({ pageNumber, totalPages }) =>
@@ -71,7 +67,7 @@ export function ReportPdfDocument({
 
         {/* Persona badge */}
         <Text style={[s.personaBadge, { color: config.accentHex }]}>
-          {personaEmoji} {PERSONA_DISPLAY_NAMES[persona]}
+          {PERSONA_DISPLAY_NAMES[persona]}
         </Text>
 
         {/* Title */}

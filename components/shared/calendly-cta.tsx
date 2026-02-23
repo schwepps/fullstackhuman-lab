@@ -14,9 +14,15 @@ interface CalendlyCtaProps {
   variant: 'banner' | 'inline'
   source: CalendlyClickProperties['source']
   className?: string
+  buttonVariant?: 'default' | 'outline'
 }
 
-export function CalendlyCta({ variant, source, className }: CalendlyCtaProps) {
+export function CalendlyCta({
+  variant,
+  source,
+  className,
+  buttonVariant,
+}: CalendlyCtaProps) {
   const t = useTranslations('calendlyCta')
   const { trackCalendlyClick } = useAnalytics()
 
@@ -28,7 +34,7 @@ export function CalendlyCta({ variant, source, className }: CalendlyCtaProps) {
     return (
       <Button
         asChild
-        variant="outline"
+        variant={buttonVariant ?? 'outline'}
         size="sm"
         className={cn('touch-manipulation', className)}
       >

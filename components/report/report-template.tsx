@@ -27,7 +27,7 @@ export async function ReportTemplate({
   const parsed = parseReport(content, persona)
 
   return (
-    <article className="report-template mx-auto w-full max-w-3xl bg-white shadow-sm">
+    <article className="report-template mx-auto w-full max-w-4xl bg-white shadow-sm">
       <ReportTemplateHeader
         title={parsed.title}
         metadata={parsed.metadata}
@@ -36,7 +36,7 @@ export async function ReportTemplate({
         createdAt={createdAt}
       />
 
-      <div className="divide-y divide-gray-50">
+      <div className="divide-y divide-gray-200">
         {parsed.sections.map((section) => (
           <ReportSectionBlock
             key={section.index}

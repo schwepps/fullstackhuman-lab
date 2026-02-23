@@ -267,26 +267,32 @@ export function useChat() {
     setState(INITIAL_STATE)
   }, [])
 
-  const loadConversation = useCallback(async (conversation: Conversation) => {
-    setState({
-      phase: 'chatting',
-      persona: conversation.persona,
-      messages: conversation.messages,
-      isStreaming: false,
-      error: null,
-      conversationId: conversation.id,
-      isReadOnly: true,
-      shareToken: null,
-    })
+  const loadConversation = useCallback(
+    async (
+      conversation: Omit<Conversation, 'userId'>,
+      shareToken?: string | null
+    ) => {
+      setState({
+        phase: 'chatting',
+        persona: conversation.persona,
+        messages: conversation.messages,
+        isStreaming: false,
+        error: null,
+        conversationId: conversation.id,
+        isReadOnly: true,
+        shareToken: shareToken ?? null,
+      })
 
-    // Load share token for conversations with reports
-    if (conversation.hasReport) {
-      const token = await getShareTokenForConversation(conversation.id)
-      if (token) {
-        setState((prev) => ({ ...prev, shareToken: token }))
+      // Only fetch token if not pre-provided and conversation has a report
+      if (!shareToken && conversation.hasReport) {
+        const token = await getShareTokenForConversation(conversation.id)
+        if (token) {
+          setState((prev) => ({ ...prev, shareToken: token }))
+        }
       }
-    }
-  }, [])
+    },
+    []
+  )
 
   const stopStreaming = useCallback(() => {
     abortRef.current?.abort()
