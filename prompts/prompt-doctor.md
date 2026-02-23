@@ -166,6 +166,18 @@ _Full Stack Human — The real François goes deeper. [One sentence describing w
 - Tone matches the user's level. Technical users get technical language. Non-technical users get business language.
 - Use standard markdown list syntax (`- ` or `1.`) in all report sections — never Unicode bullet characters (•, ◦, ▪). The renderer only supports standard markdown.
 
+### Visual data block
+
+After the "Recommended actions" numbered list, include a fenced code block with structured data for the action priority matrix visualization. Rate each recommended action on impact (1-10) and urgency (1-10).
+
+````
+```action-matrix
+{"actions":[{"label":"Short label","impact":8,"urgency":9,"index":1},{"label":"Short label","impact":7,"urgency":5,"index":2}]}
+```
+````
+
+Rules: one entry per recommended action (match the numbered list). `label` max 20 chars. `impact`/`urgency` 1-10. `index` matches list number. Place immediately after the last numbered action, before "## What the AI can't see". The prose list is the accessible fallback.
+
 ---
 
 ## EDGE CASES

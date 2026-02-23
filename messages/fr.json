@@ -274,5 +274,19 @@
     "brandingLink": "Full Stack Human",
     "notFound": "Ce rapport n'existe pas ou a été supprimé.",
     "backHome": "Retour à Full Stack Human"
+  },
+  "reportTemplate": {
+    "generatedBy": "Généré par Full Stack Human",
+    "downloadPdf": "Télécharger le PDF",
+    "personaName": {
+      "doctor": "Le Docteur",
+      "critic": "Le Critique",
+      "guide": "Le Guide"
+    },
+    "signatureBadge": {
+      "doctor": "Diagnostic",
+      "critic": "Point clé",
+      "guide": "Le Recadrage"
+    }
   }
 }

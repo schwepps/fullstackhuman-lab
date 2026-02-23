@@ -19,8 +19,8 @@ export default async function SharingLayout({
   setRequestLocale(locale)
 
   return (
-    <div className="flex min-h-svh flex-col bg-background">
-      <header className="flex h-14 items-center justify-between border-b border-border px-4 sm:px-6">
+    <div className="flex min-h-svh flex-col bg-gray-50">
+      <header className="flex h-14 items-center justify-between border-b border-gray-200 bg-white px-4 sm:px-6">
         <BrandLink />
         <LocaleSwitcher />
       </header>

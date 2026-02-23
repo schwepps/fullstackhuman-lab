@@ -155,8 +155,8 @@ Reports table (`reports`) with public read RLS (anon access via share_token). Au
 
 ### 13. HTML Report Templates and PDF Export
 
-**Complexity:** L
-**What:** Design persona-specific HTML report templates that render markdown reports into professional, branded documents. Add PDF export via server-side rendering. Reports include: FSH branding, persona badge, date, structured sections, Calendly CTA footer. Free tier PDFs include branding; paid tier gets clean exports.
+**Complexity:** XL
+**What:** Design persona-specific HTML report templates that render markdown reports into professional, branded documents. Add PDF export via server-side rendering. Reports include: FSH branding, persona badge, date, structured sections, Calendly CTA footer. PDF generation via `app/api/report/[token]/pdf/route.ts` using `@vercel/og` to render the same HTML template server-side and return a PDF response. "Download PDF" button in the report view triggers this endpoint. The HTML templates are also used for the public shareable report pages (item 12) to ensure consistency between the web and PDF versions. The PDF export is a key deliverable for users to share with CTOs and cofounders in professional contexts. Reports are light themed with the terminal/cyber aesthetic but formatted for readability and professionalism (clean typography, clear sections, consistent branding). The markdown result is not displayed plain in the chat but transformed into a polished report format in both the shareable web page and the PDF export.
 **Why launch:** The deliverable IS the product. Raw markdown in chat is functional but not shareable in professional contexts. A well-formatted PDF is what gets forwarded to CTOs and cofounders.
 **Dependencies:** Shareable report URLs (12) — the HTML template is used for both the public URL and the PDF export.
 **Key files:**

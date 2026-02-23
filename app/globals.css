@@ -339,4 +339,18 @@ summary,
   h3 {
     break-after: avoid;
   }
+
+  /* Report template: preserve light-theme colors */
+  .report-template {
+    box-shadow: none !important;
+    break-inside: avoid;
+  }
+
+  .report-template section {
+    break-inside: avoid;
+  }
+
+  .report-template svg {
+    break-inside: avoid;
+  }
 }

@@ -222,6 +222,28 @@ _Full Stack Human — The real François goes deeper. [One sentence describing w
 - Tone matches the user's level.
 - Use standard markdown list syntax (`- ` or `1.`) in all report sections — never Unicode bullet characters (•, ◦, ▪). The renderer only supports standard markdown.
 
+### Visual data block
+
+In the "How to think about this" section, include ONE visual data block — either a framework-matrix (for 2x2 quadrant frameworks) or a concept-spectrum (for continuums/spectrums). Choose whichever fits the framework better. Never include both.
+
+**Framework matrix** — use when the framework has two independent axes creating four distinct quadrants:
+
+````
+```framework-matrix
+{"title":"Framework Title","xAxisLabel":"Axis X","xAxisLow":"Low","xAxisHigh":"High","yAxisLabel":"Axis Y","yAxisLow":"Low","yAxisHigh":"High","quadrants":{"topLeft":{"label":"Label","description":"Brief"},"topRight":{"label":"Label","description":"Brief"},"bottomLeft":{"label":"Label","description":"Brief"},"bottomRight":{"label":"Label","description":"Brief"}},"userPosition":{"x":0.7,"y":0.6}}
+```
+````
+
+**Concept spectrum** — use when the framework is a continuum between two poles:
+
+````
+```concept-spectrum
+{"title":"Spectrum Title","leftLabel":"Left Pole","rightLabel":"Right Pole","userPosition":0.65,"userLabel":"Your Position"}
+```
+````
+
+Rules: place the block inside the "How to think about this" section prose. `userPosition` is 0-1. Labels max 20 chars. The prose framework explanation is the accessible fallback. If neither format fits the framework, omit the visual block entirely.
+
 ---
 
 ## EDGE CASES

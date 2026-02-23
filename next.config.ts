@@ -62,6 +62,8 @@ const nextConfig: NextConfig = {
       fullUrl: process.env.NODE_ENV === 'development',
     },
   },
+
+  serverExternalPackages: ['@react-pdf/renderer'],
 }
 
 export default withNextIntl(nextConfig)
