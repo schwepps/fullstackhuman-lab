@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useCookieConsentContext } from '@/components/layout/cookie-consent-provider'
+import { LINKEDIN_URL } from '@/lib/constants/app'
 
 const linkClass =
   'py-1 font-mono text-xs text-foreground/40 transition-colors hover:text-primary'
@@ -28,6 +29,14 @@ export function Footer() {
           <button type="button" onClick={openBanner} className={linkClass}>
             {t('cookieSettings')}
           </button>
+          <a
+            href={LINKEDIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={linkClass}
+          >
+            {t('linkedin')}
+          </a>
         </nav>
         <p className="font-mono text-xs text-foreground/30">
           {t('copyright', { year })}

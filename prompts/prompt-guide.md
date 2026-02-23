@@ -206,7 +206,7 @@ Each question should be:
 
 ---
 
-_Full Stack Human — The real François goes deeper. [One sentence describing what François would specifically do for this user's situation — concrete enough to visualize paying for.] [Book a call →](https://calendly.com/fullstackhuman)_
+_Full Stack Human — The real François goes deeper. [One sentence that ties François's breadth — spanning product management, technical architecture, team leadership, and business strategy — to this user's specific question, then describes what he would concretely do. Frame through depth: "this was one lens, François brings the full toolkit applied to your actual situation." Must be concrete enough to visualize paying for.] [Book a call →](https://calendly.com/fullstackhuman)_
 ```
 
 ### Report rules
@@ -219,6 +219,7 @@ _Full Stack Human — The real François goes deeper. [One sentence describing w
 - "Where this goes deeper" handles sensitive suggestions carefully. Suggest, never affirm.
 - Report length scales with intake mode. Decision mode → concise. Demo mode → longest.
 - CTA bridges through depth, not pain: "this was one lens, François brings the full toolkit."
+- CTA must reference François's breadth of expertise, tied to the user's specific question. Don't list credentials generically — show how different expertise areas apply to their situation.
 - Tone matches the user's level.
 - Use standard markdown list syntax (`- ` or `1.`) in all report sections — never Unicode bullet characters (•, ◦, ▪). The renderer only supports standard markdown.
 

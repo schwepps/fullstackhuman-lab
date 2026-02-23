@@ -38,20 +38,28 @@ export function ChatMessageList({
   return (
     <div className="chat-scrollbar flex-1 overflow-y-auto px-4 py-4">
       <div className="mx-auto flex max-w-3xl flex-col gap-4">
-        {messages.map((message) => (
-          <div key={message.id}>
-            <ChatBubble
-              message={message}
-              persona={persona}
-              shareToken={shareToken}
-            />
-            {message.isReport && isAnonymous && (
-              <div className="mt-4">
-                <SignupCta remaining={quotaRemaining} limit={quotaLimit} />
-              </div>
-            )}
-          </div>
-        ))}
+        {messages.map((message, index) => {
+          const isEmptyStreaming =
+            isStreaming &&
+            index === messages.length - 1 &&
+            message.role === 'assistant' &&
+            message.content === ''
+          if (isEmptyStreaming) return null
+          return (
+            <div key={message.id}>
+              <ChatBubble
+                message={message}
+                persona={persona}
+                shareToken={shareToken}
+              />
+              {message.isReport && isAnonymous && (
+                <div className="mt-4">
+                  <SignupCta remaining={quotaRemaining} limit={quotaLimit} />
+                </div>
+              )}
+            </div>
+          )
+        })}
         {isStreaming &&
           messages.length > 0 &&
           messages[messages.length - 1].content === '' && (

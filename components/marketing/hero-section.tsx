@@ -46,7 +46,7 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
       </motion.h1>
 
       {/* Portrait */}
-      <motion.div variants={itemVariants} className="mb-10">
+      <motion.div variants={itemVariants} className="mb-14">
         <PortraitViewfinder />
       </motion.div>
 

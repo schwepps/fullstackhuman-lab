@@ -20,9 +20,9 @@ function HudLabel({ position, text }: { position: HudPosition; text: string }) {
   return (
     <span
       className={cn(
-        'absolute z-10 font-mono text-[10px] tracking-widest text-primary/60 sm:text-xs',
+        'absolute z-10 max-w-[55%] truncate font-mono text-[10px] tracking-widest text-primary/60 sm:max-w-none sm:text-xs',
         isTop ? '-top-6' : '-bottom-6',
-        isLeft ? 'left-0' : 'right-0'
+        isLeft ? 'left-0' : 'right-0 text-right'
       )}
     >
       {text}
