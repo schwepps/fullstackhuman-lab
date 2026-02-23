@@ -21,6 +21,7 @@ interface ChatContainerProps {
   quotaRemaining: number | null
   quotaLimit: number | null
   isReadOnly?: boolean
+  shareToken?: string | null
 }
 
 export function ChatContainer({
@@ -35,6 +36,7 @@ export function ChatContainer({
   quotaRemaining,
   quotaLimit,
   isReadOnly = false,
+  shareToken = null,
 }: ChatContainerProps) {
   const t = useTranslations('chat.errors')
   const tConv = useTranslations('conversations')
@@ -66,6 +68,7 @@ export function ChatContainer({
         quotaTier={quotaTier}
         quotaRemaining={quotaRemaining}
         quotaLimit={quotaLimit}
+        shareToken={shareToken}
       />
 
       {isReadOnly ? (

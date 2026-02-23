@@ -17,6 +17,10 @@ import {
   saveMessages,
   abandonConversation,
 } from '@/lib/conversations/actions'
+import {
+  createReport,
+  getShareTokenForConversation,
+} from '@/lib/reports/actions'
 
 function createMessage(
   role: MessageRole,
@@ -58,6 +62,7 @@ const INITIAL_STATE: ChatState = {
   error: null,
   conversationId: null,
   isReadOnly: false,
+  shareToken: null,
 }
 
 export function useChat() {
@@ -81,6 +86,7 @@ export function useChat() {
         error: null,
         conversationId: null,
         isReadOnly: false,
+        shareToken: null,
       })
     },
     []
@@ -91,13 +97,31 @@ export function useChat() {
     async (persona: PersonaId, messages: ChatMessage[], isReport: boolean) => {
       if (!isAuthenticated) return
 
-      const currentId = stateRef.current.conversationId
-      if (currentId) {
-        await saveMessages(currentId, messages, isReport)
+      let conversationId = stateRef.current.conversationId
+      if (conversationId) {
+        await saveMessages(conversationId, messages, isReport)
       } else {
         const result = await createConversation(persona, messages)
         if (result.success) {
+          conversationId = result.id
           setState((prev) => ({ ...prev, conversationId: result.id }))
+        }
+      }
+
+      // Create report row when a report is detected
+      if (isReport && conversationId) {
+        const reportContent =
+          messages.findLast((m) => m.isReport)?.content ?? ''
+        const reportResult = await createReport(
+          conversationId,
+          persona,
+          reportContent
+        )
+        if (reportResult.success) {
+          setState((prev) => ({
+            ...prev,
+            shareToken: reportResult.shareToken,
+          }))
         }
       }
     },
@@ -243,7 +267,7 @@ export function useChat() {
     setState(INITIAL_STATE)
   }, [])
 
-  const loadConversation = useCallback((conversation: Conversation) => {
+  const loadConversation = useCallback(async (conversation: Conversation) => {
     setState({
       phase: 'chatting',
       persona: conversation.persona,
@@ -252,7 +276,16 @@ export function useChat() {
       error: null,
       conversationId: conversation.id,
       isReadOnly: true,
+      shareToken: null,
     })
+
+    // Load share token for conversations with reports
+    if (conversation.hasReport) {
+      const token = await getShareTokenForConversation(conversation.id)
+      if (token) {
+        setState((prev) => ({ ...prev, shareToken: token }))
+      }
+    }
   }, [])
 
   const stopStreaming = useCallback(() => {

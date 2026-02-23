@@ -215,3 +215,51 @@ CREATE TRIGGER conversations_updated_at
 
 -- Grants: authenticated users only (no anon access)
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.conversations TO authenticated;
+
+-- ============================================================
+-- Reports table — shareable report URLs (roadmap item #12)
+-- ============================================================
+
+-- Stores extracted report content with a public share_token.
+-- One-to-one with conversations (UNIQUE on conversation_id).
+-- Public read via share_token (no auth required).
+-- Persona CHECK constraint mirrors PERSONA_IDS in lib/constants/personas.ts.
+
+CREATE TABLE public.reports (
+  id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID NOT NULL UNIQUE REFERENCES public.conversations(id) ON DELETE CASCADE,
+  persona         TEXT NOT NULL CHECK (persona IN ('doctor', 'critic', 'guide')),
+  content         TEXT NOT NULL,
+  share_token     TEXT NOT NULL UNIQUE,
+  is_branded      BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Lookup by share_token (public page query — the hot path)
+CREATE INDEX idx_reports_share_token ON public.reports(share_token);
+
+-- Row Level Security
+ALTER TABLE public.reports ENABLE ROW LEVEL SECURITY;
+
+-- Public read: anyone (including anon) can read a report.
+-- The share_token itself is the access control — knowing the token grants read access.
+CREATE POLICY "reports_select_public" ON public.reports
+  FOR SELECT USING (true);
+
+-- Insert: only authenticated users can create reports for their own conversations.
+-- Ownership verified via subquery on conversations table.
+CREATE POLICY "reports_insert_own" ON public.reports
+  FOR INSERT WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM public.conversations c
+      WHERE c.id = conversation_id
+        AND c.user_id = (SELECT auth.uid())
+    )
+  );
+
+-- No UPDATE or DELETE policies — reports are immutable once created.
+-- Cleanup happens via ON DELETE CASCADE when the conversation is deleted.
+
+-- Grants
+GRANT SELECT ON public.reports TO anon, authenticated;
+GRANT INSERT ON public.reports TO authenticated;

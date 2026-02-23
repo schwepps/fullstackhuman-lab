@@ -14,6 +14,7 @@ interface ChatMessageListProps {
   quotaTier: TierKey
   quotaRemaining: number | null
   quotaLimit: number | null
+  shareToken: string | null
 }
 
 export function ChatMessageList({
@@ -23,6 +24,7 @@ export function ChatMessageList({
   quotaTier,
   quotaRemaining,
   quotaLimit,
+  shareToken,
 }: ChatMessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -38,7 +40,11 @@ export function ChatMessageList({
       <div className="mx-auto flex max-w-3xl flex-col gap-4">
         {messages.map((message) => (
           <div key={message.id}>
-            <ChatBubble message={message} persona={persona} />
+            <ChatBubble
+              message={message}
+              persona={persona}
+              shareToken={shareToken}
+            />
             {message.isReport && isAnonymous && (
               <div className="mt-4">
                 <SignupCta remaining={quotaRemaining} limit={quotaLimit} />

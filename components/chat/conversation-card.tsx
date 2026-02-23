@@ -2,14 +2,22 @@
 
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
+import { MoreVertical, Trash2 } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { PERSONAS } from '@/lib/constants/personas'
-import { PERSONA_NAME_KEYS } from '@/lib/constants/personas'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { PERSONAS, PERSONA_NAME_KEYS } from '@/lib/constants/personas'
 import { ConversationStatusBadge } from '@/components/chat/conversation-status-badge'
 import type { ConversationSummary } from '@/types/conversation'
 
 interface ConversationCardProps {
   conversation: ConversationSummary
+  onDeleteRequest?: (id: string, hasReport: boolean) => void
 }
 
 type TimeKey = 'justNow' | 'minutes' | 'hours' | 'days' | 'months'
@@ -34,7 +42,10 @@ function getRelativeTimeKey(dateString: string): {
   return { key: 'months', count: months }
 }
 
-export function ConversationCard({ conversation }: ConversationCardProps) {
+export function ConversationCard({
+  conversation,
+  onDeleteRequest,
+}: ConversationCardProps) {
   const t = useTranslations('chat')
   const tConv = useTranslations('conversations')
   const tTime = useTranslations('conversations.time')
@@ -65,6 +76,43 @@ export function ConversationCard({ conversation }: ConversationCardProps) {
             status={conversation.status}
             hasReport={conversation.hasReport}
           />
+          {onDeleteRequest && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="shrink-0 touch-manipulation"
+                  aria-label={tConv('actions')}
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                  }}
+                >
+                  <MoreVertical className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }}
+              >
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    onDeleteRequest(conversation.id, conversation.hasReport)
+                  }}
+                >
+                  <Trash2 className="size-4" />
+                  {tConv('deleteSubmit')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </CardContent>
       </Card>
     </Link>

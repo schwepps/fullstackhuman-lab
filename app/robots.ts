@@ -19,6 +19,11 @@ const AI_BOT_ALLOW = [
       .filter((l) => l !== routing.defaultLocale)
       .map((l) => `/${l}${path}`),
   ]),
+  // Public shared reports — every shared report is distribution
+  '/report/',
+  ...routing.locales
+    .filter((l) => l !== routing.defaultLocale)
+    .map((l) => `/${l}/report/`),
 ]
 const AI_BOT_DISALLOW = ['/api/', '/chat', '/auth/', '/account']
 

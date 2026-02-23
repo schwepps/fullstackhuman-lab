@@ -98,6 +98,10 @@ app/
         page.tsx        # Conversations library
         layout.tsx      # Conversations layout (auth gate)
         loading.tsx     # Library loading skeleton
+    (sharing)/          # Public sharing pages (no auth required)
+      report/
+        [token]/page.tsx  # Public report page with OG meta
+      layout.tsx        # Minimal branded sharing layout
     (auth)/             # Authentication pages
       auth/
         login/page.tsx
@@ -138,6 +142,7 @@ components/
   account/              # Account management components
   layout/               # Shared layout components (footer, cookie consent, legal page layout)
   seo/                  # SEO components (JSON-LD, WebMCP registration)
+  report/              # Report sharing components (share button, branding footer, report view)
   shared/               # Cross-route shared components
 prompts/                # Production prompt files (sent to API)
   system-prompt-core.md
@@ -157,12 +162,14 @@ lib/
   ai/                   # AI client & prompt assembly
   auth/                 # Auth actions, schemas, types
   conversations/        # Conversation persistence (actions, queries, migration)
+  reports/              # Report persistence (actions, queries)
   seo/                  # SEO schema generators (JSON-LD)
   supabase/             # Supabase client variants
   hooks/                # Custom React hooks (cookie consent, chat, quota, conversations)
 types/
   chat.ts               # ChatState, PersonaId, ChatMessage types
   conversation.ts       # Conversation, ConversationSummary, ConversationStatus
+  report.ts             # Report, ReportRow types
 tests/
 ```
 

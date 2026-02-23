@@ -33,4 +33,5 @@ export interface ChatState {
   readonly error: string | null
   readonly conversationId: string | null
   readonly isReadOnly: boolean
+  readonly shareToken: string | null
 }

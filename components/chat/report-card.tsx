@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Copy, Check } from 'lucide-react'
@@ -9,15 +9,19 @@ import { MarkdownRenderer } from '@/components/chat/markdown-renderer'
 import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
 import { CalendlyCta } from '@/components/shared/calendly-cta'
+import { ShareButton } from '@/components/report/share-button'
+import { buildReportShareUrl } from '@/lib/constants/reports'
 import type { PersonaId } from '@/types/chat'
 
 interface ReportCardProps {
   content: string
   persona: PersonaId
+  shareToken: string | null
 }
 
-export function ReportCard({ content, persona }: ReportCardProps) {
+export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
   const t = useTranslations('chat.report')
+  const locale = useLocale()
   const [copied, setCopied] = useState(false)
   const { trackReportCopied } = useAnalytics()
   const Illustration = PERSONA_ILLUSTRATIONS[persona]
@@ -65,6 +69,12 @@ export function ReportCard({ content, persona }: ReportCardProps) {
             </>
           )}
         </Button>
+        {shareToken && (
+          <ShareButton
+            shareUrl={buildReportShareUrl(shareToken, locale)}
+            persona={persona}
+          />
+        )}
         <CalendlyCta variant="inline" source="report_card" />
       </CardFooter>
     </Card>

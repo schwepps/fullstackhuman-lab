@@ -9,13 +9,20 @@ import type { ChatMessage, PersonaId } from '@/types/chat'
 interface ChatBubbleProps {
   message: ChatMessage
   persona: PersonaId
+  shareToken: string | null
 }
 
-export function ChatBubble({ message, persona }: ChatBubbleProps) {
+export function ChatBubble({ message, persona, shareToken }: ChatBubbleProps) {
   const isUser = message.role === 'user'
 
   if (!isUser && message.isReport) {
-    return <ReportCard content={message.content} persona={persona} />
+    return (
+      <ReportCard
+        content={message.content}
+        persona={persona}
+        shareToken={shareToken}
+      />
+    )
   }
 
   return (
