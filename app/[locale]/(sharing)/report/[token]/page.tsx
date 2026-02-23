@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // Extract plain-text snippet for OG description
   const plainText = report.content
     .replace(/^#.*$/gm, '') // strip headings
-    .replace(/[*_`#>~[\]]/g, '') // strip markdown symbols
+    .replace(/[*_`#>~\[\]]/g, '') // strip markdown symbols
     .replace(/\n+/g, ' ')
     .trim()
   const description = plainText.slice(0, OG_DESCRIPTION_MAX_LENGTH)

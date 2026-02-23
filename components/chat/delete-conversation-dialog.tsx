@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { deleteConversation } from '@/lib/conversations/actions'
 import { Button } from '@/components/ui/button'
@@ -32,6 +32,14 @@ export function DeleteConversationDialog({
   const [isPending, setIsPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const handleOpenChange = useCallback(
+    (nextOpen: boolean) => {
+      if (nextOpen) setError(null)
+      onOpenChange(nextOpen)
+    },
+    [onOpenChange]
+  )
+
   async function handleDelete() {
     setIsPending(true)
     setError(null)
@@ -49,7 +57,7 @@ export function DeleteConversationDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent closeLabel={t('deleteCancel')}>
         <DialogHeader>
           <DialogTitle>{t('deleteConfirm')}</DialogTitle>
@@ -69,7 +77,7 @@ export function DeleteConversationDialog({
           <Button
             type="button"
             variant="ghost"
-            onClick={() => onOpenChange(false)}
+            onClick={() => handleOpenChange(false)}
             disabled={isPending}
             className="h-12 touch-manipulation sm:h-10"
           >

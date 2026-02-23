@@ -101,9 +101,11 @@ export function ConversationCard({
               >
                 <DropdownMenuItem
                   variant="destructive"
-                  onClick={() =>
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
                     onDeleteRequest(conversation.id, conversation.hasReport)
-                  }
+                  }}
                 >
                   <Trash2 className="size-4" />
                   {tConv('deleteSubmit')}
