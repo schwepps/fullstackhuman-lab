@@ -1,4 +1,5 @@
 import { arrowheadPath } from '@/lib/visuals/geometry'
+import { truncateLabel } from '@/lib/visuals/constants'
 import type { RootCauseFlowData } from '@/lib/visuals/types'
 
 const BOX_WIDTH = 170
@@ -75,7 +76,7 @@ export function RootCauseFlow({ data, accentHex }: RootCauseFlowProps) {
               dominantBaseline="central"
               className="fill-gray-700 font-mono text-[10px]"
             >
-              {truncate(row.symptom, 26)}
+              {truncateLabel(row.symptom, 26)}
             </text>
 
             {/* Arrow */}
@@ -111,15 +112,11 @@ export function RootCauseFlow({ data, accentHex }: RootCauseFlowProps) {
               className="font-mono text-[10px] font-medium"
               fill={accentHex}
             >
-              {truncate(row.rootCause, 26)}
+              {truncateLabel(row.rootCause, 26)}
             </text>
           </g>
         )
       })}
     </svg>
   )
-}
-
-function truncate(text: string, max: number): string {
-  return text.length > max ? text.slice(0, max - 1) + '\u2026' : text
 }

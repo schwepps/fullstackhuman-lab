@@ -5,6 +5,10 @@ import {
   RISK_LEVEL_FRACTIONS,
   polarToCartesian,
 } from '@/lib/visuals/geometry'
+import {
+  GAUGE_SEGMENT_COLORS,
+  GAUGE_LEVEL_LABELS,
+} from '@/lib/visuals/constants'
 import type { RiskGaugeData, RiskLevel } from '@/lib/visuals/types'
 
 const CX = 140
@@ -12,20 +16,6 @@ const CY = 130
 const OUTER_R = 110
 const INNER_R = 80
 const NEEDLE_R = 95
-
-const SEGMENT_COLORS: Record<string, string> = {
-  low: '#06b6d4', // cyan-500
-  medium: '#f59e0b', // amber-500
-  high: '#f97316', // orange-500
-  critical: '#ef4444', // red-500
-}
-
-const LEVEL_LABELS: Record<RiskLevel, string> = {
-  low: 'Low',
-  medium: 'Medium',
-  high: 'High',
-  critical: 'Critical',
-}
 
 interface RiskGaugeProps {
   data: RiskGaugeData
@@ -41,7 +31,7 @@ export function RiskGauge({ data }: RiskGaugeProps) {
       viewBox="0 0 280 160"
       className="mx-auto w-full max-w-[280px]"
       role="img"
-      aria-label={`Risk level: ${LEVEL_LABELS[data.level]}`}
+      aria-label={`Risk level: ${GAUGE_LEVEL_LABELS[data.level]}`}
     >
       {/* Gauge segments */}
       {segments.map((seg) => (
@@ -55,7 +45,7 @@ export function RiskGauge({ data }: RiskGaugeProps) {
             seg.startAngle,
             seg.endAngle
           )}
-          fill={SEGMENT_COLORS[seg.level]}
+          fill={GAUGE_SEGMENT_COLORS[seg.level]}
           opacity={seg.level === data.level ? 1 : 0.25}
         />
       ))}
@@ -72,7 +62,7 @@ export function RiskGauge({ data }: RiskGaugeProps) {
             textAnchor="middle"
             className="fill-gray-400 font-mono text-[8px]"
           >
-            {LEVEL_LABELS[seg.level as RiskLevel]}
+            {GAUGE_LEVEL_LABELS[seg.level as RiskLevel]}
           </text>
         )
       })}
@@ -97,9 +87,9 @@ export function RiskGauge({ data }: RiskGaugeProps) {
         y={CY + 25}
         textAnchor="middle"
         className="font-mono text-xs font-semibold"
-        fill={SEGMENT_COLORS[data.level]}
+        fill={GAUGE_SEGMENT_COLORS[data.level]}
       >
-        {LEVEL_LABELS[data.level]}
+        {GAUGE_LEVEL_LABELS[data.level]}
       </text>
     </svg>
   )

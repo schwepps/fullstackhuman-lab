@@ -1,3 +1,4 @@
+import { truncateLabel } from '@/lib/visuals/constants'
 import type { PriorityRoadmapData } from '@/lib/visuals/types'
 
 const CIRCLE_R = 16
@@ -71,15 +72,11 @@ export function PriorityRoadmap({ data, accentHex }: PriorityRoadmapProps) {
               textAnchor="middle"
               className="fill-gray-600 font-mono text-[9px]"
             >
-              {truncate(item.label, 14)}
+              {truncateLabel(item.label, 14)}
             </text>
           </g>
         )
       })}
     </svg>
   )
-}
-
-function truncate(text: string, max: number): string {
-  return text.length > max ? text.slice(0, max - 1) + '\u2026' : text
 }

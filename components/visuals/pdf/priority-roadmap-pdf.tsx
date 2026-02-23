@@ -1,5 +1,6 @@
 import React from 'react'
 import { Svg, Circle, Line, Text as SvgText } from '@react-pdf/renderer'
+import { truncateLabel } from '@/lib/visuals/constants'
 import type { PriorityRoadmapData } from '@/lib/visuals/types'
 
 const R = 14
@@ -56,15 +57,11 @@ export function PriorityRoadmapPdf({
               style={{ fontSize: 7, fontFamily: 'Helvetica' }}
               fill="#4b5563"
             >
-              {truncate(item.label, 12)}
+              {truncateLabel(item.label, 12)}
             </SvgText>
           </React.Fragment>
         )
       })}
     </Svg>
   )
-}
-
-function truncate(text: string, max: number): string {
-  return text.length > max ? text.slice(0, max - 1) + '\u2026' : text
 }

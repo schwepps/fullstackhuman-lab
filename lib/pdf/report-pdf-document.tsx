@@ -12,7 +12,10 @@ import {
   ConceptSpectrumPdf,
 } from '@/components/visuals/pdf'
 import { parseReport } from '@/lib/visuals/parser'
-import { PERSONA_TEMPLATE_CONFIGS } from '@/lib/constants/report-templates'
+import {
+  PERSONA_TEMPLATE_CONFIGS,
+  PERSONA_DISPLAY_NAMES,
+} from '@/lib/constants/report-templates'
 import { PERSONAS } from '@/lib/constants/personas'
 import type { PersonaId } from '@/types/chat'
 import type { VisualData } from '@/lib/visuals/types'
@@ -38,12 +41,6 @@ export function ReportPdfDocument({
     day: 'numeric',
   })
 
-  const personaNames: Record<PersonaId, string> = {
-    doctor: 'The Doctor',
-    critic: 'The Critic',
-    guide: 'The Guide',
-  }
-
   return (
     <Document>
       <Page size="A4" style={s.page}>
@@ -62,7 +59,7 @@ export function ReportPdfDocument({
         {/* Running footer */}
         <View style={s.pageFooter} fixed>
           <Text style={s.pageFooterText}>
-            {personaEmoji} {personaNames[persona]}
+            {personaEmoji} {PERSONA_DISPLAY_NAMES[persona]}
           </Text>
           <Text
             style={s.pageFooterText}
@@ -74,7 +71,7 @@ export function ReportPdfDocument({
 
         {/* Persona badge */}
         <Text style={[s.personaBadge, { color: config.accentHex }]}>
-          {personaEmoji} {personaNames[persona]}
+          {personaEmoji} {PERSONA_DISPLAY_NAMES[persona]}
         </Text>
 
         {/* Title */}

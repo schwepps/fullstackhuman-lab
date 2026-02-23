@@ -1,6 +1,7 @@
 import React from 'react'
 import { Svg, Rect, Line, Path, Text as SvgText } from '@react-pdf/renderer'
 import { arrowheadPath } from '@/lib/visuals/geometry'
+import { truncateLabel } from '@/lib/visuals/constants'
 import type { RootCauseFlowData } from '@/lib/visuals/types'
 
 const BOX_W = 160
@@ -48,7 +49,7 @@ export function RootCauseFlowPdf({
               style={{ fontSize: 8, fontFamily: 'Helvetica' }}
               fill="#374151"
             >
-              {truncate(row.symptom, 24)}
+              {truncateLabel(row.symptom, 24)}
             </SvgText>
             {/* Arrow */}
             <Line
@@ -79,15 +80,11 @@ export function RootCauseFlowPdf({
               style={{ fontSize: 8, fontFamily: 'Helvetica-Bold' }}
               fill={accentHex}
             >
-              {truncate(row.rootCause, 24)}
+              {truncateLabel(row.rootCause, 24)}
             </SvgText>
           </React.Fragment>
         )
       })}
     </Svg>
   )
-}
-
-function truncate(text: string, max: number): string {
-  return text.length > max ? text.slice(0, max - 1) + '\u2026' : text
 }

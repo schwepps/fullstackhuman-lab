@@ -1,19 +1,16 @@
 import React from 'react'
 import { Svg, Rect, Circle, Text as SvgText } from '@react-pdf/renderer'
 import { quadrantBounds, frameworkUserPosition } from '@/lib/visuals/geometry'
+import {
+  FRAMEWORK_QUADRANT_FILLS,
+  truncateLabel,
+} from '@/lib/visuals/constants'
 import type { FrameworkMatrixData } from '@/lib/visuals/types'
 
 const PX = 40
 const PY = 24
 const PW = 280
 const PH = 260
-
-const Q_FILLS: Record<string, string> = {
-  topLeft: '#f0fdf4',
-  topRight: '#ecfdf5',
-  bottomLeft: '#fafafa',
-  bottomRight: '#fefce8',
-}
 
 export function FrameworkMatrixPdf({
   data,
@@ -72,7 +69,7 @@ export function FrameworkMatrixPdf({
             y={q.b.y}
             width={q.b.width}
             height={q.b.height}
-            fill={Q_FILLS[q.key]}
+            fill={FRAMEWORK_QUADRANT_FILLS[q.key]}
             stroke="#e5e7eb"
             strokeWidth={0.5}
           />
@@ -90,7 +87,7 @@ export function FrameworkMatrixPdf({
             style={{ fontSize: 7, fontFamily: 'Helvetica' }}
             fill="#9ca3af"
           >
-            {truncate(q.d.description, 28)}
+            {truncateLabel(q.d.description, 28)}
           </SvgText>
         </React.Fragment>
       ))}
@@ -128,8 +125,4 @@ export function FrameworkMatrixPdf({
       )}
     </Svg>
   )
-}
-
-function truncate(text: string, max: number): string {
-  return text.length > max ? text.slice(0, max - 1) + '\u2026' : text
 }

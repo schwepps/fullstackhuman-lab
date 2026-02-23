@@ -1,17 +1,14 @@
 import { quadrantBounds, frameworkUserPosition } from '@/lib/visuals/geometry'
+import {
+  FRAMEWORK_QUADRANT_FILLS,
+  truncateLabel,
+} from '@/lib/visuals/constants'
 import type { FrameworkMatrixData } from '@/lib/visuals/types'
 
 const PLOT_X = 50
 const PLOT_Y = 30
 const PLOT_WIDTH = 280
 const PLOT_HEIGHT = 260
-
-const QUADRANT_FILLS = {
-  topLeft: '#f0fdf4', // emerald-50
-  topRight: '#ecfdf5', // emerald-50 variant
-  bottomLeft: '#fafafa', // gray-50
-  bottomRight: '#fefce8', // yellow-50
-}
 
 interface FrameworkMatrixProps {
   data: FrameworkMatrixData
@@ -79,7 +76,7 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
           y={q.bounds.y}
           width={q.bounds.width}
           height={q.bounds.height}
-          fill={QUADRANT_FILLS[q.key]}
+          fill={FRAMEWORK_QUADRANT_FILLS[q.key]}
           stroke="#e5e7eb"
           strokeWidth={0.5}
         />
@@ -94,7 +91,7 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
             textAnchor="middle"
             className="fill-gray-700 font-mono text-[10px] font-semibold"
           >
-            {truncate(q.data.label, 20)}
+            {truncateLabel(q.data.label, 20)}
           </text>
           <text
             x={q.bounds.centerX}
@@ -102,7 +99,7 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
             textAnchor="middle"
             className="fill-gray-400 font-mono text-[8px]"
           >
-            {truncate(q.data.description, 28)}
+            {truncateLabel(q.data.description, 28)}
           </text>
         </g>
       ))}
@@ -188,8 +185,4 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
       )}
     </svg>
   )
-}
-
-function truncate(text: string, max: number): string {
-  return text.length > max ? text.slice(0, max - 1) + '\u2026' : text
 }

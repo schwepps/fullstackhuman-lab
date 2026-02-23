@@ -72,12 +72,30 @@ export const PERSONA_TEMPLATE_CONFIGS: Record<
 } as const
 
 /**
+ * English persona display names for non-i18n contexts (PDF generation).
+ * Must stay in sync with messages/en.json reportTemplate.personaName.
+ */
+export const PERSONA_DISPLAY_NAMES: Record<PersonaId, string> = {
+  doctor: 'The Doctor',
+  critic: 'The Critic',
+  guide: 'The Guide',
+}
+
+/**
+ * PDF filename prefixes per persona.
+ */
+export const PERSONA_PDF_PREFIX: Record<PersonaId, string> = {
+  doctor: 'Diagnostic-Report',
+  critic: 'Review-Brief',
+  guide: 'Framework-Brief',
+}
+
+/**
  * Report template i18n key map (keys within 'reportTemplate' namespace).
  */
 export const REPORT_TEMPLATE_KEYS = {
   generatedBy: 'generatedBy',
   downloadPdf: 'downloadPdf',
-  reportDate: 'reportDate',
   personaName: {
     doctor: 'personaName.doctor',
     critic: 'personaName.critic',
