@@ -91,6 +91,7 @@
       "attach": "Joindre un fichier",
       "removeFile": "Supprimer {name}",
       "dropHint": "Glissez vos fichiers ici",
+      "turnsRemaining": "{count, plural, one {# échange restant} other {# échanges restants}}",
       "fileErrors": {
         "invalid_type": "{name} n'est pas un type de fichier supporté. Utilisez PDF, images ou fichiers texte.",
         "file_too_large": "{name} dépasse la limite de {max} Mo.",
@@ -116,6 +117,7 @@
       "genericError": "Quelque chose a coincé. Réessayez.",
       "invalidAttachment": "Le fichier joint n'a pas pu être traité. Essayez un autre fichier ou retirez-le.",
       "attachmentsTooLarge": "La taille totale des pièces jointes dépasse la limite. Retirez des fichiers et réessayez.",
+      "conversationLimitReached": "Cette conversation a atteint sa limite. Commencez-en une nouvelle pour continuer.",
       "dismiss": "Fermer"
     },
     "quota": {
@@ -291,7 +293,9 @@
     "terms": "Conditions d\u2019utilisation",
     "cookieSettings": "Paramètres des cookies",
     "builtBy": "par François Schuers",
-    "tagline": "{brand} {year}"
+    "tagline": "{brand} {year}",
+    "linkedinAriaLabel": "LinkedIn",
+    "telegramAriaLabel": "Telegram"
   },
   "cookieConsent": {
     "title": "Cookies & confidentialité",
@@ -305,6 +309,10 @@
     "title": "Envie d'aller plus loin ?",
     "description": "Réservez un appel avec le vrai François — 30 minutes pour débloquer votre situation.",
     "action": "Réserver un appel"
+  },
+  "telegramLink": {
+    "action": "Essayer sur Telegram",
+    "ariaLabel": "Telegram"
   },
   "report": {
     "label": "Rapport",

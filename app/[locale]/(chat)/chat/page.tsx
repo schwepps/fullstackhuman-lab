@@ -154,6 +154,7 @@ function ChatPageContent() {
           isReadOnly={chat.isReadOnly}
           shareToken={chat.shareToken}
           getTotalAttachmentBytes={chat.getTotalAttachmentBytes}
+          turnsRemaining={chat.turnsRemaining}
         />
       ) : null}
     </>

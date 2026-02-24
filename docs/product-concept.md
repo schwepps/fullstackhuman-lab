@@ -62,6 +62,10 @@ No blank chat. No "Ask me anything." The AI owns the opening.
 
 Avatars set expectations before the conversation starts. Illustrations, not corporate headshots.
 
+Users can also access the three personas via a Telegram bot. Same conversation quality, same report output — the share link points to the web report page. This expands distribution: every Telegram conversation is a potential booking.
+
+Conversations are limited to 15 user exchanges. At exchange 9, the AI begins steering toward the report. At exchange 12, it generates the report. This ensures every interaction produces a professional deliverable while controlling costs.
+
 ### 3.2 Conversation tone: warm-then-sharp
 
 First 2-3 messages: curious, validating, slightly funny. Builds trust.
@@ -169,6 +173,10 @@ Landing page → AI chat (free, anonymous)
   → Wants more → creates account (email captured)
   → Power user → paid tier
   → Needs human → books François (the real product)
+
+Telegram bot → AI chat (free, 15/mo)
+  → Gets report link → visits web → organic reach
+  → Wants more → books François (the real product)
 ```
 
 ---
@@ -184,6 +192,7 @@ Landing page → AI chat (free, anonymous)
   - ✅ The Critic — fully specified (`persona-critic.md`)
   - ✅ The Guide — fully specified (`persona-guide.md`)
 - No chat interface yet
+- Telegram bot integration via Telegraf webhook at `/api/telegram/webhook`
 
 ### Output strategy
 

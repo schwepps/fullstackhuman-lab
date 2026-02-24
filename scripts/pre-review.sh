@@ -17,6 +17,10 @@ echo "=== SEO consistency ==="
 bash scripts/check-seo-consistency.sh
 
 echo ""
+echo "=== Service client access control ==="
+bash scripts/check-service-client.sh
+
+echo ""
 echo "=== Copy-paste detection ==="
 pnpm check:duplicates
 

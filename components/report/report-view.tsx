@@ -2,6 +2,7 @@ import { ReportTemplate } from '@/components/report/report-template'
 import { ShareButton } from '@/components/report/share-button'
 import { DownloadPdfButton } from '@/components/report/download-pdf-button'
 import { CalendlyCta } from '@/components/shared/calendly-cta'
+import { TelegramLink } from '@/components/shared/telegram-link'
 import { buildReportShareUrl } from '@/lib/constants/reports'
 import type { Report } from '@/types/report'
 
@@ -24,6 +25,7 @@ export async function ReportView({ report, locale }: ReportViewProps) {
           source="public_report"
           buttonVariant="default"
         />
+        <TelegramLink source="public_report" />
       </div>
 
       {/* Professional report template */}

@@ -8,6 +8,7 @@ Three interactive personas for structured consulting conversations:
 - The Guide: Framework and thinking — a new way to see your question
 
 Each conversation generates a structured report with actionable recommendations.
+Conversations are limited to 15 exchanges to ensure a professional report is always generated.
 
 ## Who this is for
 
@@ -40,6 +41,13 @@ Public consulting reports are accessible without authentication at:
 - `https://fullstackhuman.sh/en/report/{token}` (English)
 
 Each report includes the persona's structured analysis, actionable recommendations, and a booking CTA.
+
+## Telegram
+
+Also available as a Telegram bot for conversational consulting:
+- Bot: https://t.me/FullStackHumanBot
+- Same three personas, same report quality
+- Reports delivered as shareable web links
 
 ## How to cite
 

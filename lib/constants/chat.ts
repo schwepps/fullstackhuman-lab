@@ -40,6 +40,7 @@ export type ErrorMessageKey =
   | 'genericError'
   | 'invalidAttachment'
   | 'attachmentsTooLarge'
+  | 'conversationLimitReached'
 
 export const ERROR_MESSAGE_KEYS: Record<string, ErrorMessageKey> = {
   rate_limit_exceeded: 'rateLimitExceeded',
@@ -47,4 +48,5 @@ export const ERROR_MESSAGE_KEYS: Record<string, ErrorMessageKey> = {
   generic_error: 'genericError',
   invalid_attachment: 'invalidAttachment',
   attachments_too_large: 'attachmentsTooLarge',
+  conversation_limit_reached: 'conversationLimitReached',
 }

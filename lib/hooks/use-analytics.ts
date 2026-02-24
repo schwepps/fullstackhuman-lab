@@ -8,6 +8,7 @@ import {
   type ReportGeneratedProperties,
   type ReportCopiedProperties,
   type CalendlyClickProperties,
+  type TelegramClickProperties,
   type CtaClickProperties,
   type ReportLinkCopiedProperties,
 } from '@/lib/constants/analytics'
@@ -17,6 +18,7 @@ interface UseAnalyticsResult {
   trackReportGenerated: (props: ReportGeneratedProperties) => void
   trackReportCopied: (props: ReportCopiedProperties) => void
   trackCalendlyClick: (props: CalendlyClickProperties) => void
+  trackTelegramClick: (props: TelegramClickProperties) => void
   trackCtaClick: (props: CtaClickProperties) => void
   trackReportLinkCopied: (props: ReportLinkCopiedProperties) => void
 }
@@ -44,6 +46,10 @@ export function useAnalytics(): UseAnalyticsResult {
     captureEvent(ANALYTICS_EVENTS.CALENDLY_CLICK, props)
   }, [])
 
+  const trackTelegramClick = useCallback((props: TelegramClickProperties) => {
+    captureEvent(ANALYTICS_EVENTS.TELEGRAM_CLICK, props)
+  }, [])
+
   const trackCtaClick = useCallback((props: CtaClickProperties) => {
     captureEvent(ANALYTICS_EVENTS.CTA_CLICK, props)
   }, [])
@@ -61,6 +67,7 @@ export function useAnalytics(): UseAnalyticsResult {
       trackReportGenerated,
       trackReportCopied,
       trackCalendlyClick,
+      trackTelegramClick,
       trackCtaClick,
       trackReportLinkCopied,
     }),
@@ -69,6 +76,7 @@ export function useAnalytics(): UseAnalyticsResult {
       trackReportGenerated,
       trackReportCopied,
       trackCalendlyClick,
+      trackTelegramClick,
       trackCtaClick,
       trackReportLinkCopied,
     ]

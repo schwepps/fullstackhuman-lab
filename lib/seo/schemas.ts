@@ -14,6 +14,7 @@ import {
   CALENDLY_URL,
   LINKEDIN_URL,
   TWITTER_URL,
+  TELEGRAM_BOT_URL,
 } from '@/lib/constants/app'
 import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 import { SEO_PERSONAS } from '@/lib/constants/personas'
@@ -87,7 +88,7 @@ export function getOrganizationSchema(locale: string) {
     logo: `${APP_URL}/images/fullstackhuman.png`,
     description: ORG_DESCRIPTIONS[lang],
     foundingDate: '2025',
-    sameAs: [LINKEDIN_URL, TWITTER_URL],
+    sameAs: [LINKEDIN_URL, TWITTER_URL, TELEGRAM_BOT_URL],
     founder: {
       '@type': 'Person',
       name: 'François Schuers',

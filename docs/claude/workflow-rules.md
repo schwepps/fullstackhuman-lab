@@ -192,6 +192,24 @@ Before writing any constant, type, or pattern:
 
 ---
 
+## Service Client Access Control
+
+The service role Supabase client (`createServiceClient()`) bypasses ALL RLS policies. New imports are restricted to approved files only.
+
+**Before importing `createServiceClient()` in a new file:**
+
+1. Check if an existing scoped module already provides the access you need
+2. If not, add the new file to `scripts/check-service-client.sh` allowlist
+3. Run `pnpm check:service-client` to verify
+
+**Current allowlist:**
+
+- `lib/supabase/service.ts` — definition
+- `lib/auth/account-actions.ts` — account deletion (re-auth required)
+- `lib/telegram/db.ts` — Telegram bot DB access (scoped queries only)
+
+---
+
 ## Automated Quality Checks
 
 Run `pnpm pre-review` before opening any PR. This runs:
@@ -199,6 +217,7 @@ Run `pnpm pre-review` before opening any PR. This runs:
 - `check:i18n` — Verifies en.json and fr.json have identical key structures
 - `check:auth-strings` — Catches magic auth string literals (must use AUTH_ERROR/AUTH_SUCCESS constants)
 - `check:seo` — SEO/discovery data consistency (personas, URLs, schemas)
+- `check:service-client` — Verify no unauthorized `createServiceClient()` imports
 - `check:duplicates` — Copy-paste detection via jscpd
 - `lint` + `typecheck` + `test:run`
 

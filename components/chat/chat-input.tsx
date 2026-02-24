@@ -27,6 +27,7 @@ interface ChatInputProps {
   isStreaming: boolean
   onStopStreaming: () => void
   getTotalAttachmentBytes: () => number
+  turnsRemaining?: number | null
 }
 
 const FILE_ERROR_DISMISS_MS = 5000
@@ -36,6 +37,7 @@ export function ChatInput({
   isStreaming,
   onStopStreaming,
   getTotalAttachmentBytes,
+  turnsRemaining,
 }: ChatInputProps) {
   const t = useTranslations('chat.input')
   const [value, setValue] = useState('')
@@ -241,6 +243,16 @@ export function ChatInput({
           <p className="mx-auto max-w-3xl text-center text-xs font-medium text-primary">
             {t('dropHint')}
           </p>
+        </div>
+      )}
+
+      {turnsRemaining != null && (
+        <div className="px-4 pt-2">
+          <div className="mx-auto max-w-3xl">
+            <p className="text-center text-xs font-medium text-warning">
+              {t('turnsRemaining', { count: turnsRemaining })}
+            </p>
+          </div>
         </div>
       )}
 

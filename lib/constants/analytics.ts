@@ -17,6 +17,7 @@ export const ANALYTICS_EVENTS = {
   CALENDLY_CLICK: 'calendly_click',
   CTA_CLICK: 'cta_click',
   REPORT_LINK_COPIED: 'report_link_copied',
+  TELEGRAM_CLICK: 'telegram_click',
 } as const
 
 export type AnalyticsEventName =
@@ -47,6 +48,10 @@ export interface CalendlyClickProperties {
     | 'hero'
     | 'conversations_dashboard'
     | 'public_report'
+}
+
+export interface TelegramClickProperties {
+  source: 'footer' | 'public_report'
 }
 
 export interface CtaClickProperties {

@@ -23,7 +23,9 @@
     "check:auth-strings": "bash scripts/check-no-magic-auth.sh",
     "check:duplicates": "jscpd lib/ components/ app/ --config .jscpd.json",
     "check:seo": "bash scripts/check-seo-consistency.sh",
+    "check:service-client": "bash scripts/check-service-client.sh",
     "pre-review": "bash scripts/pre-review.sh",
+    "telegram:setup": "tsx --env-file .env.local scripts/telegram-setup.ts",
     "seed": "tsx --env-file .env.local scripts/seed/seed.ts"
   },
   "dependencies": {
@@ -46,6 +48,7 @@
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "tailwind-merge": "^3.4.0",
+    "telegraf": "^4.16.3",
     "zod": "^4.3.6"
   },
   "pnpm": {

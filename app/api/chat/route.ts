@@ -3,6 +3,12 @@ import { getAnthropicClient } from '@/lib/ai/client'
 import { assembleSystemPrompt } from '@/lib/ai/prompt-assembler'
 import { validateChatRequest } from '@/lib/ai/validate-chat-request'
 import { buildAnthropicMessages } from '@/lib/ai/build-content-blocks'
+import {
+  getUserTurnCount,
+  getConversationPhase,
+  getWrapUpInjection,
+  truncateHistory,
+} from '@/lib/ai/conversation-limits'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 import {
@@ -113,9 +119,31 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    const systemPrompt = await assembleSystemPrompt(persona)
+    // Enforce conversation depth limit
+    const turnCount = getUserTurnCount(messages.length)
+    const phase = getConversationPhase(turnCount)
 
-    const anthropicMessages = buildAnthropicMessages(messages)
+    if (phase === 'hard-cap') {
+      log('info', LOG_EVENT.CONVERSATION_LIMIT_REACHED, {
+        persona,
+        turnCount,
+        ipHash,
+      })
+      return Response.json(
+        { error: 'conversation_limit_reached' },
+        { status: 400 }
+      )
+    }
+
+    const basePrompt = await assembleSystemPrompt(persona)
+    const injection = getWrapUpInjection(turnCount)
+    const systemPrompt = injection
+      ? `${basePrompt}\n\n${injection}`
+      : basePrompt
+
+    // Truncate history to sliding window for cost control
+    const truncatedMessages = truncateHistory(messages)
+    const anthropicMessages = buildAnthropicMessages(truncatedMessages)
 
     const client = getAnthropicClient()
     const stream = client.messages.stream({

@@ -54,6 +54,8 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 - **All outputs include Calendly CTA** in footer
 - **Respond in user's language** — French ↔ English
 - **Free tier outputs include branding** — every shared report is distribution
+- **Telegram bot mirrors web experience** — same personas, same prompts, same report quality. Reports shared via the same `/report/{token}` URLs
+- **Conversation depth limit: 15 user turns max** — 3-phase wrap-up (normal → wrap-up → force report) ensures every conversation produces a report. Shared logic in `lib/ai/conversation-limits.ts`.
 
 ---
 
@@ -67,6 +69,7 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 | AI        | Claude API                       |
 | i18n      | next-intl v4                     |
 | PDF       | @react-pdf/renderer              |
+| Telegram  | Telegraf v4 (webhook bot)        |
 | Testing   | Vitest + Testing Library         |
 | Git Hooks | Husky + lint-staged + commitlint |
 
@@ -125,6 +128,9 @@ app/
     report/             # Report API
       [token]/
         pdf/route.ts    # PDF generation endpoint (@react-pdf/renderer)
+    telegram/           # Telegram Bot webhook
+      webhook/
+        route.ts        # POST webhook handler (async via after())
   layout.tsx
   globals.css
   not-found.tsx
@@ -175,6 +181,7 @@ lib/
   pdf/                  # PDF document assembly, styles, markdown renderer
   seo/                  # SEO schema generators (JSON-LD)
   supabase/             # Supabase client variants
+  telegram/             # Telegram bot integration (handlers, services, formatting, i18n)
   hooks/                # Custom React hooks (cookie consent, chat, quota, conversations)
 types/
   chat.ts               # ChatState, PersonaId, ChatMessage types
@@ -187,19 +194,21 @@ tests/
 
 ## Key Scripts
 
-| Script         | Description                                                                        |
-| -------------- | ---------------------------------------------------------------------------------- |
-| `dev`          | Start development server                                                           |
-| `build`        | Build for production                                                               |
-| `lint`         | Run ESLint checks                                                                  |
-| `lint:fix`     | Fix ESLint issues                                                                  |
-| `typecheck`    | TypeScript type checking                                                           |
-| `format`       | Format with Prettier                                                               |
-| `format:check` | Check formatting                                                                   |
-| `test`         | Run tests (watch mode)                                                             |
-| `test:run`     | Run tests once                                                                     |
-| `check:seo`    | SEO/discovery data consistency (personas, URLs, schemas)                           |
-| `pre-review`   | All quality checks (i18n parity, auth strings, SEO, jscpd, lint, typecheck, tests) |
+| Script                 | Description                                                                        |
+| ---------------------- | ---------------------------------------------------------------------------------- |
+| `dev`                  | Start development server                                                           |
+| `build`                | Build for production                                                               |
+| `lint`                 | Run ESLint checks                                                                  |
+| `lint:fix`             | Fix ESLint issues                                                                  |
+| `typecheck`            | TypeScript type checking                                                           |
+| `format`               | Format with Prettier                                                               |
+| `format:check`         | Check formatting                                                                   |
+| `test`                 | Run tests (watch mode)                                                             |
+| `test:run`             | Run tests once                                                                     |
+| `check:seo`            | SEO/discovery data consistency (personas, URLs, schemas)                           |
+| `check:service-client` | CI guard: verify no unauthorized service client imports                            |
+| `telegram:setup`       | Register Telegram webhook with BotFather                                           |
+| `pre-review`           | All quality checks (i18n parity, auth strings, SEO, jscpd, lint, typecheck, tests) |
 
 ---
 

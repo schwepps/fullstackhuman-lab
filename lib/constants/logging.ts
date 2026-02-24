@@ -1,8 +1,30 @@
-/** Structured log event names for the chat API. */
+/** Structured log event names for the chat API and Telegram bot. */
 export const LOG_EVENT = {
   CHAT_REQUEST: 'chat_request',
   SUSPICIOUS_INPUT: 'suspicious_input',
   RATE_LIMIT_HIT: 'rate_limit_hit',
   STREAM_ERROR: 'stream_error',
   REDIS_FALLBACK: 'redis_fallback',
+  CONVERSATION_LIMIT_REACHED: 'conversation_limit_reached',
+
+  // Telegram bot events
+  TELEGRAM_WEBHOOK_REJECTED: 'telegram_webhook_rejected',
+  TELEGRAM_NON_PRIVATE: 'telegram_non_private',
+  TELEGRAM_GLOBAL_RATE_LIMIT: 'telegram_global_rate_limit',
+  TELEGRAM_PROCESS_ERROR: 'telegram_process_error',
+  TELEGRAM_USER_RATE_LIMITED: 'telegram_user_rate_limited',
+  TELEGRAM_QUOTA_EXCEEDED: 'telegram_quota_exceeded',
+  TELEGRAM_AI_CALL: 'telegram_ai_call',
+  TELEGRAM_AI_ERROR: 'telegram_ai_error',
+  TELEGRAM_REPORT_CREATED: 'telegram_report_created',
+  TELEGRAM_DATA_DELETED: 'telegram_data_deleted',
+  TELEGRAM_CONVERSATION_START: 'telegram_conversation_start',
+  TELEGRAM_DAILY_LIMIT: 'telegram_daily_limit',
+  TELEGRAM_REPORT_CREATE_FAILED: 'telegram_report_create_failed',
+  TELEGRAM_PERSONA_USER_FAILED: 'telegram_persona_user_failed',
+  TELEGRAM_PERSONA_CONV_FAILED: 'telegram_persona_conv_failed',
+  TELEGRAM_START_USER_FAILED: 'telegram_start_user_create_failed',
+  TELEGRAM_DELETE_DATA_FAILED: 'telegram_delete_data_failed',
+  TELEGRAM_BOT_ERROR: 'telegram_bot_error',
+  TELEGRAM_STATE_RECONSTRUCT_FAILED: 'telegram_state_reconstruct_failed',
 } as const
