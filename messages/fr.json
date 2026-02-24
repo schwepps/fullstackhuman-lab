@@ -1,20 +1,20 @@
 {
   "metadata": {
     "title": "Fullstackhuman — Conseil IA, sans filtre",
-    "description": "Vision produit, profondeur technique et instinct de livraison — packagés en IA à la demande. Trois personas pour diagnostiquer, challenger ou recadrer vos défis.",
+    "description": "Vision produit, expertise technique et focus client — packagés en IA à la demande. Trois personas pour diagnostiquer, challenger ou recadrer vos défis.",
     "ogImageAlt": "Fullstackhuman — Conseil IA"
   },
   "hero": {
     "headline": "EXÉCUTER: full_stack_human.sh",
-    "subheadline": "Un humain. Chaque couche. Désormais appelable.",
+    "subheadline": "Un humain. Chaque expertise. Désormais à la demande.",
     "cta": "> CONNECTER_INSTANCE"
   },
   "about": {
-    "bio": "La vision produit, la profondeur technique et l\u2019instinct de livraison de François \u2014 packagés en IA à la demande. Pas de blabla. Pas de réponses génériques. L\u2019authentique, à la vitesse machine."
+    "bio": "La vision produit, l'expertise technique et le focus client de François \u2014 packagés en IA à la demande. Pas de blabla. Pas de réponses génériques. L\u2019authentique, disponible 24/7."
   },
   "aboutSection": {
     "title": "QUI EST FRAN\u00c7OIS ?",
-    "intro": "Ingénieur devenu leader produit. 15+ ans à construire, livrer et piloter dans la finance, l\u2019énergie, le sport, la blockchain et l\u2019IA. Le système d\u2019exploitation est toujours le même : comprendre le contexte, cartographier la réalité, installer juste assez de structure, responsabiliser les gens.",
+    "intro": "Ingénieur devenu leader produit. 15+ ans à construire, livrer et piloter dans la finance, l\u2019énergie, le sport, la blockchain et l\u2019IA. La démarche est toujours la même : comprendre le contexte, cartographier la réalité, mettre en place juste assez de structure, responsabiliser les gens.",
     "expertise": {
       "leadership": {
         "title": "Leadership d\u2019équipe",
@@ -60,7 +60,7 @@
     "personas": {
       "doctor": {
         "trigger": "Mon projet est bloqué",
-        "description": "Diagnostic de projet \u2014 identifie la cause racine, pas les symptômes",
+        "description": "Diagnostic de projet \u2014 identifie la cause, pas les symptômes",
         "openingMessage": "Très bien, voyons ce qui se passe. Pas de jugement \u2014 tous les projets se bloquent. La question, c\u2019est *pourquoi*.\n\nDites-moi ce que vous construisez et où ça coince."
       },
       "critic": {
