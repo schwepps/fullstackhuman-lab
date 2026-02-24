@@ -45,8 +45,8 @@ describe('verifyWebhookSecret', () => {
     expect(verifyWebhookSecret('')).toBe(false)
   })
 
-  it('returns false when token has different length than secret', () => {
-    // timingSafeEqual requires equal length — verify the length check
+  it('returns false when token differs from secret', () => {
+    // HMAC digests are fixed-length, so comparison always runs constant-time
     expect(verifyWebhookSecret('short')).toBe(false)
   })
 

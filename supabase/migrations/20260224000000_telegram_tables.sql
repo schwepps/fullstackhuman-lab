@@ -3,7 +3,7 @@
 -- ============================================================
 -- Separate identity and conversation space for Telegram users.
 -- Not linked to auth.users — Telegram users are a distinct identity space.
--- All access via service role client only (no RLS, no grants to anon/authenticated).
+-- All access via service role client only (RLS enabled deny-all + explicit revoke).
 
 -- ============================================================
 -- Telegram Users table

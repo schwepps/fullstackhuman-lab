@@ -75,7 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   after(async () => {
     try {
       const bot = getBot()
-      await bot.handleUpdate(body as Update)
+      await bot.handleUpdate(update as Update)
     } catch (error) {
       log('error', LOG_EVENT.TELEGRAM_PROCESS_ERROR, {
         error: error instanceof Error ? error.message : 'Unknown error',

@@ -63,9 +63,7 @@ describe('detectLanguage', () => {
     expect(detectLanguage(undefined)).toBe('fr')
   })
 
-  it('returns "en" for empty string (non-fr code)', () => {
-    // Empty string does not start with "fr", so falls to "en"
-    // Actually, empty string is falsy, so !languageCode returns true -> 'fr'
+  it('returns "fr" for empty string (falsy, treated as missing)', () => {
     expect(detectLanguage('')).toBe('fr')
   })
 })
