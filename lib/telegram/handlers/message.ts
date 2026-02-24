@@ -40,6 +40,7 @@ import {
   checkDailyAiCallLimit,
 } from '@/lib/telegram/services/quota-service'
 import { DAILY_LIMIT_REACHED, MESSAGE_RATE_LIMITED } from '@/lib/telegram/i18n'
+import { withTypingIndicator } from '@/lib/telegram/typing'
 import { CALENDLY_URL } from '@/lib/constants/app'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
@@ -129,11 +130,10 @@ export async function handleMessage(ctx: Context): Promise<void> {
     allMessages.map((m) => ({ role: m.role, content: m.content }))
   )
 
-  // Call AI
-  const aiResponse = await callAI({
-    systemPrompt,
-    messages: aiMessages,
-  })
+  // Call AI (with typing indicator to show feedback during generation)
+  const aiResponse = await withTypingIndicator(ctx, () =>
+    callAI({ systemPrompt, messages: aiMessages })
+  )
 
   if (!aiResponse) {
     await ctx.reply(t(AI_ERROR, lang))

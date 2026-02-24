@@ -10,6 +10,7 @@ import { saveMessages } from '@/lib/telegram/services/conversation-service'
 import { convertToMarkdownV2, splitMessage } from '@/lib/telegram/format'
 import { detectLanguage, t } from '@/lib/telegram/i18n'
 import { QUOTA_EXCEEDED, PERSONA_STARTING, AI_ERROR } from '@/lib/telegram/i18n'
+import { withTypingIndicator } from '@/lib/telegram/typing'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 import { checkDailyAiCallLimit } from '@/lib/telegram/services/quota-service'
@@ -90,12 +91,14 @@ export async function handlePersonaSelection(ctx: Context): Promise<void> {
     return
   }
 
-  // First AI call with synthetic trigger
+  // First AI call with synthetic trigger (typing indicator for UX)
   const triggerText = PERSONA_TRIGGERS[persona]
-  const aiResponse = await callAI({
-    systemPrompt,
-    messages: [{ role: 'user', content: triggerText }],
-  })
+  const aiResponse = await withTypingIndicator(ctx, () =>
+    callAI({
+      systemPrompt,
+      messages: [{ role: 'user', content: triggerText }],
+    })
+  )
 
   if (!aiResponse) {
     await ctx.reply(t(AI_ERROR, lang))

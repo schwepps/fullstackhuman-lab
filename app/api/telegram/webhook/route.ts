@@ -8,6 +8,10 @@ import { getBot } from '@/lib/telegram/bot'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 
+// after() callbacks need enough time for Claude to generate reports (~90s)
+// plus DB writes and Telegram message sends.
+export const maxDuration = 120
+
 /**
  * Telegram webhook endpoint.
  *
