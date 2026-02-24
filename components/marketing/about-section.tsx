@@ -32,7 +32,7 @@ export function AboutSection() {
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: '-50px' }}
-      className="mx-auto w-full max-w-4xl px-4 py-16 sm:px-6"
+      className="mx-auto w-full max-w-4xl px-4 py-16 sm:px-6 sm:py-20"
     >
       {/* Section title */}
       <motion.h2

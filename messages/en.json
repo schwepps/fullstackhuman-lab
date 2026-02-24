@@ -272,9 +272,9 @@
     "legal": "Legal Notice",
     "privacy": "Privacy Policy",
     "terms": "Terms of Service",
-    "copyright": "\u00a9 {year} Fullstackhuman. All rights reserved.",
     "cookieSettings": "Cookie settings",
-    "linkedin": "LinkedIn"
+    "builtBy": "by François Schuers",
+    "tagline": "Fullstackhuman {year}"
   },
   "cookieConsent": {
     "title": "Cookies & privacy",

@@ -35,7 +35,7 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
       variants={containerVariants}
       initial="hidden"
       animate={isVisible ? 'visible' : 'hidden'}
-      className="flex flex-col items-center px-4 py-6 sm:px-6"
+      className="flex flex-col items-center px-4 py-16 sm:px-6 sm:py-20"
     >
       {/* Headline */}
       <motion.h1
@@ -59,7 +59,7 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
       </motion.p>
 
       {/* CTA */}
-      <motion.div variants={itemVariants} className="mb-8">
+      <motion.div variants={itemVariants} className="mb-12">
         <Link
           href="/chat"
           onClick={() => trackCtaClick({ source: 'hero' })}
@@ -78,7 +78,7 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
       </motion.div>
 
       {/* Calendly CTA */}
-      <motion.div variants={itemVariants} className="mt-6">
+      <motion.div variants={itemVariants} className="mt-10">
         <CalendlyCta variant="inline" source="hero" />
       </motion.div>
     </motion.section>
