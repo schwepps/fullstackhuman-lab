@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { MarkdownRenderer } from '@/components/chat/markdown-renderer'
 import { ReportCard } from '@/components/chat/report-card'
 import { AiAvatar } from '@/components/chat/ai-avatar'
+import { AttachmentChips } from '@/components/chat/attachment-chips'
 import type { ChatMessage, PersonaId } from '@/types/chat'
 
 interface ChatBubbleProps {
@@ -37,9 +38,14 @@ export function ChatBubble({ message, persona, shareToken }: ChatBubbleProps) {
         )}
       >
         {isUser ? (
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">
-            {message.content}
-          </p>
+          <div>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed">
+              {message.content}
+            </p>
+            {message.attachments && message.attachments.length > 0 && (
+              <AttachmentChips attachments={message.attachments} />
+            )}
+          </div>
         ) : (
           <MarkdownRenderer content={message.content} />
         )}

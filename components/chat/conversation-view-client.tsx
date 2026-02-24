@@ -128,6 +128,7 @@ export function ConversationViewClient({
           quotaLimit={quota.limit}
           isReadOnly={chat.isReadOnly}
           shareToken={chat.shareToken}
+          getTotalAttachmentBytes={chat.getTotalAttachmentBytes}
         />
       )}
 

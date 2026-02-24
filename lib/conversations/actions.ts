@@ -7,11 +7,19 @@ import { checkAuthRateLimit } from '@/lib/auth/rate-limit'
 import { PERSONA_IDS } from '@/lib/constants/personas'
 import { UUID_REGEX } from '@/lib/constants/validation'
 import { extractTitle } from '@/lib/conversations/utils'
-import type { ChatMessage } from '@/types/chat'
+import { ALLOWED_FILE_TYPES, type ChatMessage } from '@/types/chat'
+import { MAX_FILE_NAME_LENGTH } from '@/lib/constants/chat'
 import type { ConversationStatus } from '@/types/conversation'
 import type { ActionResult } from '@/types/action'
 
 // --- Validation schemas ---
+
+const attachmentMetaSchema = z.object({
+  id: z.string().trim().min(1),
+  name: z.string().trim().min(1).max(MAX_FILE_NAME_LENGTH),
+  type: z.enum(ALLOWED_FILE_TYPES),
+  size: z.number().positive(),
+})
 
 const messageSchema = z.object({
   id: z.string(),
@@ -19,6 +27,7 @@ const messageSchema = z.object({
   content: z.string(),
   isReport: z.boolean(),
   timestamp: z.number(),
+  attachments: z.array(attachmentMetaSchema).optional(),
 })
 
 const createConversationSchema = z.object({
