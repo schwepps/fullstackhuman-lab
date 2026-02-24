@@ -3,10 +3,12 @@ import {
   isAllowedFileType,
   validateFile,
   validateFileCount,
+  validateTotalSize,
 } from '@/lib/files/validate'
 import {
   MAX_FILE_SIZE_BYTES,
   MAX_FILES_PER_MESSAGE,
+  MAX_TOTAL_ATTACHMENT_BYTES,
   FILE_INPUT_ACCEPT,
 } from '@/lib/constants/chat'
 import { ALLOWED_FILE_TYPES } from '@/types/chat'
@@ -134,5 +136,32 @@ describe('validateFileCount', () => {
     const result = validateFileCount(MAX_FILES_PER_MESSAGE, 1)
     expect(result.ok).toBe(false)
     expect(result.error).toBe('too_many_files')
+  })
+})
+
+describe('validateTotalSize', () => {
+  it('accepts files within total limit', () => {
+    expect(validateTotalSize(0, 1024)).toEqual({ ok: true })
+    expect(validateTotalSize(10 * 1024 * 1024, 5 * 1024 * 1024)).toEqual({
+      ok: true,
+    })
+  })
+
+  it('accepts files at exactly the limit', () => {
+    expect(validateTotalSize(MAX_TOTAL_ATTACHMENT_BYTES - 100, 100)).toEqual({
+      ok: true,
+    })
+  })
+
+  it('rejects when total would exceed limit', () => {
+    const result = validateTotalSize(MAX_TOTAL_ATTACHMENT_BYTES, 1)
+    expect(result.ok).toBe(false)
+    expect(result.error).toBe('total_size_exceeded')
+  })
+
+  it('rejects when single file exceeds remaining budget', () => {
+    const result = validateTotalSize(MAX_TOTAL_ATTACHMENT_BYTES - 100, 101)
+    expect(result.ok).toBe(false)
+    expect(result.error).toBe('total_size_exceeded')
   })
 })

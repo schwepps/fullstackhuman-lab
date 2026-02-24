@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { validateChatRequest } from '@/lib/ai/validate-chat-request'
+import { MAX_FILE_SIZE_BYTES } from '@/lib/constants/chat'
 
 // --- Helpers ---
 
@@ -310,7 +311,7 @@ describe('validateChatRequest', () => {
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
   })
 
   it('rejects invalid attachment type', () => {
@@ -328,7 +329,7 @@ describe('validateChatRequest', () => {
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
   })
 
   it('rejects attachment exceeding size limit', () => {
@@ -340,13 +341,13 @@ describe('validateChatRequest', () => {
           {
             role: 'user',
             content: 'Big file',
-            attachments: [{ ...validAttachment, size: 10 * 1024 * 1024 + 1 }],
+            attachments: [{ ...validAttachment, size: 5 * 1024 * 1024 + 1 }],
           },
         ],
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
   })
 
   it('rejects too many attachments per message', () => {
@@ -364,7 +365,7 @@ describe('validateChatRequest', () => {
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
   })
 
   it('rejects attachment with empty data', () => {
@@ -382,7 +383,7 @@ describe('validateChatRequest', () => {
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
   })
 
   it('rejects non-base64 data string', () => {
@@ -402,13 +403,13 @@ describe('validateChatRequest', () => {
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
   })
 
   it('rejects base64 data exceeding max length', () => {
-    // Generate a valid base64 string that exceeds MAX_FILE_SIZE_BYTES
+    // Generate a valid base64 string that exceeds MAX_FILE_SIZE_BYTES (5MB)
     const oversizedData =
-      'JVBER' + 'A'.repeat(Math.ceil((10 * 1024 * 1024) / 3) * 4)
+      'JVBER' + 'A'.repeat(Math.ceil((5 * 1024 * 1024) / 3) * 4)
     const result = validateChatRequest(
       validBody({
         messages: [
@@ -423,7 +424,7 @@ describe('validateChatRequest', () => {
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
   })
 
   it('rejects PDF with wrong magic bytes', () => {
@@ -448,7 +449,7 @@ describe('validateChatRequest', () => {
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
   })
 
   it('rejects unsafe file names (path traversal)', () => {
@@ -466,7 +467,7 @@ describe('validateChatRequest', () => {
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
   })
 
   it('rejects file names with HTML characters', () => {
@@ -489,7 +490,97 @@ describe('validateChatRequest', () => {
       })
     )
     expect(result.ok).toBe(false)
-    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+    if (!result.ok) expect(result.error.error).toBe('invalid_attachment')
+  })
+
+  it('accepts filenames with parentheses (macOS duplicate pattern)', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Review this',
+            attachments: [{ ...validAttachment, name: 'report (1).pdf' }],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.messages[2].attachments![0].name).toBe(
+        'report (1).pdf'
+      )
+    }
+  })
+
+  it('accepts base64 data with embedded newlines (normalized)', () => {
+    const dataWithNewlines = 'JVBER\ni0xLjQK'
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Review this',
+            attachments: [
+              { ...validAttachment, data: dataWithNewlines, size: 100 },
+            ],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      // Data should be stored without whitespace
+      expect(result.data.messages[2].attachments![0].data).toBe('JVBERi0xLjQK')
+    }
+  })
+
+  it('rejects when total attachment payload exceeds limit', () => {
+    // Use ~80% of per-file limit — individually valid but collectively exceed total limit
+    // 6 user messages × 4MB each = 24MB > 20MB total limit
+    const perFileBytes = Math.floor(MAX_FILE_SIZE_BYTES * 0.8)
+    const largeData = 'JVBER' + 'A'.repeat(Math.ceil(perFileBytes / 3) * 4)
+    const largeAttachment = {
+      type: 'application/pdf',
+      data: largeData,
+      name: 'big.pdf',
+      size: perFileBytes,
+    }
+    // 10 messages (indices 0-9) + 1 appended = 11 messages (odd count)
+    // User messages at indices 0, 2, 4, 6, 8, 10 = 6 user messages with attachments
+    const messages = []
+    for (let i = 0; i < 10; i++) {
+      messages.push({
+        role: i % 2 === 0 ? 'user' : 'assistant',
+        content: `Message ${i}`,
+        ...(i % 2 === 0
+          ? { attachments: [{ ...largeAttachment, name: `file${i}.pdf` }] }
+          : {}),
+      })
+    }
+    // Ensure odd message count (alternating user/assistant ending with user)
+    messages.push({
+      role: 'user',
+      content: 'One more',
+      attachments: [{ ...largeAttachment, name: 'last.pdf' }],
+    })
+    // First message must be a short trigger
+    messages[0] = {
+      role: 'user',
+      content: 'trigger',
+      attachments: [{ ...largeAttachment, name: 'file0.pdf' }],
+    }
+
+    const result = validateChatRequest({
+      persona: 'doctor',
+      messages,
+    })
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('attachments_too_large')
   })
 
   // -- Happy path --

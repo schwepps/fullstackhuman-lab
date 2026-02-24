@@ -33,25 +33,29 @@ export function buildApiMessages(
   messages: ChatMessage[],
   userMessage: ChatMessage,
   triggerText: string,
-  attachments?: FileAttachment[]
+  attachmentStore: ReadonlyMap<string, FileAttachment>
 ): ApiMessage[] {
   const allMessages = [...messages, userMessage]
   return [
     { role: 'user' as const, content: triggerText },
-    ...allMessages.map((msg, index) => {
-      const isLastMessage = index === allMessages.length - 1
+    ...allMessages.map((msg) => {
       const base: ApiMessage = {
         role: msg.role,
         content: msg.content,
       }
-      // Only attach files to the current message being sent
-      if (isLastMessage && attachments?.length) {
-        base.attachments = attachments.map((a) => ({
-          type: a.type,
-          data: a.data,
-          name: a.name,
-          size: a.size,
-        }))
+      // Re-hydrate attachment data from the store for any message with attachments
+      if (msg.attachments?.length) {
+        const hydrated = msg.attachments
+          .map((meta) => attachmentStore.get(meta.id))
+          .filter((a): a is FileAttachment => a !== undefined)
+        if (hydrated.length > 0) {
+          base.attachments = hydrated.map((a) => ({
+            type: a.type,
+            data: a.data,
+            name: a.name,
+            size: a.size,
+          }))
+        }
       }
       return base
     }),

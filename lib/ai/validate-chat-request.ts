@@ -10,6 +10,7 @@ import {
   MAX_MESSAGE_LENGTH,
   VALID_MESSAGE_ROLES,
   MAX_FILE_SIZE_BYTES,
+  MAX_TOTAL_ATTACHMENT_BYTES,
   MAX_FILES_PER_MESSAGE,
   MAX_FILE_NAME_LENGTH,
 } from '@/lib/constants/chat'
@@ -24,8 +25,8 @@ const MAX_BASE64_LENGTH = Math.ceil(MAX_FILE_SIZE_BYTES / 3) * 4
 /** Base64 format: alphanumeric, +, /, optional trailing = padding */
 const BASE64_REGEX = /^[A-Za-z0-9+/]*={0,2}$/
 
-/** File name allowlist: letters, digits, dots, hyphens, underscores, spaces */
-const SAFE_FILE_NAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9._\- ]*$/
+/** File name allowlist: letters, digits, dots, hyphens, underscores, spaces, parentheses */
+const SAFE_FILE_NAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9._\- ()]*$/
 
 /**
  * Magic byte prefixes for each MIME type (base64-encoded).
@@ -101,26 +102,31 @@ function matchesMagicBytes(type: AllowedFileType, data: string): boolean {
 
 function validateAttachments(
   attachments: unknown[]
-): AttachmentPayload[] | null {
-  if (attachments.length > MAX_FILES_PER_MESSAGE) return null
+): AttachmentPayload[] | string {
+  if (attachments.length > MAX_FILES_PER_MESSAGE) return 'too_many_files'
 
   const validated: AttachmentPayload[] = []
   for (const att of attachments) {
-    if (!att || typeof att !== 'object') return null
+    if (!att || typeof att !== 'object') return 'invalid_shape'
     const { type, data, name, size } = att as Record<string, unknown>
 
-    if (typeof type !== 'string' || !isAllowedFileType(type)) return null
-    if (typeof data !== 'string' || data.length === 0) return null
-    if (!isValidBase64(data)) return null
-    if (data.length > MAX_BASE64_LENGTH) return null
-    if (typeof name !== 'string' || name.length === 0) return null
-    if (name.length > MAX_FILE_NAME_LENGTH) return null
-    if (!isSafeFileName(name)) return null
-    if (typeof size !== 'number' || size <= 0) return null
-    if (size > MAX_FILE_SIZE_BYTES) return null
-    if (!matchesMagicBytes(type, data)) return null
+    if (typeof type !== 'string' || !isAllowedFileType(type))
+      return 'invalid_type'
+    if (typeof data !== 'string' || data.length === 0) return 'empty_data'
 
-    validated.push({ type, data, name, size })
+    // Normalize base64: strip whitespace/newlines some encoders insert
+    const cleanData = data.replace(/\s/g, '')
+
+    if (!isValidBase64(cleanData)) return 'invalid_base64'
+    if (cleanData.length > MAX_BASE64_LENGTH) return 'data_too_large'
+    if (typeof name !== 'string' || name.length === 0) return 'empty_name'
+    if (name.length > MAX_FILE_NAME_LENGTH) return 'name_too_long'
+    if (!isSafeFileName(name)) return 'unsafe_name'
+    if (typeof size !== 'number' || size <= 0) return 'invalid_size'
+    if (size > MAX_FILE_SIZE_BYTES) return 'size_too_large'
+    if (!matchesMagicBytes(type, cleanData)) return 'magic_bytes_mismatch'
+
+    validated.push({ type, data: cleanData, name, size })
   }
   return validated
 }
@@ -189,20 +195,20 @@ export function validateChatRequest(body: unknown): ValidationResult {
       if (role !== 'user') {
         return {
           ok: false,
-          error: { error: 'Invalid attachment', status: 400 },
+          error: { error: 'invalid_attachment', status: 400 },
         }
       }
       if (!Array.isArray(attachments)) {
         return {
           ok: false,
-          error: { error: 'Invalid attachment', status: 400 },
+          error: { error: 'invalid_attachment', status: 400 },
         }
       }
       const result = validateAttachments(attachments)
-      if (!result) {
+      if (typeof result === 'string') {
         return {
           ok: false,
-          error: { error: 'Invalid attachment', status: 400 },
+          error: { error: 'invalid_attachment', status: 400 },
         }
       }
       validatedAttachments = result.length > 0 ? result : undefined
@@ -213,6 +219,18 @@ export function validateChatRequest(body: unknown): ValidationResult {
       content,
       ...(validatedAttachments ? { attachments: validatedAttachments } : {}),
     })
+  }
+
+  // Validate total attachment payload size across all messages
+  const totalAttachmentBytes = validatedMessages.reduce(
+    (sum, msg) => sum + (msg.attachments?.reduce((s, a) => s + a.size, 0) ?? 0),
+    0
+  )
+  if (totalAttachmentBytes > MAX_TOTAL_ATTACHMENT_BYTES) {
+    return {
+      ok: false,
+      error: { error: 'attachments_too_large', status: 400 },
+    }
   }
 
   // Validate conversation structure: must alternate user/assistant roles

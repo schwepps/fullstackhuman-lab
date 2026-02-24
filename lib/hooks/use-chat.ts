@@ -10,6 +10,7 @@ import type {
 } from '@/types/chat'
 import type { Conversation } from '@/types/conversation'
 import { PERSONAS } from '@/lib/constants/personas'
+import { ERROR_MESSAGE_KEYS } from '@/lib/constants/chat'
 import { readSSEStream } from '@/lib/ai/sse-reader'
 import { createMessage, buildApiMessages } from '@/lib/ai/message-builder'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
@@ -47,6 +48,9 @@ export function useChat() {
   const stateRef = useRef(state)
   stateRef.current = state
   const triggerRef = useRef('')
+  // Stores full attachment data (with base64) by ID — survives across renders
+  // without bloating React state. Cleared on resetChat.
+  const attachmentDataRef = useRef<Map<string, FileAttachment>>(new Map())
 
   const selectPersona = useCallback(
     (personaId: PersonaId, openingText: string, triggerText: string) => {
@@ -107,7 +111,14 @@ export function useChat() {
       const { persona, isStreaming, messages, isReadOnly } = stateRef.current
       if (!persona || isStreaming || isReadOnly) return
 
-      // Store metadata only (strip base64 data) for persistence
+      // Store full attachments in ref for re-hydration in subsequent API calls
+      if (attachments?.length) {
+        for (const att of attachments) {
+          attachmentDataRef.current.set(att.id, att)
+        }
+      }
+
+      // Store metadata only (strip base64 data) in React state for display
       const attachmentMeta: FileAttachmentMeta[] | undefined =
         attachments?.length
           ? attachments.map(({ id, name, type, size }) => ({
@@ -123,7 +134,7 @@ export function useChat() {
         messages,
         userMsg,
         triggerRef.current,
-        attachments
+        attachmentDataRef.current
       )
       const assistantId = crypto.randomUUID()
 
@@ -157,8 +168,8 @@ export function useChat() {
           let errorCode = 'generic_error'
           try {
             const err = (await response.json()) as { error: string }
-            if (err.error === 'rate_limit_exceeded') {
-              errorCode = 'rate_limit_exceeded'
+            if (err.error in ERROR_MESSAGE_KEYS) {
+              errorCode = err.error
             }
           } catch {
             // Non-JSON error response (e.g., proxy 502)
@@ -245,6 +256,7 @@ export function useChat() {
 
   const resetChat = useCallback(() => {
     abortRef.current?.abort()
+    attachmentDataRef.current.clear()
     const { conversationId } = stateRef.current
     const hasReport = stateRef.current.messages.some((m) => m.isReport)
     if (conversationId && !hasReport) {
@@ -289,6 +301,14 @@ export function useChat() {
     setState((prev) => ({ ...prev, error: null }))
   }, [])
 
+  const getTotalAttachmentBytes = useCallback(() => {
+    let total = 0
+    for (const att of attachmentDataRef.current.values()) {
+      total += att.size
+    }
+    return total
+  }, [])
+
   return useMemo(
     () => ({
       ...state,
@@ -298,6 +318,7 @@ export function useChat() {
       loadConversation,
       stopStreaming,
       dismissError,
+      getTotalAttachmentBytes,
     }),
     [
       state,
@@ -307,6 +328,7 @@ export function useChat() {
       loadConversation,
       stopStreaming,
       dismissError,
+      getTotalAttachmentBytes,
     ]
   )
 }

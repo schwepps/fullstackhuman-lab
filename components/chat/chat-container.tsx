@@ -22,6 +22,7 @@ interface ChatContainerProps {
   quotaLimit: number | null
   isReadOnly?: boolean
   shareToken?: string | null
+  getTotalAttachmentBytes: () => number
 }
 
 export function ChatContainer({
@@ -37,12 +38,17 @@ export function ChatContainer({
   quotaLimit,
   isReadOnly = false,
   shareToken = null,
+  getTotalAttachmentBytes,
 }: ChatContainerProps) {
   const t = useTranslations('chat.errors')
   const tConv = useTranslations('conversations')
 
   return (
-    <div className="flex flex-1 flex-col">
+    <div
+      className="flex flex-1 flex-col"
+      onDragOver={(e) => e.preventDefault()}
+      onDrop={(e) => e.preventDefault()}
+    >
       {error && (
         <div className="border-b border-destructive/20 bg-destructive/10 px-4 py-3">
           <div className="mx-auto flex max-w-3xl items-start justify-between gap-3">
@@ -82,6 +88,7 @@ export function ChatContainer({
           onSendMessage={onSendMessage}
           isStreaming={isStreaming}
           onStopStreaming={onStopStreaming}
+          getTotalAttachmentBytes={getTotalAttachmentBytes}
         />
       )}
     </div>

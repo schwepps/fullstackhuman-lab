@@ -90,11 +90,14 @@
       "stop": "Stop",
       "attach": "Attach file",
       "removeFile": "Remove {name}",
+      "dropHint": "Drop files here",
       "fileErrors": {
         "invalid_type": "{name} is not a supported file type. Use PDF, images, or text files.",
-        "file_too_large": "{name} exceeds the 10 MB limit.",
+        "file_too_large": "{name} exceeds the {max} MB limit.",
         "too_many_files": "Maximum {max} files per message.",
-        "read_error": "Failed to read {name}. Try again."
+        "total_size_exceeded": "Total attachment size would exceed {max} MB. Remove a file or use a smaller one.",
+        "read_error": "Failed to read {name}. Try again.",
+        "read_timeout": "{name} took too long to read. Try a smaller file."
       }
     },
     "attachments": {
@@ -111,6 +114,8 @@
       "rateLimitExceeded": "You\u2019ve reached the daily conversation limit. Come back tomorrow, or book a call with the real Fran\u00e7ois.",
       "streamError": "The response was interrupted. Your conversation is still here \u2014 try sending another message.",
       "genericError": "Something went wrong. Please try again.",
+      "invalidAttachment": "The attached file could not be processed. Try a different file or remove it.",
+      "attachmentsTooLarge": "Total attachment size exceeds the limit. Remove some files and try again.",
       "dismiss": "Dismiss"
     },
     "quota": {
