@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Download } from 'lucide-react'
 
@@ -11,6 +11,7 @@ interface DownloadPdfButtonProps {
 
 export function DownloadPdfButton({ shareToken }: DownloadPdfButtonProps) {
   const t = useTranslations('reportTemplate')
+  const locale = useLocale()
   const [isDownloading, setIsDownloading] = useState(false)
   const [hasError, setHasError] = useState(false)
 
@@ -18,9 +19,12 @@ export function DownloadPdfButton({ shareToken }: DownloadPdfButtonProps) {
     setIsDownloading(true)
     setHasError(false)
     try {
-      const res = await fetch(`/api/report/${shareToken}/pdf`, {
-        cache: 'no-store',
-      })
+      const res = await fetch(
+        `/api/report/${shareToken}/pdf?locale=${locale}`,
+        {
+          cache: 'no-store',
+        }
+      )
       if (!res.ok) {
         setHasError(true)
         return
@@ -35,6 +39,8 @@ export function DownloadPdfButton({ shareToken }: DownloadPdfButtonProps) {
       a.download = filename
       a.click()
       URL.revokeObjectURL(url)
+    } catch {
+      setHasError(true)
     } finally {
       setIsDownloading(false)
     }

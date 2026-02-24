@@ -30,7 +30,7 @@ function jsonError(message: string, status: number) {
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ token: string }> }
 ) {
   const { token } = await params
@@ -61,9 +61,12 @@ export async function GET(
     return jsonError('Report not found', 404)
   }
 
-  // Resolve locale from Accept-Language header
+  // Resolve locale: prefer explicit ?locale= param, fallback to Accept-Language
+  const url = new URL(request.url)
+  const localeParam = url.searchParams.get('locale')
   const acceptLang = headerList.get('accept-language') ?? ''
-  const isFrench = acceptLang.startsWith('fr')
+  const isFrench =
+    localeParam === 'fr' || (!localeParam && acceptLang.startsWith('fr'))
   const brandingText = isFrench ? BRANDING_TEXT.fr : BRANDING_TEXT.en
 
   // Generate PDF
@@ -88,6 +91,7 @@ export async function GET(
           process.env.NODE_ENV === 'production'
             ? 'private, max-age=3600'
             : 'private, no-store',
+        Vary: 'Accept-Language',
       },
     })
   } catch (error) {

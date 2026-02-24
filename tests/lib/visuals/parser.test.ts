@@ -201,6 +201,33 @@ describe('parseReport — Doctor', () => {
     expect(data.items[2].label).toContain('Kill the roadmap')
   })
 
+  it('strips markdown table from root-cause-flow section content', () => {
+    const result = parseReport(DOCTOR_REPORT, 'doctor')
+    const signatureSection = result.sections[2]
+    // Table source markdown should be stripped when visual is detected
+    expect(signatureSection.content).not.toContain('| What it looks like')
+    expect(signatureSection.content).not.toContain('| --- |')
+    expect(signatureSection.content).not.toContain('missing deadlines')
+  })
+
+  it('strips risk level keyword from risk-gauge section content', () => {
+    const result = parseReport(DOCTOR_REPORT, 'doctor')
+    const riskSection = result.sections[3]
+    // The standalone "High" line should be stripped
+    expect(riskSection.content).not.toMatch(/^High$/m)
+    // But the elaboration text should remain
+    expect(riskSection.content).toContain('nothing changes')
+  })
+
+  it('strips numbered list from priority-roadmap section content', () => {
+    const result = parseReport(DOCTOR_REPORT, 'doctor')
+    const actionsSection = result.sections[4]
+    // Numbered items should be stripped when visual is detected
+    expect(actionsSection.content).not.toContain('1.')
+    expect(actionsSection.content).not.toContain('2.')
+    expect(actionsSection.content).not.toContain('3.')
+  })
+
   it('does not attach visuals to non-visual sections', () => {
     const result = parseReport(DOCTOR_REPORT, 'doctor')
     // Patient summary (index 0) and Diagnosis (index 1) have no visuals

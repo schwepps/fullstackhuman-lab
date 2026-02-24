@@ -17,8 +17,11 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
 }
 
 // Safety: refuse to run against non-local Supabase instances
+const parsedHost = new URL(SUPABASE_URL).hostname
 const isLocal =
-  SUPABASE_URL.includes('localhost') || SUPABASE_URL.includes('127.0.0.1')
+  parsedHost === 'localhost' ||
+  parsedHost === '127.0.0.1' ||
+  parsedHost === '0.0.0.0'
 if (!isLocal) {
   console.error(
     '🚨 SUPABASE_URL does not point to localhost. Refusing to seed a remote database.'
@@ -46,10 +49,18 @@ async function seed() {
 // ─── Cleanup ───
 
 async function cleanup() {
-  const { data } = await supabase.auth.admin.listUsers()
+  const { data, error: listError } = await supabase.auth.admin.listUsers()
+  if (listError) {
+    throw new Error(`Failed to list users: ${listError.message}`)
+  }
   const existing = data.users.find((u) => u.email === SEED_EMAIL)
   if (existing) {
-    await supabase.auth.admin.deleteUser(existing.id)
+    const { error: deleteError } = await supabase.auth.admin.deleteUser(
+      existing.id
+    )
+    if (deleteError) {
+      throw new Error(`Failed to delete seed user: ${deleteError.message}`)
+    }
     console.log('🗑  Deleted existing seed user (cascade)')
   }
 }

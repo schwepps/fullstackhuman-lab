@@ -32,6 +32,7 @@
    * z-50  — default overlays (sub-menus, tooltips)
    * z-110 — modal overlays (dialog, dropdown) — above sticky headers
    */
+  --z-index-110: 110;
 
   /* Custom Animations */
   @keyframes scanline {
