@@ -1,5 +1,7 @@
 import { Ratelimit, type Duration } from '@upstash/ratelimit'
 import { getRedisClient } from '@/lib/upstash'
+import { log } from '@/lib/logger'
+import { LOG_EVENT } from '@/lib/constants/logging'
 
 const DEFAULT_MAX_MAP_ENTRIES = 10_000
 
@@ -86,9 +88,7 @@ export function createLazyRateLimiter(
       })
       return limiter
     } catch {
-      console.warn(
-        `[rate-limit] Redis unavailable for ${config.prefix}, using in-memory fallback`
-      )
+      log('warn', LOG_EVENT.REDIS_FALLBACK, { prefix: config.prefix })
       return null
     }
   }
@@ -116,9 +116,7 @@ export async function consumeWithFallback(
       const { success } = await limiter.limit(key)
       return success
     } catch {
-      console.warn(
-        '[rate-limit] Redis request failed, falling back to in-memory'
-      )
+      log('warn', LOG_EVENT.REDIS_FALLBACK, { context: 'request' })
     }
   }
   return consumeFromTimestampMap(fallbackMap, key, windowMs, maxPerWindow)
