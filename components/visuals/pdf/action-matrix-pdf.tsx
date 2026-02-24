@@ -1,6 +1,7 @@
 import React from 'react'
 import { Svg, Rect, Circle, Line, Text as SvgText } from '@react-pdf/renderer'
 import { matrixDotPosition } from '@/lib/visuals/geometry'
+import { ACTION_MATRIX_QUADRANT_LABELS } from '@/lib/visuals/constants'
 import type { ActionMatrixData } from '@/lib/visuals/types'
 
 const PLOT_X = 40
@@ -9,6 +10,12 @@ const PLOT_WIDTH = 260
 const PLOT_HEIGHT = 240
 const MAX_SCORE = 10
 const DOT_R = 10
+
+const QUADRANT_POSITIONS = ACTION_MATRIX_QUADRANT_LABELS.map((label, i) => ({
+  x: PLOT_X + PLOT_WIDTH * (i % 2 === 0 ? 0.25 : 0.75),
+  y: PLOT_Y + PLOT_HEIGHT * (i < 2 ? 0.25 : 0.75),
+  label,
+}))
 
 export function ActionMatrixPdf({
   data,
@@ -48,18 +55,33 @@ export function ActionMatrixPdf({
         strokeWidth={1}
         strokeDasharray="4 3"
       />
+      {/* Quadrant labels */}
+      {QUADRANT_POSITIONS.map((q) => (
+        <SvgText
+          key={q.label}
+          x={q.x}
+          y={q.y}
+          textAnchor="middle"
+          style={{ fontSize: 7, fontFamily: 'Helvetica' }}
+          fill="#d1d5db"
+        >
+          {q.label}
+        </SvgText>
+      ))}
       {/* Axis labels */}
       <SvgText
         x={PLOT_X + PLOT_WIDTH / 2}
         y={PLOT_Y + PLOT_HEIGHT + 16}
+        textAnchor="middle"
         style={{ fontSize: 9, fontFamily: 'Helvetica' }}
         fill="#6b7280"
       >
         Urgency
       </SvgText>
       <SvgText
-        x={PLOT_X - 28}
+        x={PLOT_X - 8}
         y={PLOT_Y + PLOT_HEIGHT / 2}
+        textAnchor="end"
         style={{ fontSize: 9, fontFamily: 'Helvetica' }}
         fill="#6b7280"
       >
@@ -90,6 +112,7 @@ export function ActionMatrixPdf({
             <SvgText
               x={pos.x}
               y={pos.y + 3}
+              textAnchor="middle"
               style={{ fontSize: 9, fontFamily: 'Helvetica-Bold' }}
               fill={accentHex}
             >

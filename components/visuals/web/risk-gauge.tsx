@@ -11,7 +11,7 @@ import {
 } from '@/lib/visuals/constants'
 import type { RiskGaugeData, RiskLevel } from '@/lib/visuals/types'
 
-const CX = 140
+const CX = 160
 const CY = 130
 const OUTER_R = 110
 const INNER_R = 80
@@ -28,8 +28,8 @@ export function RiskGauge({ data }: RiskGaugeProps) {
 
   return (
     <svg
-      viewBox="0 0 280 160"
-      className="mx-auto w-full max-w-[280px]"
+      viewBox="0 0 330 160"
+      className="mx-auto w-full max-w-[330px]"
       role="img"
       aria-label={`Risk level: ${GAUGE_LEVEL_LABELS[data.level]}`}
     >
@@ -53,13 +53,16 @@ export function RiskGauge({ data }: RiskGaugeProps) {
       {/* Segment labels */}
       {segments.map((seg) => {
         const midAngle = (seg.startAngle + seg.endAngle) / 2
-        const labelPos = polarToCartesian(CX, CY, OUTER_R + 12, midAngle)
+        const labelPos = polarToCartesian(CX, CY, OUTER_R + 14, midAngle)
+        const isRight = labelPos.x > CX + 10
+        const isLeft = labelPos.x < CX - 10
+        const anchor = isRight ? 'start' : isLeft ? 'end' : 'middle'
         return (
           <text
             key={`label-${seg.level}`}
             x={labelPos.x}
             y={labelPos.y}
-            textAnchor="middle"
+            textAnchor={anchor}
             className="fill-gray-400 font-mono text-[9px]"
           >
             {GAUGE_LEVEL_LABELS[seg.level as RiskLevel]}

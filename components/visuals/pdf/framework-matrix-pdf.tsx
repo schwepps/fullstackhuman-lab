@@ -1,16 +1,17 @@
 import React from 'react'
 import { Svg, Rect, Circle, Text as SvgText } from '@react-pdf/renderer'
 import { quadrantBounds, frameworkUserPosition } from '@/lib/visuals/geometry'
-import {
-  FRAMEWORK_QUADRANT_FILLS,
-  truncateLabel,
-} from '@/lib/visuals/constants'
+import { FRAMEWORK_QUADRANT_FILLS, wrapSvgText } from '@/lib/visuals/constants'
 import type { FrameworkMatrixData } from '@/lib/visuals/types'
 
-const PX = 40
-const PY = 24
-const PW = 280
-const PH = 260
+const PX = 120
+const PY = 36
+const PW = 384
+const PH = 336
+const DESC_LINE_HEIGHT = 12
+const DESC_MAX_CHARS = 26
+const YAXIS_LABEL_MAX_CHARS = 18
+const YAXIS_LABEL_LINE_HEIGHT = 12
 
 export function FrameworkMatrixPdf({
   data,
@@ -50,77 +51,152 @@ export function FrameworkMatrixPdf({
       )
     : null
 
+  const yAxisLines = wrapSvgText(data.yAxisLabel, YAXIS_LABEL_MAX_CHARS)
+
   return (
-    <Svg width="380" height="320" viewBox="0 0 380 320">
+    <Svg width="580" height="440" viewBox="0 0 580 440">
       {/* Title */}
       <SvgText
         x={PX + PW / 2}
-        y={14}
-        style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' }}
+        y={16}
+        textAnchor="middle"
+        style={{ fontSize: 12, fontFamily: 'Helvetica-Bold' }}
         fill="#374151"
       >
         {data.title}
       </SvgText>
+
       {/* Quadrants */}
-      {quads.map((q) => (
-        <React.Fragment key={q.key}>
-          <Rect
-            x={q.b.x}
-            y={q.b.y}
-            width={q.b.width}
-            height={q.b.height}
-            fill={FRAMEWORK_QUADRANT_FILLS[q.key]}
-            stroke="#e5e7eb"
-            strokeWidth={0.5}
-          />
-          <SvgText
-            x={q.b.centerX}
-            y={q.b.centerY - 4}
-            style={{ fontSize: 9, fontFamily: 'Helvetica-Bold' }}
-            fill="#374151"
-          >
-            {q.d.label}
-          </SvgText>
-          <SvgText
-            x={q.b.centerX}
-            y={q.b.centerY + 8}
-            style={{ fontSize: 7, fontFamily: 'Helvetica' }}
-            fill="#9ca3af"
-          >
-            {truncateLabel(q.d.description, 28)}
-          </SvgText>
-        </React.Fragment>
-      ))}
-      {/* Axis labels */}
+      {quads.map((q) => {
+        const descLines = wrapSvgText(q.d.description, DESC_MAX_CHARS)
+        return (
+          <React.Fragment key={q.key}>
+            <Rect
+              x={q.b.x}
+              y={q.b.y}
+              width={q.b.width}
+              height={q.b.height}
+              fill={FRAMEWORK_QUADRANT_FILLS[q.key]}
+              stroke="#e5e7eb"
+              strokeWidth={0.5}
+            />
+            <SvgText
+              x={q.b.centerX}
+              y={q.b.centerY - 8}
+              textAnchor="middle"
+              style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}
+              fill="#374151"
+            >
+              {q.d.label}
+            </SvgText>
+            {descLines.map((line, li) => (
+              <SvgText
+                key={`d-${q.key}-${li}`}
+                x={q.b.centerX}
+                y={q.b.centerY + 6 + li * DESC_LINE_HEIGHT}
+                textAnchor="middle"
+                style={{ fontSize: 8, fontFamily: 'Helvetica' }}
+                fill="#9ca3af"
+              >
+                {line}
+              </SvgText>
+            ))}
+          </React.Fragment>
+        )
+      })}
+
+      {/* X-axis label */}
       <SvgText
         x={PX + PW / 2}
-        y={PY + PH + 14}
-        style={{ fontSize: 8, fontFamily: 'Helvetica' }}
+        y={PY + PH + 16}
+        textAnchor="middle"
+        style={{ fontSize: 9, fontFamily: 'Helvetica' }}
         fill="#6b7280"
       >
         {data.xAxisLabel}
       </SvgText>
+      {/* X-axis low */}
       <SvgText
-        x={PX - 6}
-        y={PY + PH / 2}
+        x={PX}
+        y={PY + PH + 28}
+        textAnchor="start"
         style={{ fontSize: 8, fontFamily: 'Helvetica' }}
-        fill="#6b7280"
+        fill="#9ca3af"
       >
-        {data.yAxisLabel}
+        {data.xAxisLow}
       </SvgText>
+      {/* X-axis high */}
+      <SvgText
+        x={PX + PW}
+        y={PY + PH + 28}
+        textAnchor="end"
+        style={{ fontSize: 8, fontFamily: 'Helvetica' }}
+        fill="#9ca3af"
+      >
+        {data.xAxisHigh}
+      </SvgText>
+
+      {/* Y-axis label (horizontal, left of plot) */}
+      {yAxisLines.map((line, li) => (
+        <SvgText
+          key={`ya-${li}`}
+          x={PX - 8}
+          y={
+            PY +
+            PH / 2 -
+            ((yAxisLines.length - 1) * YAXIS_LABEL_LINE_HEIGHT) / 2 +
+            li * YAXIS_LABEL_LINE_HEIGHT
+          }
+          textAnchor="end"
+          style={{ fontSize: 8, fontFamily: 'Helvetica' }}
+          fill="#6b7280"
+        >
+          {line}
+        </SvgText>
+      ))}
+      {/* Y-axis low */}
+      <SvgText
+        x={PX - 8}
+        y={PY + PH - 4}
+        textAnchor="end"
+        style={{ fontSize: 8, fontFamily: 'Helvetica' }}
+        fill="#9ca3af"
+      >
+        {data.yAxisLow}
+      </SvgText>
+      {/* Y-axis high */}
+      <SvgText
+        x={PX - 8}
+        y={PY + 10}
+        textAnchor="end"
+        style={{ fontSize: 8, fontFamily: 'Helvetica' }}
+        fill="#9ca3af"
+      >
+        {data.yAxisHigh}
+      </SvgText>
+
       {/* User dot */}
       {userPos && (
         <>
           <Circle
             cx={userPos.x}
             cy={userPos.y}
-            r={7}
+            r={14}
             fill={accentHex}
             fillOpacity={0.2}
             stroke={accentHex}
-            strokeWidth={2}
+            strokeWidth={2.5}
           />
-          <Circle cx={userPos.x} cy={userPos.y} r={3} fill={accentHex} />
+          <Circle cx={userPos.x} cy={userPos.y} r={6} fill={accentHex} />
+          <SvgText
+            x={userPos.x}
+            y={userPos.y - 20}
+            textAnchor="middle"
+            style={{ fontSize: 12, fontFamily: 'Helvetica-Bold' }}
+            fill={accentHex}
+          >
+            You
+          </SvgText>
         </>
       )}
     </Svg>

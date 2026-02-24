@@ -1,5 +1,5 @@
 export const APP_URL =
-  process.env.NEXT_PUBLIC_APP_URL || 'https://fullstackhuman.com'
+  process.env.NEXT_PUBLIC_APP_URL || 'https://fullstackhuman.sh'
 
 export const CALENDLY_URL = 'https://calendly.com/fullstackhuman'
 

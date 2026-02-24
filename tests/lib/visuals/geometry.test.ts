@@ -188,18 +188,18 @@ describe('RISK_LEVEL_FRACTIONS', () => {
 
 describe('gaugeNeedleAngle', () => {
   it.each([
-    { fraction: 0, expected: 180, desc: 'fraction 0 maps to 180 (left)' },
-    { fraction: 0.5, expected: 270, desc: 'fraction 0.5 maps to 270 (top)' },
-    { fraction: 1, expected: 360, desc: 'fraction 1 maps to 360 (right)' },
+    { fraction: 0, expected: 270, desc: 'fraction 0 maps to 270 (left)' },
+    { fraction: 0.5, expected: 360, desc: 'fraction 0.5 maps to 360 (top)' },
+    { fraction: 1, expected: 450, desc: 'fraction 1 maps to 450 (right)' },
     {
       fraction: 0.25,
-      expected: 225,
-      desc: 'fraction 0.25 maps to 225',
+      expected: 315,
+      desc: 'fraction 0.25 maps to 315',
     },
     {
       fraction: 0.75,
-      expected: 315,
-      desc: 'fraction 0.75 maps to 315',
+      expected: 405,
+      desc: 'fraction 0.75 maps to 405',
     },
   ])('$desc', ({ fraction, expected }) => {
     expect(gaugeNeedleAngle(fraction)).toBeCloseTo(expected, 5)
@@ -208,8 +208,8 @@ describe('gaugeNeedleAngle', () => {
   it('maps risk level fractions to within the gauge arc', () => {
     for (const fraction of Object.values(RISK_LEVEL_FRACTIONS)) {
       const angle = gaugeNeedleAngle(fraction)
-      expect(angle).toBeGreaterThanOrEqual(180)
-      expect(angle).toBeLessThanOrEqual(360)
+      expect(angle).toBeGreaterThanOrEqual(270)
+      expect(angle).toBeLessThanOrEqual(450)
     }
   })
 })
@@ -221,29 +221,29 @@ describe('gaugeNeedlePoint', () => {
 
   it('returns a point on the left at fraction 0', () => {
     const point = gaugeNeedlePoint(cx, cy, r, 0)
-    // fraction 0 -> angle 180
-    // angleRad = (180-90)*PI/180 = PI/2 = 90 deg
-    // x = 100 + 80*cos(PI/2) ~ 100, y = 100 + 80*sin(PI/2) = 180
-    expect(point.x).toBeCloseTo(100, 5)
-    expect(point.y).toBeCloseTo(180, 5)
-  })
-
-  it('returns a point on the right at fraction 1', () => {
-    const point = gaugeNeedlePoint(cx, cy, r, 1)
-    // fraction 1 -> angle 360 -> same as 0 deg
-    // angleRad = (360-90)*PI/180 = 270 deg = 3PI/2
-    // x = 100 + 80*cos(3PI/2) ~ 100, y = 100 + 80*sin(3PI/2) = 20
-    expect(point.x).toBeCloseTo(100, 5)
-    expect(point.y).toBeCloseTo(20, 5)
-  })
-
-  it('returns a point at the expected angle for fraction 0.5', () => {
-    const point = gaugeNeedlePoint(cx, cy, r, 0.5)
-    // fraction 0.5 -> angle 270
+    // fraction 0 -> angle 270
     // angleRad = (270-90)*PI/180 = PI
     // x = 100 + 80*cos(PI) = 20, y = 100 + 80*sin(PI) ~ 100
     expect(point.x).toBeCloseTo(20, 5)
     expect(point.y).toBeCloseTo(100, 5)
+  })
+
+  it('returns a point on the right at fraction 1', () => {
+    const point = gaugeNeedlePoint(cx, cy, r, 1)
+    // fraction 1 -> angle 450 -> same as 90 deg
+    // angleRad = (450-90)*PI/180 = 2*PI
+    // x = 100 + 80*cos(2PI) = 180, y = 100 + 80*sin(2PI) ~ 100
+    expect(point.x).toBeCloseTo(180, 5)
+    expect(point.y).toBeCloseTo(100, 5)
+  })
+
+  it('returns a point at the expected angle for fraction 0.5', () => {
+    const point = gaugeNeedlePoint(cx, cy, r, 0.5)
+    // fraction 0.5 -> angle 360 -> same as 0 deg
+    // angleRad = (360-90)*PI/180 = 3PI/2
+    // x = 100 + 80*cos(3PI/2) ~ 100, y = 100 + 80*sin(3PI/2) = 20
+    expect(point.x).toBeCloseTo(100, 5)
+    expect(point.y).toBeCloseTo(20, 5)
   })
 })
 
@@ -252,10 +252,10 @@ describe('gaugeSegments', () => {
     expect(gaugeSegments()).toHaveLength(4)
   })
 
-  it('covers the full 180 to 360 range', () => {
+  it('covers the full 270 to 450 range', () => {
     const segments = gaugeSegments()
-    expect(segments[0].startAngle).toBe(180)
-    expect(segments[segments.length - 1].endAngle).toBe(360)
+    expect(segments[0].startAngle).toBe(270)
+    expect(segments[segments.length - 1].endAngle).toBe(450)
   })
 
   it('has contiguous segments with no gaps', () => {

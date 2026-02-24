@@ -59,7 +59,7 @@ export function ConversationCard({
 
   return (
     <Link href={`/chat/${conversation.id}`}>
-      <Card className="cursor-pointer border-primary/10 transition-all touch-manipulation hover:border-primary/30 active:scale-[0.98]">
+      <Card className="cursor-pointer border-primary/10 shadow-none transition-all touch-manipulation hover:border-primary/30 active:scale-[0.98]">
         <CardContent className="flex items-center gap-3 p-3">
           <Illustration
             className="size-10 shrink-0 text-muted-foreground"

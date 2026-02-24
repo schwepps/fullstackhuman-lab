@@ -32,6 +32,7 @@ export function ConceptSpectrumPdf({
       <SvgText
         x={TRACK_X + TRACK_W / 2}
         y={16}
+        textAnchor="middle"
         style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' }}
         fill="#374151"
       >
@@ -59,6 +60,7 @@ export function ConceptSpectrumPdf({
       <SvgText
         x={TRACK_X}
         y={TRACK_Y - 6}
+        textAnchor="start"
         style={{ fontSize: 8, fontFamily: 'Helvetica' }}
         fill="#6b7280"
       >
@@ -67,6 +69,7 @@ export function ConceptSpectrumPdf({
       <SvgText
         x={TRACK_X + TRACK_W}
         y={TRACK_Y - 6}
+        textAnchor="end"
         style={{ fontSize: 8, fontFamily: 'Helvetica' }}
         fill="#6b7280"
       >
@@ -90,6 +93,7 @@ export function ConceptSpectrumPdf({
       <SvgText
         x={mx}
         y={TRACK_Y + TRACK_H + 20}
+        textAnchor="middle"
         style={{ fontSize: 9, fontFamily: 'Helvetica-Bold' }}
         fill={accentHex}
       >

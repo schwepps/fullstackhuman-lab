@@ -15,8 +15,24 @@
   --color-accent: #4ade80; /* Matrix Green */
   --color-warning: #f59e0b; /* Amber Warning */
   --color-destructive: #ef4444; /* Red Destructive */
+  --color-card: #0a0a0c;
+  --color-card-foreground: #e2e8f0;
+  --color-popover: #12121a;
+  --color-popover-foreground: #e2e8f0;
+  --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
+  --color-secondary: #1e293b;
+  --color-secondary-foreground: #e2e8f0;
+  --color-success: #4ade80;
   --color-border: #1e293b;
   --color-ring: #22d3ee;
+
+  /*
+   * Z-index scale:
+   * z-50  — default overlays (sub-menus, tooltips)
+   * z-110 — modal overlays (dialog, dropdown) — above sticky headers
+   */
+  --z-index-110: 110;
 
   /* Custom Animations */
   @keyframes scanline {

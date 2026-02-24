@@ -64,7 +64,7 @@ export const PERSONA_TEMPLATE_CONFIGS: Record<
     accentHex: '#047857', // emerald-700
     accentHexLight: '#ecfdf5', // emerald-50
     signatureSectionIndex: 2,
-    signatureTreatment: 'statement',
+    signatureTreatment: 'callout',
     visualMapping: {
       1: 'framework-matrix', // "How to think about this" — or concept-spectrum
     },

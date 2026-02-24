@@ -22,7 +22,7 @@ const BADGE_STYLES: Record<
     key: 'active',
   },
   abandoned: {
-    className: 'bg-muted text-muted-foreground border-border',
+    className: 'bg-primary/10 text-primary border-primary/20',
     key: 'abandoned',
   },
 }

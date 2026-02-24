@@ -30,7 +30,6 @@ export async function ReportTemplate({
     <article className="report-template mx-auto w-full max-w-4xl bg-white shadow-sm">
       <ReportTemplateHeader
         title={parsed.title}
-        metadata={parsed.metadata}
         persona={persona}
         accentHex={config.accentHex}
         createdAt={createdAt}

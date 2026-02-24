@@ -12,14 +12,17 @@ import {
   pointsToSvgString,
   polarToCartesian,
 } from '@/lib/visuals/geometry'
+import { wrapSvgText } from '@/lib/visuals/constants'
 import type { AssessmentRadarData } from '@/lib/visuals/types'
 
-const CX = 160
-const CY = 150
-const OUTER_R = 110
+const CX = 250
+const CY = 200
+const OUTER_R = 130
 const MAX_SCORE = 10
 const GRID_RINGS = [2, 4, 6, 8, 10]
-const LABEL_R = OUTER_R + 18
+const LABEL_R = OUTER_R + 30
+const LABEL_MAX_CHARS = 16
+const LABEL_LINE_HEIGHT = 10
 
 export function AssessmentRadarPdf({
   data,
@@ -34,7 +37,7 @@ export function AssessmentRadarPdf({
   const outerPoints = radarGridPoints(CX, CY, OUTER_R, n)
 
   return (
-    <Svg width="320" height="300" viewBox="0 0 320 300">
+    <Svg width="500" height="420" viewBox="0 0 500 420">
       {/* Grid rings */}
       {GRID_RINGS.map((ring) => {
         const r = (ring / MAX_SCORE) * OUTER_R
@@ -83,16 +86,52 @@ export function AssessmentRadarPdf({
       {data.dimensions.map((dim, i) => {
         const angle = (i * 360) / n
         const labelPos = polarToCartesian(CX, CY, LABEL_R, angle)
+        const isRight = labelPos.x > CX + 10
+        const isLeft = labelPos.x < CX - 10
+        const anchor = isRight ? 'start' : isLeft ? 'end' : 'middle'
+
+        // Push labels away from chart center to prevent overlap
+        const isTop = labelPos.y < CY - 10
+        const isBottom = labelPos.y > CY + 10
+        const nameY = isTop
+          ? labelPos.y - 10
+          : isBottom
+            ? labelPos.y + 2
+            : labelPos.y - 4
+        const scoreY = isTop
+          ? labelPos.y + 2
+          : isBottom
+            ? labelPos.y + 14
+            : labelPos.y + 8
+
+        const nameLines = wrapSvgText(dim.name, LABEL_MAX_CHARS)
+        const adjustedScoreY =
+          scoreY + (nameLines.length - 1) * LABEL_LINE_HEIGHT
+
         return (
-          <SvgText
-            key={`label-${i}`}
-            x={labelPos.x}
-            y={labelPos.y}
-            style={{ fontSize: 8, fontFamily: 'Helvetica' }}
-            fill="#4b5563"
-          >
-            {dim.name} ({dim.score}/10)
-          </SvgText>
+          <React.Fragment key={`label-${i}`}>
+            {nameLines.map((line, li) => (
+              <SvgText
+                key={`name-${i}-${li}`}
+                x={labelPos.x}
+                y={nameY + li * LABEL_LINE_HEIGHT}
+                textAnchor={anchor}
+                style={{ fontSize: 8, fontFamily: 'Helvetica' }}
+                fill="#4b5563"
+              >
+                {line}
+              </SvgText>
+            ))}
+            <SvgText
+              x={labelPos.x}
+              y={adjustedScoreY}
+              textAnchor={anchor}
+              style={{ fontSize: 8, fontFamily: 'Helvetica-Bold' }}
+              fill={accentHex}
+            >
+              {`${dim.score}/10`}
+            </SvgText>
+          </React.Fragment>
         )
       })}
     </Svg>

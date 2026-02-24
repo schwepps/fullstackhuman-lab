@@ -118,15 +118,15 @@ describe('PostHog analytics module', () => {
   describe('capturePageView', () => {
     it('sends $pageview event with $current_url when initialized', () => {
       initPostHog()
-      capturePageView('https://fullstackhuman.com/chat')
+      capturePageView('https://fullstackhuman.sh/chat')
 
       expect(mockCapture).toHaveBeenCalledWith('$pageview', {
-        $current_url: 'https://fullstackhuman.com/chat',
+        $current_url: 'https://fullstackhuman.sh/chat',
       })
     })
 
     it('is a no-op when not initialized', () => {
-      capturePageView('https://fullstackhuman.com/')
+      capturePageView('https://fullstackhuman.sh/')
 
       expect(mockCapture).not.toHaveBeenCalled()
     })

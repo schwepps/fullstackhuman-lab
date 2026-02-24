@@ -1,10 +1,13 @@
 'use client'
 
+import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { motion } from 'framer-motion'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ConversationCard } from '@/components/chat/conversation-card'
+import { DeleteConversationDialog } from '@/components/chat/delete-conversation-dialog'
 import type { ConversationSummary } from '@/types/conversation'
 
 interface RecentConversationsProps {
@@ -23,10 +26,33 @@ function LoadingSkeleton() {
 }
 
 export function RecentConversations({
-  conversations,
+  conversations: initialConversations,
   isLoading,
 }: RecentConversationsProps) {
   const t = useTranslations('conversations')
+  const router = useRouter()
+  const [conversations, setConversations] = useState(initialConversations)
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string
+    hasReport: boolean
+  } | null>(null)
+
+  // Sync local state when parent re-renders with new data (async fetch)
+  useEffect(() => {
+    setConversations(initialConversations)
+  }, [initialConversations])
+
+  const handleDeleteRequest = useCallback((id: string, hasReport: boolean) => {
+    setDeleteTarget({ id, hasReport })
+  }, [])
+
+  const handleDeleted = useCallback(() => {
+    if (deleteTarget) {
+      setConversations((prev) => prev.filter((c) => c.id !== deleteTarget.id))
+    }
+    setDeleteTarget(null)
+    router.refresh()
+  }, [deleteTarget, router])
 
   if (!isLoading && conversations.length === 0) return null
 
@@ -54,14 +80,27 @@ export function RecentConversations({
       {isLoading ? (
         <LoadingSkeleton />
       ) : (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-3">
           {conversations.map((conversation) => (
             <ConversationCard
               key={conversation.id}
               conversation={conversation}
+              onDeleteRequest={handleDeleteRequest}
             />
           ))}
         </div>
+      )}
+
+      {deleteTarget && (
+        <DeleteConversationDialog
+          conversationId={deleteTarget.id}
+          hasReport={deleteTarget.hasReport}
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) setDeleteTarget(null)
+          }}
+          onDeleted={handleDeleted}
+        />
       )}
     </motion.div>
   )

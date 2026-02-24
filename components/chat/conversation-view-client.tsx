@@ -3,13 +3,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
-import { Trash2 } from 'lucide-react'
+import { Download, ExternalLink, MoreVertical, Trash2 } from 'lucide-react'
+import { Link } from '@/i18n/routing'
 import { useChat } from '@/lib/hooks/use-chat'
 import { useQuota } from '@/lib/hooks/use-quota'
 import { ChatPageHeader } from '@/components/chat/chat-page-header'
 import { ChatContainer } from '@/components/chat/chat-container'
 import { DeleteConversationDialog } from '@/components/chat/delete-conversation-dialog'
 import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import type { Conversation } from '@/types/conversation'
 
 interface ConversationViewClientProps {
@@ -64,15 +72,44 @@ export function ConversationViewClient({
         isReadOnly={chat.isReadOnly}
         actions={
           chat.isReadOnly ? (
-            <Button
-              variant="destructive"
-              size="icon-xs"
-              onClick={() => setDeleteOpen(true)}
-              className="touch-manipulation"
-              aria-label={t('deleteSubmit')}
-            >
-              <Trash2 className="size-3.5" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="touch-manipulation"
+                  aria-label={t('actions')}
+                >
+                  <MoreVertical className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {shareToken && (
+                  <>
+                    <DropdownMenuItem asChild>
+                      <Link href={`/report/${shareToken}`}>
+                        <ExternalLink className="size-4" />
+                        {t('viewReport')}
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href={`/api/report/${shareToken}/pdf`} download>
+                        <Download className="size-4" />
+                        {t('downloadPdf')}
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => setDeleteOpen(true)}
+                >
+                  <Trash2 className="size-4" />
+                  {t('deleteSubmit')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           ) : undefined
         }
       />

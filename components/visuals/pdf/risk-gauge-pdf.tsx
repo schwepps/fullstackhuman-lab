@@ -13,7 +13,7 @@ import {
 } from '@/lib/visuals/constants'
 import type { RiskGaugeData, RiskLevel } from '@/lib/visuals/types'
 
-const CX = 140
+const CX = 160
 const CY = 130
 const OUTER_R = 110
 const INNER_R = 80
@@ -25,7 +25,7 @@ export function RiskGaugePdf({ data }: { data: RiskGaugeData }) {
   const segments = gaugeSegments()
 
   return (
-    <Svg width="280" height="160" viewBox="0 0 280 160">
+    <Svg width="330" height="160" viewBox="0 0 330 160">
       {segments.map((seg) => (
         <Path
           key={seg.level}
@@ -43,12 +43,16 @@ export function RiskGaugePdf({ data }: { data: RiskGaugeData }) {
       ))}
       {segments.map((seg) => {
         const midAngle = (seg.startAngle + seg.endAngle) / 2
-        const labelPos = polarToCartesian(CX, CY, OUTER_R + 12, midAngle)
+        const labelPos = polarToCartesian(CX, CY, OUTER_R + 14, midAngle)
+        const isRight = labelPos.x > CX + 10
+        const isLeft = labelPos.x < CX - 10
+        const anchor = isRight ? 'start' : isLeft ? 'end' : 'middle'
         return (
           <SvgText
             key={`label-${seg.level}`}
             x={labelPos.x}
             y={labelPos.y}
+            textAnchor={anchor}
             style={{ fontSize: 7, fontFamily: 'Helvetica' }}
             fill="#9ca3af"
           >
@@ -68,6 +72,7 @@ export function RiskGaugePdf({ data }: { data: RiskGaugeData }) {
       <SvgText
         x={CX}
         y={CY + 25}
+        textAnchor="middle"
         style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}
         fill={GAUGE_SEGMENT_COLORS[data.level]}
       >

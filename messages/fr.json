@@ -302,8 +302,10 @@
     "backHome": "Retour à Full Stack Human"
   },
   "reportTemplate": {
-    "generatedBy": "Généré par Full Stack Human",
+    "generatedBy": "Généré par Full Stack Human - François Schuers",
     "downloadPdf": "Télécharger le PDF",
+    "downloadingPdf": "Génération...",
+    "downloadPdfError": "Échec — réessayer",
     "personaName": {
       "doctor": "Le Docteur",
       "critic": "Le Critique",

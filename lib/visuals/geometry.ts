@@ -74,8 +74,8 @@ export function donutArcPath(
 
 // ─── Risk Gauge ───
 
-const RISK_GAUGE_START_ANGLE = 180 // left
-const RISK_GAUGE_END_ANGLE = 360 // right
+const RISK_GAUGE_START_ANGLE = 270 // left (9 o'clock)
+const RISK_GAUGE_END_ANGLE = 450 // right (3 o'clock)
 const RISK_GAUGE_RANGE = RISK_GAUGE_END_ANGLE - RISK_GAUGE_START_ANGLE
 
 export const RISK_LEVEL_FRACTIONS: Record<string, number> = {
@@ -87,7 +87,7 @@ export const RISK_LEVEL_FRACTIONS: Record<string, number> = {
 
 /**
  * Get the needle angle for a risk level.
- * Returns angle in degrees (180 = left, 360 = right).
+ * Returns angle in degrees (270 = left, 450 = right).
  */
 export function gaugeNeedleAngle(fraction: number): number {
   return RISK_GAUGE_START_ANGLE + fraction * RISK_GAUGE_RANGE
@@ -281,6 +281,56 @@ export function spectrumTickX(
   fraction: number
 ): number {
   return startX + fraction * trackWidth
+}
+
+// ─── Priority Roadmap layout ───
+
+export interface RoadmapLayoutConfig {
+  readonly circleR: number
+  readonly paddingY: number
+  readonly labelLineHeight: number
+  readonly subtitleLineHeight: number
+  readonly labelMaxChars: number
+  readonly subtitleMaxChars: number
+  readonly rowGap: number
+}
+
+export interface RoadmapItemLayout {
+  readonly circleY: number
+  readonly labelLines: string[]
+  readonly subtitleLines: string[]
+  readonly blockHeight: number
+}
+
+/**
+ * Compute vertical layout for a priority roadmap.
+ * Shared between web and PDF renderers with different sizing configs.
+ */
+export function computeRoadmapLayout(
+  items: ReadonlyArray<{ label: string; fullText: string }>,
+  config: RoadmapLayoutConfig,
+  wrapText: (text: string, maxChars: number) => string[]
+): { items: RoadmapItemLayout[]; totalHeight: number } {
+  const layouts: RoadmapItemLayout[] = []
+  let y = config.paddingY
+
+  for (const item of items) {
+    const labelLines = wrapText(item.label, config.labelMaxChars)
+    const subtitleLines = wrapText(item.fullText, config.subtitleMaxChars)
+
+    const textHeight =
+      labelLines.length * config.labelLineHeight +
+      4 +
+      subtitleLines.length * config.subtitleLineHeight
+
+    const blockHeight = Math.max(config.circleR * 2, textHeight)
+    const circleY = y + config.circleR
+
+    layouts.push({ circleY, labelLines, subtitleLines, blockHeight })
+    y += blockHeight + config.rowGap
+  }
+
+  return { items: layouts, totalHeight: y - config.rowGap + config.paddingY }
 }
 
 // ─── SVG arrowhead (for flow diagrams) ───

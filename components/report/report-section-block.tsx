@@ -48,23 +48,24 @@ export function ReportSectionBlock({
         </div>
       )}
 
-      {/* Signature treatment wrapper */}
-      {isSignature ? (
-        <SignatureWrapper
-          treatment={config.signatureTreatment}
-          accentColor={accentColor}
-        >
+      {/* Prose markdown (skip if content was stripped empty) */}
+      {section.content.trim() &&
+        (isSignature ? (
+          <SignatureWrapper
+            treatment={config.signatureTreatment}
+            accentColor={accentColor}
+          >
+            <ProfessionalMarkdown
+              content={section.content}
+              accentColor={accentColor}
+            />
+          </SignatureWrapper>
+        ) : (
           <ProfessionalMarkdown
             content={section.content}
             accentColor={accentColor}
           />
-        </SignatureWrapper>
-      ) : (
-        <ProfessionalMarkdown
-          content={section.content}
-          accentColor={accentColor}
-        />
-      )}
+        ))}
     </section>
   )
 }

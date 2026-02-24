@@ -11,23 +11,23 @@ Each conversation generates a structured report with actionable recommendations.
 
 ## Pages
 
-- [Homepage](https://fullstackhuman.com): Main landing page (French)
-- [English](https://fullstackhuman.com/en): English version
-- [Start a Consultation](https://fullstackhuman.com/chat): Choose a persona and begin
+- [Homepage](https://fullstackhuman.sh): Main landing page (French)
+- [English](https://fullstackhuman.sh/en): English version
+- [Start a Consultation](https://fullstackhuman.sh/chat): Choose a persona and begin
 
 ## Shared Reports
 
 Public consulting reports are accessible without authentication at:
-- `https://fullstackhuman.com/report/{token}` (French)
-- `https://fullstackhuman.com/en/report/{token}` (English)
+- `https://fullstackhuman.sh/report/{token}` (French)
+- `https://fullstackhuman.sh/en/report/{token}` (English)
 
 Each report includes the persona's structured analysis, actionable recommendations, and a booking CTA.
 
 ## Legal
 
-- [Privacy Policy](https://fullstackhuman.com/privacy)
-- [Privacy Policy (English)](https://fullstackhuman.com/en/privacy)
-- [Terms of Service](https://fullstackhuman.com/terms)
-- [Terms of Service (English)](https://fullstackhuman.com/en/terms)
-- [Mentions Légales](https://fullstackhuman.com/legal)
-- [Mentions Légales (English)](https://fullstackhuman.com/en/legal)
+- [Privacy Policy](https://fullstackhuman.sh/privacy)
+- [Privacy Policy (English)](https://fullstackhuman.sh/en/privacy)
+- [Terms of Service](https://fullstackhuman.sh/terms)
+- [Terms of Service (English)](https://fullstackhuman.sh/en/terms)
+- [Mentions Légales](https://fullstackhuman.sh/legal)
+- [Mentions Légales (English)](https://fullstackhuman.sh/en/legal)
