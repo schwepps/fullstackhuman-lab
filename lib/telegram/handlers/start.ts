@@ -7,6 +7,7 @@ import {
   WELCOME_MESSAGE,
   PRIVACY_NOTICE,
   PERSONA_BUTTON_LABELS,
+  PERSONA_PICKER_PROMPT,
   ALREADY_IN_CONVERSATION,
 } from '@/lib/telegram/i18n'
 import { CALLBACK_PERSONA_PREFIX } from '@/lib/telegram/constants'
@@ -52,5 +53,8 @@ export async function handleStart(ctx: Context): Promise<void> {
     )
   )
 
-  await ctx.reply('\u200B', Markup.inlineKeyboard(buttons, { columns: 1 }))
+  await ctx.reply(
+    t(PERSONA_PICKER_PROMPT, lang),
+    Markup.inlineKeyboard(buttons, { columns: 1 })
+  )
 }

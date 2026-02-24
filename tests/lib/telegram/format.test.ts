@@ -367,8 +367,8 @@ describe('splitMessage', () => {
     expect(splitMessage(text)).toEqual([text])
   })
 
-  it('returns empty string as single element', () => {
-    expect(splitMessage('')).toEqual([''])
+  it('returns empty array for empty string', () => {
+    expect(splitMessage('')).toEqual([])
   })
 
   describe('paragraph splitting', () => {
@@ -456,7 +456,12 @@ describe('splitMessage', () => {
     const text = 'Hello\n\n\n\nWorld'
     const result = splitMessage(text, maxLength)
     for (const chunk of result) {
-      expect(chunk).toBeDefined()
+      expect(chunk.trim().length).toBeGreaterThan(0)
     }
+  })
+
+  it('returns empty array for whitespace-only input', () => {
+    expect(splitMessage('   ')).toEqual([])
+    expect(splitMessage('\n\n')).toEqual([])
   })
 })

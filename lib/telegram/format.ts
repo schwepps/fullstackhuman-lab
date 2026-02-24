@@ -177,7 +177,7 @@ export function splitMessage(
   text: string,
   maxLength: number = TELEGRAM_MESSAGE_MAX_LENGTH
 ): string[] {
-  if (text.length <= maxLength) return [text]
+  if (text.length <= maxLength) return text.trim() ? [text] : []
 
   const messages: string[] = []
   const paragraphs = text.split('\n\n')
@@ -240,5 +240,6 @@ export function splitMessage(
     messages.push(current)
   }
 
-  return messages
+  // Guard: filter empty/whitespace chunks Telegram would reject
+  return messages.filter((chunk) => chunk.trim().length > 0)
 }

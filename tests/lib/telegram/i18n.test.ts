@@ -7,6 +7,7 @@ import {
   QUOTA_EXCEEDED,
   AI_ERROR,
   PERSONA_BUTTON_LABELS,
+  PERSONA_PICKER_PROMPT,
   PERSONA_STARTING,
 } from '@/lib/telegram/i18n'
 
@@ -110,6 +111,11 @@ describe('t', () => {
       expect(WELCOME_MESSAGE.fr).toBeTruthy()
       expect(WELCOME_MESSAGE.en).toBeTruthy()
       expect(WELCOME_MESSAGE.fr).not.toBe(WELCOME_MESSAGE.en)
+    })
+
+    it('PERSONA_PICKER_PROMPT has non-empty values', () => {
+      expect(PERSONA_PICKER_PROMPT.fr.trim().length).toBeGreaterThan(0)
+      expect(PERSONA_PICKER_PROMPT.en.trim().length).toBeGreaterThan(0)
     })
 
     it('PERSONA_BUTTON_LABELS has all three personas', () => {

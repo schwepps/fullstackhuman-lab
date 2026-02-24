@@ -39,6 +39,11 @@ export const PERSONA_BUTTON_LABELS: Record<PersonaId, Messages> = {
   },
 }
 
+export const PERSONA_PICKER_PROMPT: Messages = {
+  fr: '👇 Choisissez votre parcours :',
+  en: '👇 Choose your path:',
+}
+
 // --- Conversation state ---
 
 export const NO_ACTIVE_CONVERSATION: Messages = {
