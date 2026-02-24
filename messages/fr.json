@@ -272,9 +272,9 @@
     "legal": "Mentions légales",
     "privacy": "Politique de confidentialité",
     "terms": "Conditions d\u2019utilisation",
-    "copyright": "© {year} Fullstackhuman. Tous droits réservés.",
     "cookieSettings": "Paramètres des cookies",
-    "linkedin": "LinkedIn"
+    "builtBy": "par François Schuers",
+    "tagline": "{brand} {year}"
   },
   "cookieConsent": {
     "title": "Cookies & confidentialité",
