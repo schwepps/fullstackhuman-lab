@@ -9,3 +9,5 @@ export const LINKEDIN_URL = 'https://www.linkedin.com/in/francoisschuers/'
 
 export const TWITTER_URL = 'https://x.com/FrancoisSchuers'
 export const TWITTER_HANDLE = '@FrancoisSchuers'
+
+export const TELEGRAM_BOT_URL = 'https://t.me/FullStackHumanBot'

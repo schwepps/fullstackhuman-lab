@@ -91,6 +91,7 @@
       "attach": "Attach file",
       "removeFile": "Remove {name}",
       "dropHint": "Drop files here",
+      "turnsRemaining": "{count, plural, one {# exchange remaining} other {# exchanges remaining}}",
       "fileErrors": {
         "invalid_type": "{name} is not a supported file type. Use PDF, images, or text files.",
         "file_too_large": "{name} exceeds the {max} MB limit.",
@@ -116,6 +117,7 @@
       "genericError": "Something went wrong. Please try again.",
       "invalidAttachment": "The attached file could not be processed. Try a different file or remove it.",
       "attachmentsTooLarge": "Total attachment size exceeds the limit. Remove some files and try again.",
+      "conversationLimitReached": "This conversation has reached its limit. Start a new one to continue.",
       "dismiss": "Dismiss"
     },
     "quota": {
@@ -291,7 +293,9 @@
     "terms": "Terms of Service",
     "cookieSettings": "Cookie settings",
     "builtBy": "by François Schuers",
-    "tagline": "{brand} {year}"
+    "tagline": "{brand} {year}",
+    "linkedinAriaLabel": "LinkedIn",
+    "telegramAriaLabel": "Telegram"
   },
   "cookieConsent": {
     "title": "Cookies & privacy",
@@ -305,6 +309,10 @@
     "title": "Ready to go further?",
     "description": "Book a call with the real François — 30 minutes to unblock your situation.",
     "action": "Book a call"
+  },
+  "telegramLink": {
+    "action": "Try on Telegram",
+    "ariaLabel": "Telegram"
   },
   "report": {
     "label": "Report",

@@ -254,6 +254,20 @@ Completed in PR #15. Root `app/not-found.tsx` now detects locale from `NEXT_LOCA
 
 ---
 
+### 23. Telegram Bot Integration
+
+**Complexity:** L
+**What:** Telegram bot that mirrors the web chat experience. Users pick a persona via inline keyboard, have a full AI conversation, receive a shareable report link and Calendly CTA. Runs as a webhook handler inside the Next.js app at `/api/telegram/webhook`. Separate `telegram_users` and `telegram_conversations` tables with independent quota pool (15/month free). Professional MarkdownV2 formatting for AI responses. Security: timing-safe webhook verification, scoped service client, 4-layer rate limiting, GDPR compliance (`/deletedata` command). Includes conversation depth limiting (15 turns, 3-phase wrap-up) applied to both web chat and Telegram.
+**Why Tier 3:** Product works without it. Expands distribution channel — every Telegram conversation is a potential booking. Reports shared via existing web report pages.
+**Dependencies:** Conversation persistence (10) ✅, Shareable report URLs (12) ✅, Report templates (13) ✅
+**Key files:**
+
+- `lib/telegram/` — bot logic, handlers, services, formatting
+- `app/api/telegram/webhook/route.ts` — webhook endpoint
+- `supabase/migrations/20260224000000_telegram_tables.sql` — new tables + reports FK
+
+---
+
 ### 19. Accessibility Audit (WCAG 2.1 AA)
 
 **Complexity:** M
@@ -344,6 +358,8 @@ Independent (no dependencies):
   17 Branded emails ✅
   18 Root 404 fix ✅
 
+  10 ✅ + 12 ✅ + 13 ✅ ──→ 23 Telegram Bot (Tier 3)
+
 Tier 4:
   10 ✅ + 13 ✅ + 15 ──→ 20 Stripe (needs stable product + paid differentiators)
   All Tier 1+2 ──→ 21 ProductCompanion (needs validated core)
@@ -385,6 +401,7 @@ Parallel tracks:
 - Cross-session memory (15) — major post-launch feature
 - ~~Loading skeletons (16), branded emails (17), 404 fix (18)~~ DONE
 - Accessibility audit (19) — when other polish is done
+- Telegram bot (23) — distribution channel expansion
 
 ### Tier 4 — Month 2+
 

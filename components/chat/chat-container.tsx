@@ -23,6 +23,7 @@ interface ChatContainerProps {
   isReadOnly?: boolean
   shareToken?: string | null
   getTotalAttachmentBytes: () => number
+  turnsRemaining?: number | null
 }
 
 export function ChatContainer({
@@ -39,6 +40,7 @@ export function ChatContainer({
   isReadOnly = false,
   shareToken = null,
   getTotalAttachmentBytes,
+  turnsRemaining,
 }: ChatContainerProps) {
   const t = useTranslations('chat.errors')
   const tConv = useTranslations('conversations')
@@ -89,6 +91,7 @@ export function ChatContainer({
           isStreaming={isStreaming}
           onStopStreaming={onStopStreaming}
           getTotalAttachmentBytes={getTotalAttachmentBytes}
+          turnsRemaining={turnsRemaining}
         />
       )}
     </div>

@@ -9,8 +9,13 @@ import type {
   FileAttachmentMeta,
 } from '@/types/chat'
 import type { Conversation } from '@/types/conversation'
-import { PERSONAS } from '@/lib/constants/personas'
+import { detectReport } from '@/lib/ai/detect-report'
 import { ERROR_MESSAGE_KEYS } from '@/lib/constants/chat'
+import {
+  getUserTurnCount,
+  getRemainingTurns,
+  WRAP_UP_START_TURN,
+} from '@/lib/ai/conversation-limits'
 import { readSSEStream } from '@/lib/ai/sse-reader'
 import { createMessage, buildApiMessages } from '@/lib/ai/message-builder'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
@@ -24,10 +29,6 @@ import {
   createReport,
   getShareTokenForConversation,
 } from '@/lib/reports/actions'
-
-function detectReport(content: string, persona: PersonaId): boolean {
-  return PERSONAS[persona].reportDetectPattern.test(content)
-}
 
 const INITIAL_STATE: ChatState = {
   phase: 'selection',
@@ -309,6 +310,19 @@ export function useChat() {
     return total
   }, [])
 
+  // Compute remaining turns for the next send.
+  // API messages = [trigger, ...state.messages, newUserMsg] = state.messages.length + 2
+  const nextTurnCount = useMemo(
+    () => getUserTurnCount(state.messages.length + 2),
+    [state.messages.length]
+  )
+  // Only show remaining turns when in wrap-up or force-report phase
+  const turnsRemaining = useMemo(() => {
+    if (state.isReadOnly || state.phase !== 'chatting') return null
+    if (nextTurnCount < WRAP_UP_START_TURN) return null
+    return getRemainingTurns(nextTurnCount)
+  }, [state.isReadOnly, state.phase, nextTurnCount])
+
   return useMemo(
     () => ({
       ...state,
@@ -319,6 +333,7 @@ export function useChat() {
       stopStreaming,
       dismissError,
       getTotalAttachmentBytes,
+      turnsRemaining,
     }),
     [
       state,
@@ -329,6 +344,7 @@ export function useChat() {
       stopStreaming,
       dismissError,
       getTotalAttachmentBytes,
+      turnsRemaining,
     ]
   )
 }

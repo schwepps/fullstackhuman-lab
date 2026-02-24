@@ -3,7 +3,9 @@
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useCookieConsentContext } from '@/components/layout/cookie-consent-provider'
-import { LINKEDIN_URL } from '@/lib/constants/app'
+import { useAnalytics } from '@/lib/hooks/use-analytics'
+import { LINKEDIN_URL, TELEGRAM_BOT_URL } from '@/lib/constants/app'
+import { TelegramIcon } from '@/components/shared/telegram-link'
 import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 
 const linkClass =
@@ -25,6 +27,7 @@ function LinkedInIcon({ className }: { className?: string }) {
 export function Footer() {
   const t = useTranslations('footer')
   const { openBanner } = useCookieConsentContext()
+  const { trackTelegramClick } = useAnalytics()
   const year = new Date().getFullYear()
 
   return (
@@ -45,9 +48,19 @@ export function Footer() {
             target="_blank"
             rel="noopener noreferrer"
             className="text-foreground/30 transition-colors hover:text-primary"
-            aria-label="LinkedIn"
+            aria-label={t('linkedinAriaLabel')}
           >
             <LinkedInIcon className="h-5 w-5" />
+          </a>
+          <a
+            href={TELEGRAM_BOT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-foreground/30 transition-colors hover:text-primary"
+            aria-label={t('telegramAriaLabel')}
+            onClick={() => trackTelegramClick({ source: 'footer' })}
+          >
+            <TelegramIcon className="h-5 w-5" />
           </a>
         </div>
 
