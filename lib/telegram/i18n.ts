@@ -15,8 +15,8 @@ type PersonaMessages = Record<PersonaId, Messages>
 // --- Persona selection ---
 
 export const WELCOME_MESSAGE: Messages = {
-  fr: "Bienvenue ! Je suis l'IA de Full Stack Human — 15 ans d'expertise produit & tech, disponible 24/7.\n\nChoisissez votre parcours :",
-  en: "Welcome! I'm the Full Stack Human AI — 15 years of product & tech expertise, available 24/7.\n\nChoose your path:",
+  fr: "Bienvenue ! Je suis l'IA de Full Stack Human — 15 ans d'expertise produit & tech, disponible 24/7.",
+  en: "Welcome! I'm the Full Stack Human AI — 15 years of product & tech expertise, available 24/7.",
 }
 
 export const PRIVACY_NOTICE: Messages = {

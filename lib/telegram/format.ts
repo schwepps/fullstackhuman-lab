@@ -1,4 +1,5 @@
 import { TELEGRAM_MESSAGE_MAX_LENGTH } from '@/lib/telegram/constants'
+import { sanitizeMessageContent } from '@/lib/ai/sanitize'
 
 /**
  * Characters that must be escaped in Telegram MarkdownV2.
@@ -166,7 +167,17 @@ function convertInlineFormatting(text: string): string {
 }
 
 /**
+ * Check whether a string contains only invisible characters that Telegram
+ * would reject as "text must be non-empty". Strips Unicode control chars
+ * (including zero-width spaces U+200B) via the shared sanitizer, then trims.
+ */
+function isVisiblyEmpty(text: string): boolean {
+  return sanitizeMessageContent(text).trim().length === 0
+}
+
+/**
  * Split a long message into chunks that fit within Telegram's 4096-char limit.
+ * Returns an empty array if the input contains no visible content.
  *
  * Strategy:
  * 1. Split at paragraph boundaries (double newline)
@@ -177,7 +188,7 @@ export function splitMessage(
   text: string,
   maxLength: number = TELEGRAM_MESSAGE_MAX_LENGTH
 ): string[] {
-  if (text.length <= maxLength) return text.trim() ? [text] : []
+  if (text.length <= maxLength) return isVisiblyEmpty(text) ? [] : [text]
 
   const messages: string[] = []
   const paragraphs = text.split('\n\n')
@@ -240,6 +251,6 @@ export function splitMessage(
     messages.push(current)
   }
 
-  // Guard: filter empty/whitespace chunks Telegram would reject
-  return messages.filter((chunk) => chunk.trim().length > 0)
+  // Guard: filter chunks Telegram would reject (empty, whitespace, invisible chars)
+  return messages.filter((chunk) => !isVisiblyEmpty(chunk))
 }

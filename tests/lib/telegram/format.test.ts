@@ -463,5 +463,6 @@ describe('splitMessage', () => {
   it('returns empty array for whitespace-only input', () => {
     expect(splitMessage('   ')).toEqual([])
     expect(splitMessage('\n\n')).toEqual([])
+    expect(splitMessage('\u200B')).toEqual([])
   })
 })
