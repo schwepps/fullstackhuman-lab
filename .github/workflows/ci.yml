@@ -38,4 +38,4 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          NEXT_PUBLIC_APP_URL: 'https://fullstackhuman.com'
+          NEXT_PUBLIC_APP_URL: 'https://fullstackhuman.sh'

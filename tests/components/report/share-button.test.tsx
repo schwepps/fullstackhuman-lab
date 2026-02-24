@@ -14,7 +14,7 @@ vi.mock('@/lib/hooks/use-analytics', () => ({
   }),
 }))
 
-const MOCK_URL = 'https://fullstackhuman.com/report/abc123'
+const MOCK_URL = 'https://fullstackhuman.sh/report/abc123'
 
 describe('ShareButton', () => {
   beforeEach(() => {

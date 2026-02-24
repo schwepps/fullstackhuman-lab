@@ -24,7 +24,7 @@ const CONTENT = {
       {
         heading: 'Acceptation des conditions',
         paragraphs: [
-          'En acc\u00e9dant au site fullstackhuman.com et en utilisant le service, vous acceptez les pr\u00e9sentes conditions d\u2019utilisation. Si vous n\u2019acceptez pas ces conditions, veuillez ne pas utiliser le service.',
+          'En acc\u00e9dant au site fullstackhuman.sh et en utilisant le service, vous acceptez les pr\u00e9sentes conditions d\u2019utilisation. Si vous n\u2019acceptez pas ces conditions, veuillez ne pas utiliser le service.',
         ],
       },
       {
@@ -80,7 +80,7 @@ const CONTENT = {
       },
       {
         heading: 'Contact',
-        paragraphs: ['Pour toute question\u00a0: contact@fullstackhuman.com'],
+        paragraphs: ['Pour toute question\u00a0: hello@fullstackhuman.sh'],
       },
     ],
   },
@@ -91,7 +91,7 @@ const CONTENT = {
       {
         heading: 'Acceptance of terms',
         paragraphs: [
-          'By accessing fullstackhuman.com and using the service, you agree to these terms of service. If you do not agree, please do not use the service.',
+          'By accessing fullstackhuman.sh and using the service, you agree to these terms of service. If you do not agree, please do not use the service.',
         ],
       },
       {
@@ -147,7 +147,7 @@ const CONTENT = {
       },
       {
         heading: 'Contact',
-        paragraphs: ['For any questions: contact@fullstackhuman.com'],
+        paragraphs: ['For any questions: hello@fullstackhuman.sh'],
       },
     ],
   },

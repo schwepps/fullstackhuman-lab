@@ -35,7 +35,7 @@ fi
 
 # --- 2. APP_URL consistency ---
 echo "  [2/4] APP_URL references..."
-EXPECTED_URL="fullstackhuman.com"
+EXPECTED_URL="fullstackhuman.sh"
 PREV_ERRORS=$ERRORS
 
 # Check the SSOT constant file exists and has the URL

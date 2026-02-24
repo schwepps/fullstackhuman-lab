@@ -21,14 +21,14 @@ const CONTENT = {
       {
         heading: '\u00c9diteur du site',
         paragraphs: [
-          'Le site fullstackhuman.com est \u00e9dit\u00e9 par\u00a0: FSC CONSULTING',
+          'Le site fullstackhuman.sh est \u00e9dit\u00e9 par\u00a0: FSC CONSULTING',
           'Forme juridique\u00a0: EURL (Entreprise Unipersonnelle \u00e0 Responsabilit\u00e9 Limit\u00e9e)',
           'Capital social\u00a0: 1\u00a0000,00\u00a0\u20ac',
           'SIRET\u00a0: 851\u00a0331\u00a0298\u00a000022',
           'TVA intracommunautaire\u00a0: FR08851331298',
           'RCS\u00a0: 851\u00a0331\u00a0298 R.C.S. Nanterre',
           'Si\u00e8ge social\u00a0: 42 rue Voltaire, 92800 Puteaux, France',
-          'Email\u00a0: contact@fullstackhuman.com',
+          'Email\u00a0: hello@fullstackhuman.sh',
         ],
       },
       {
@@ -70,14 +70,14 @@ const CONTENT = {
       {
         heading: 'Website publisher',
         paragraphs: [
-          'The website fullstackhuman.com is published by: FSC CONSULTING',
+          'The website fullstackhuman.sh is published by: FSC CONSULTING',
           'Legal form: EURL (Single-Member Limited Liability Company)',
           'Share capital: \u20ac1,000.00',
           'Registration number (SIRET): 851 331 298 00022',
           'EU VAT number: FR08851331298',
           'Trade register: 851 331 298 R.C.S. Nanterre',
           'Registered office: 42 rue Voltaire, 92800 Puteaux, France',
-          'Email: contact@fullstackhuman.com',
+          'Email: hello@fullstackhuman.sh',
         ],
       },
       {

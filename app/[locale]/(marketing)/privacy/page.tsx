@@ -24,8 +24,8 @@ const CONTENT = {
       {
         heading: 'Responsable du traitement',
         paragraphs: [
-          'Le responsable du traitement des donn\u00e9es personnelles collect\u00e9es sur le site fullstackhuman.com est\u00a0: FSC CONSULTING, EURL au capital de 1\u00a0000,00\u00a0\u20ac, SIRET 851\u00a0331\u00a0298\u00a000022, 42 rue Voltaire, 92800 Puteaux, France.',
-          'Contact\u00a0: contact@fullstackhuman.com',
+          'Le responsable du traitement des donn\u00e9es personnelles collect\u00e9es sur le site fullstackhuman.sh est\u00a0: FSC CONSULTING, EURL au capital de 1\u00a0000,00\u00a0\u20ac, SIRET 851\u00a0331\u00a0298\u00a000022, 42 rue Voltaire, 92800 Puteaux, France.',
+          'Contact\u00a0: hello@fullstackhuman.sh',
         ],
       },
       {
@@ -55,7 +55,7 @@ const CONTENT = {
         heading: 'Vos droits',
         paragraphs: [
           'Conform\u00e9ment au R\u00e8glement G\u00e9n\u00e9ral sur la Protection des Donn\u00e9es (RGPD), vous disposez des droits suivants\u00a0: droit d\u2019acc\u00e8s (art.\u00a015), droit de rectification (art.\u00a016), droit \u00e0 l\u2019effacement (art.\u00a017), droit \u00e0 la portabilit\u00e9 (art.\u00a020), droit d\u2019opposition (art.\u00a021), et droit \u00e0 la limitation du traitement (art.\u00a018).',
-          'Vous pouvez supprimer votre compte et toutes les donn\u00e9es associ\u00e9es directement depuis la page Param\u00e8tres du compte. Pour toute autre demande, contactez-nous \u00e0 contact@fullstackhuman.com.',
+          'Vous pouvez supprimer votre compte et toutes les donn\u00e9es associ\u00e9es directement depuis la page Param\u00e8tres du compte. Pour toute autre demande, contactez-nous \u00e0 hello@fullstackhuman.sh.',
           'Vous avez \u00e9galement le droit d\u2019introduire une r\u00e9clamation aupr\u00e8s de la CNIL (Commission Nationale de l\u2019Informatique et des Libert\u00e9s)\u00a0: www.cnil.fr',
         ],
       },
@@ -70,7 +70,7 @@ const CONTENT = {
       {
         heading: 'Contact',
         paragraphs: [
-          'Pour toute question relative \u00e0 la protection de vos donn\u00e9es personnelles\u00a0: contact@fullstackhuman.com',
+          'Pour toute question relative \u00e0 la protection de vos donn\u00e9es personnelles\u00a0: hello@fullstackhuman.sh',
         ],
       },
     ],
@@ -82,8 +82,8 @@ const CONTENT = {
       {
         heading: 'Data controller',
         paragraphs: [
-          'The data controller for personal data collected on fullstackhuman.com is: FSC CONSULTING, EURL with a share capital of \u20ac1,000.00, SIRET 851 331 298 00022, 42 rue Voltaire, 92800 Puteaux, France.',
-          'Contact: contact@fullstackhuman.com',
+          'The data controller for personal data collected on fullstackhuman.sh is: FSC CONSULTING, EURL with a share capital of \u20ac1,000.00, SIRET 851 331 298 00022, 42 rue Voltaire, 92800 Puteaux, France.',
+          'Contact: hello@fullstackhuman.sh',
         ],
       },
       {
@@ -113,7 +113,7 @@ const CONTENT = {
         heading: 'Your rights',
         paragraphs: [
           'Under the General Data Protection Regulation (GDPR), you have the following rights: right of access (Art. 15), right to rectification (Art. 16), right to erasure (Art. 17), right to data portability (Art. 20), right to object (Art. 21), and right to restriction of processing (Art. 18).',
-          'You can delete your account and all associated data directly from the Account Settings page. For any other request, contact us at contact@fullstackhuman.com.',
+          'You can delete your account and all associated data directly from the Account Settings page. For any other request, contact us at hello@fullstackhuman.sh.',
           'You also have the right to lodge a complaint with the CNIL (French Data Protection Authority): www.cnil.fr',
         ],
       },
@@ -128,7 +128,7 @@ const CONTENT = {
       {
         heading: 'Contact',
         paragraphs: [
-          'For any questions regarding the protection of your personal data: contact@fullstackhuman.com',
+          'For any questions regarding the protection of your personal data: hello@fullstackhuman.sh',
         ],
       },
     ],
