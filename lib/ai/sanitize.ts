@@ -18,7 +18,7 @@
  * - U+100000-10FFFD: Supplementary Private Use Area-B
  */
 const CONTROL_CHARS_REGEX =
-  /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200F\u2028-\u202F\u2060-\u206F\uFEFF\uFFF0-\uFFFB\u{E0001}-\u{E007F}\u{F0000}-\u{FFFFD}\u{100000}-\u{10FFFD}]/gu
+  /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F-\u009F\u200B-\u200F\u2028-\u202F\u2060-\u206F\uFEFF\uFFF9-\uFFFB\u{E0001}-\u{E007F}\u{F0000}-\u{FFFFD}\u{100000}-\u{10FFFD}]/gu
 
 /**
  * Strip invisible Unicode control characters from message content.

@@ -95,6 +95,20 @@ describe('validateChatRequest', () => {
     if (!result.ok) expect(result.error.error).toBe('Message too long')
   })
 
+  it('rejects assistant message exceeding length limit', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'x'.repeat(50001) },
+          { role: 'user', content: 'Thanks' },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Message too long')
+  })
+
   // -- Structure validation --
 
   it('rejects messages starting with assistant role', () => {

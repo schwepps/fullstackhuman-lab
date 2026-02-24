@@ -76,6 +76,8 @@ describe('assembleSystemPrompt', () => {
 
     expect(result).toContain('## SAFETY BOUNDARIES (NON-NEGOTIABLE)')
     expect(result).toContain('INSTRUCTION INTEGRITY')
+    expect(result).toContain('<safety_boundaries>')
+    expect(result).toContain('</safety_boundaries>')
 
     // Preamble must appear before persona content (sandwich structure)
     const preambleIndex = result.indexOf(
@@ -91,6 +93,8 @@ describe('assembleSystemPrompt', () => {
     const result = await assemble('doctor')
 
     expect(result).toContain('## SAFETY REMINDER')
+    expect(result).toContain('<safety_reminder>')
+    expect(result).toContain('</safety_reminder>')
 
     // Reinforcement must appear after persona content (sandwich structure)
     const personaIndex = result.indexOf(DOCTOR_CONTENT)

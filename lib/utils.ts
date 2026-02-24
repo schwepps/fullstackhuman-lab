@@ -15,15 +15,21 @@ export function getClientIp(headers: Headers): string {
   )
 }
 
-const IP_HASH_SALT = process.env.LOG_HASH_SALT ?? 'fsh-log-salt-default'
+const IP_HASH_SALT = process.env.LOG_HASH_SALT ?? ''
+
+if (!IP_HASH_SALT && process.env.NODE_ENV === 'production') {
+  console.warn(
+    '[security] LOG_HASH_SALT env var is not set. IP hashes will use an empty salt, making them trivially reversible. Set LOG_HASH_SALT to a secret value in production.'
+  )
+}
 
 /**
  * One-way hash of an IP address for privacy-safe logging.
  * Returns a 12-char hex prefix — enough to correlate requests
  * from the same IP without storing the raw address.
  *
- * Salt is read from LOG_HASH_SALT env var. In production, set this
- * to a secret value so IP hashes cannot be reversed from source code.
+ * Salt is read from LOG_HASH_SALT env var. In production, this
+ * MUST be set to a secret value so IP hashes cannot be reversed.
  */
 export function hashIp(ip: string): string {
   return createHash('sha256')
