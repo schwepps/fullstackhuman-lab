@@ -16,6 +16,16 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   process.exit(1)
 }
 
+// Safety: refuse to run against non-local Supabase instances
+const isLocal =
+  SUPABASE_URL.includes('localhost') || SUPABASE_URL.includes('127.0.0.1')
+if (!isLocal) {
+  console.error(
+    '🚨 SUPABASE_URL does not point to localhost. Refusing to seed a remote database.'
+  )
+  process.exit(1)
+}
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
   auth: { persistSession: false },
 })

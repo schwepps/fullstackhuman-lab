@@ -27,6 +27,12 @@
   --color-border: #1e293b;
   --color-ring: #22d3ee;
 
+  /*
+   * Z-index scale:
+   * z-50  — default overlays (sub-menus, tooltips)
+   * z-110 — modal overlays (dialog, dropdown) — above sticky headers
+   */
+
   /* Custom Animations */
   @keyframes scanline {
     0% {

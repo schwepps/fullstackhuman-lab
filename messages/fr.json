@@ -305,6 +305,7 @@
     "generatedBy": "Généré par Full Stack Human - François Schuers",
     "downloadPdf": "Télécharger le PDF",
     "downloadingPdf": "Génération...",
+    "downloadPdfError": "Échec — réessayer",
     "personaName": {
       "doctor": "Le Docteur",
       "critic": "Le Critique",

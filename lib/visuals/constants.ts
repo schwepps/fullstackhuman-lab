@@ -51,6 +51,15 @@ export function wrapSvgText(text: string, maxCharsPerLine: number): string[] {
   return lines
 }
 
+// ─── Action Matrix quadrant labels ───
+
+export const ACTION_MATRIX_QUADRANT_LABELS = [
+  'Do First',
+  'Schedule',
+  'Quick Wins',
+  'Reconsider',
+] as const
+
 // ─── Framework Matrix quadrant fills ───
 
 export const FRAMEWORK_QUADRANT_FILLS: Record<string, string> = {

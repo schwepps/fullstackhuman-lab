@@ -12,7 +12,7 @@ import {
   pointsToSvgString,
   polarToCartesian,
 } from '@/lib/visuals/geometry'
-import { truncateLabel } from '@/lib/visuals/constants'
+import { wrapSvgText } from '@/lib/visuals/constants'
 import type { AssessmentRadarData } from '@/lib/visuals/types'
 
 const CX = 250
@@ -21,6 +21,8 @@ const OUTER_R = 130
 const MAX_SCORE = 10
 const GRID_RINGS = [2, 4, 6, 8, 10]
 const LABEL_R = OUTER_R + 30
+const LABEL_MAX_CHARS = 16
+const LABEL_LINE_HEIGHT = 10
 
 export function AssessmentRadarPdf({
   data,
@@ -102,20 +104,27 @@ export function AssessmentRadarPdf({
             ? labelPos.y + 14
             : labelPos.y + 8
 
+        const nameLines = wrapSvgText(dim.name, LABEL_MAX_CHARS)
+        const adjustedScoreY =
+          scoreY + (nameLines.length - 1) * LABEL_LINE_HEIGHT
+
         return (
           <React.Fragment key={`label-${i}`}>
+            {nameLines.map((line, li) => (
+              <SvgText
+                key={`name-${i}-${li}`}
+                x={labelPos.x}
+                y={nameY + li * LABEL_LINE_HEIGHT}
+                textAnchor={anchor}
+                style={{ fontSize: 8, fontFamily: 'Helvetica' }}
+                fill="#4b5563"
+              >
+                {line}
+              </SvgText>
+            ))}
             <SvgText
               x={labelPos.x}
-              y={nameY}
-              textAnchor={anchor}
-              style={{ fontSize: 8, fontFamily: 'Helvetica' }}
-              fill="#4b5563"
-            >
-              {truncateLabel(dim.name, 18)}
-            </SvgText>
-            <SvgText
-              x={labelPos.x}
-              y={scoreY}
+              y={adjustedScoreY}
               textAnchor={anchor}
               style={{ fontSize: 8, fontFamily: 'Helvetica-Bold' }}
               fill={accentHex}

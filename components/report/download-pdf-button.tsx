@@ -12,14 +12,19 @@ interface DownloadPdfButtonProps {
 export function DownloadPdfButton({ shareToken }: DownloadPdfButtonProps) {
   const t = useTranslations('reportTemplate')
   const [isDownloading, setIsDownloading] = useState(false)
+  const [hasError, setHasError] = useState(false)
 
   async function handleDownload() {
     setIsDownloading(true)
+    setHasError(false)
     try {
       const res = await fetch(`/api/report/${shareToken}/pdf`, {
         cache: 'no-store',
       })
-      if (!res.ok) return
+      if (!res.ok) {
+        setHasError(true)
+        return
+      }
       const blob = await res.blob()
       const disposition = res.headers.get('Content-Disposition')
       const filename =
@@ -35,9 +40,15 @@ export function DownloadPdfButton({ shareToken }: DownloadPdfButtonProps) {
     }
   }
 
+  const label = hasError
+    ? t('downloadPdfError')
+    : isDownloading
+      ? t('downloadingPdf')
+      : t('downloadPdf')
+
   return (
     <Button
-      variant="outline"
+      variant={hasError ? 'destructive' : 'outline'}
       size="sm"
       className="touch-manipulation"
       disabled={isDownloading}
@@ -48,7 +59,7 @@ export function DownloadPdfButton({ shareToken }: DownloadPdfButtonProps) {
       ) : (
         <Download className="size-3.5" />
       )}
-      {isDownloading ? t('downloadingPdf') : t('downloadPdf')}
+      {label}
     </Button>
   )
 }

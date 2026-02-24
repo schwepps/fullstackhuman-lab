@@ -1,6 +1,7 @@
 import React from 'react'
 import { Svg, Rect, Circle, Line, Text as SvgText } from '@react-pdf/renderer'
 import { matrixDotPosition } from '@/lib/visuals/geometry'
+import { ACTION_MATRIX_QUADRANT_LABELS } from '@/lib/visuals/constants'
 import type { ActionMatrixData } from '@/lib/visuals/types'
 
 const PLOT_X = 40
@@ -10,28 +11,11 @@ const PLOT_HEIGHT = 240
 const MAX_SCORE = 10
 const DOT_R = 10
 
-const QUADRANT_LABELS = [
-  {
-    x: PLOT_X + PLOT_WIDTH * 0.25,
-    y: PLOT_Y + PLOT_HEIGHT * 0.25,
-    label: 'Do First',
-  },
-  {
-    x: PLOT_X + PLOT_WIDTH * 0.75,
-    y: PLOT_Y + PLOT_HEIGHT * 0.25,
-    label: 'Schedule',
-  },
-  {
-    x: PLOT_X + PLOT_WIDTH * 0.25,
-    y: PLOT_Y + PLOT_HEIGHT * 0.75,
-    label: 'Quick Wins',
-  },
-  {
-    x: PLOT_X + PLOT_WIDTH * 0.75,
-    y: PLOT_Y + PLOT_HEIGHT * 0.75,
-    label: 'Reconsider',
-  },
-]
+const QUADRANT_POSITIONS = ACTION_MATRIX_QUADRANT_LABELS.map((label, i) => ({
+  x: PLOT_X + PLOT_WIDTH * (i % 2 === 0 ? 0.25 : 0.75),
+  y: PLOT_Y + PLOT_HEIGHT * (i < 2 ? 0.25 : 0.75),
+  label,
+}))
 
 export function ActionMatrixPdf({
   data,
@@ -72,7 +56,7 @@ export function ActionMatrixPdf({
         strokeDasharray="4 3"
       />
       {/* Quadrant labels */}
-      {QUADRANT_LABELS.map((q) => (
+      {QUADRANT_POSITIONS.map((q) => (
         <SvgText
           key={q.label}
           x={q.x}

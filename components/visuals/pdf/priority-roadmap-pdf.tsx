@@ -1,6 +1,7 @@
 import React from 'react'
 import { Svg, Circle, Line, Text as SvgText } from '@react-pdf/renderer'
 import { wrapSvgText } from '@/lib/visuals/constants'
+import { computeRoadmapLayout } from '@/lib/visuals/geometry'
 import type { PriorityRoadmapData } from '@/lib/visuals/types'
 
 const SVG_WIDTH = 320
@@ -11,42 +12,17 @@ const TEXT_X = PADDING_X + CIRCLE_R * 2 + 14
 const CIRCLE_CX = PADDING_X + CIRCLE_R
 const LABEL_LINE_HEIGHT = 12
 const SUBTITLE_LINE_HEIGHT = 10
-const LABEL_MAX_CHARS = 30
-const SUBTITLE_MAX_CHARS = 34
 const ROW_GAP = 24
 
-interface ItemLayout {
-  circleY: number
-  labelLines: string[]
-  subtitleLines: string[]
-  blockHeight: number
-}
-
-function computeLayout(data: PriorityRoadmapData): {
-  items: ItemLayout[]
-  totalHeight: number
-} {
-  const layouts: ItemLayout[] = []
-  let y = PADDING_Y
-
-  for (const item of data.items) {
-    const labelLines = wrapSvgText(item.label, LABEL_MAX_CHARS)
-    const subtitleLines = wrapSvgText(item.fullText, SUBTITLE_MAX_CHARS)
-
-    const textHeight =
-      labelLines.length * LABEL_LINE_HEIGHT +
-      4 +
-      subtitleLines.length * SUBTITLE_LINE_HEIGHT
-
-    const blockHeight = Math.max(CIRCLE_R * 2, textHeight)
-    const circleY = y + CIRCLE_R
-
-    layouts.push({ circleY, labelLines, subtitleLines, blockHeight })
-    y += blockHeight + ROW_GAP
-  }
-
-  return { items: layouts, totalHeight: y - ROW_GAP + PADDING_Y }
-}
+const LAYOUT_CONFIG = {
+  circleR: CIRCLE_R,
+  paddingY: PADDING_Y,
+  labelLineHeight: LABEL_LINE_HEIGHT,
+  subtitleLineHeight: SUBTITLE_LINE_HEIGHT,
+  labelMaxChars: 30,
+  subtitleMaxChars: 34,
+  rowGap: ROW_GAP,
+} as const
 
 export function PriorityRoadmapPdf({
   data,
@@ -55,7 +31,11 @@ export function PriorityRoadmapPdf({
   data: PriorityRoadmapData
   accentHex: string
 }) {
-  const { items, totalHeight } = computeLayout(data)
+  const { items, totalHeight } = computeRoadmapLayout(
+    data.items,
+    LAYOUT_CONFIG,
+    wrapSvgText
+  )
 
   return (
     <Svg

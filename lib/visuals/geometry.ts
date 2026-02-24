@@ -283,6 +283,56 @@ export function spectrumTickX(
   return startX + fraction * trackWidth
 }
 
+// ─── Priority Roadmap layout ───
+
+export interface RoadmapLayoutConfig {
+  readonly circleR: number
+  readonly paddingY: number
+  readonly labelLineHeight: number
+  readonly subtitleLineHeight: number
+  readonly labelMaxChars: number
+  readonly subtitleMaxChars: number
+  readonly rowGap: number
+}
+
+export interface RoadmapItemLayout {
+  readonly circleY: number
+  readonly labelLines: string[]
+  readonly subtitleLines: string[]
+  readonly blockHeight: number
+}
+
+/**
+ * Compute vertical layout for a priority roadmap.
+ * Shared between web and PDF renderers with different sizing configs.
+ */
+export function computeRoadmapLayout(
+  items: ReadonlyArray<{ label: string; fullText: string }>,
+  config: RoadmapLayoutConfig,
+  wrapText: (text: string, maxChars: number) => string[]
+): { items: RoadmapItemLayout[]; totalHeight: number } {
+  const layouts: RoadmapItemLayout[] = []
+  let y = config.paddingY
+
+  for (const item of items) {
+    const labelLines = wrapText(item.label, config.labelMaxChars)
+    const subtitleLines = wrapText(item.fullText, config.subtitleMaxChars)
+
+    const textHeight =
+      labelLines.length * config.labelLineHeight +
+      4 +
+      subtitleLines.length * config.subtitleLineHeight
+
+    const blockHeight = Math.max(config.circleR * 2, textHeight)
+    const circleY = y + config.circleR
+
+    layouts.push({ circleY, labelLines, subtitleLines, blockHeight })
+    y += blockHeight + config.rowGap
+  }
+
+  return { items: layouts, totalHeight: y - config.rowGap + config.paddingY }
+}
+
 // ─── SVG arrowhead (for flow diagrams) ───
 
 /**
@@ -297,22 +347,6 @@ export function arrowheadPath(
     `M ${tipX} ${tipY}`,
     `L ${tipX - size} ${tipY - size / 2}`,
     `L ${tipX - size} ${tipY + size / 2}`,
-    'Z',
-  ].join(' ')
-}
-
-/**
- * Generate an SVG path for a downward-pointing arrowhead at a given position.
- */
-export function downArrowheadPath(
-  tipX: number,
-  tipY: number,
-  size: number
-): string {
-  return [
-    `M ${tipX} ${tipY}`,
-    `L ${tipX - size / 2} ${tipY - size}`,
-    `L ${tipX + size / 2} ${tipY - size}`,
     'Z',
   ].join(' ')
 }
