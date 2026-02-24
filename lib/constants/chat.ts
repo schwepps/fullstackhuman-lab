@@ -15,6 +15,10 @@ export const NEW_CONVERSATION_MESSAGE_COUNT = 3
 
 export const VALID_MESSAGE_ROLES = ['user', 'assistant'] as const
 
+// Max length for the trigger message (first message in conversation).
+// Trigger texts are short phrases like "My project is stuck" (~30 chars).
+export const MAX_TRIGGER_LENGTH = 200
+
 // IP rate limiting (chat API protection)
 export const MAX_REQUESTS_PER_IP_PER_HOUR = 60
 export const IP_WINDOW_MS = 60 * 60 * 1000 // 1 hour
