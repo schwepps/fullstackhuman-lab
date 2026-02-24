@@ -34,7 +34,7 @@ export function stripVisualBlocks(content: string): string {
   return content.replace(VISUAL_BLOCK_REGEX, '')
 }
 
-const RISK_LEVEL_REGEX = /^(Low|Medium|High|Critical)\b/im
+const RISK_LEVEL_REGEX = /^\*{0,2}\s*(Low|Medium|High|Critical)\b/im
 
 const TABLE_SEPARATOR_REGEX = /^\|[\s-:|]+\|$/
 
@@ -58,12 +58,21 @@ export function parseReport(content: string, persona: PersonaId): ParsedReport {
     ctaFooter,
   } = splitReportStructure(strippedContent)
 
-  // Pass 3: Attach visuals to sections
+  // Pass 3: Attach visuals to sections (strip source patterns when visual detected)
   const config = PERSONA_TEMPLATE_CONFIGS[persona]
-  const sections = rawSections.map((section) => ({
-    ...section,
-    visual: resolveVisualForSection(section, persona, config, visualBlocks),
-  }))
+  const sections = rawSections.map((section) => {
+    const { visual, strippedContent } = resolveVisualForSection(
+      section,
+      persona,
+      config,
+      visualBlocks
+    )
+    return {
+      ...section,
+      content: strippedContent ?? section.content,
+      visual,
+    }
+  })
 
   return { title, metadata, sections, ctaFooter, persona }
 }
@@ -228,12 +237,17 @@ interface TemplateConfig {
   visualMapping: Record<number, string>
 }
 
+interface VisualResolution {
+  visual: VisualData | null
+  strippedContent?: string
+}
+
 function resolveVisualForSection(
   section: Omit<ReportSection, 'visual'>,
   persona: PersonaId,
   config: TemplateConfig,
   visualBlocks: Map<VisualBlockTag, unknown>
-): VisualData | null {
+): VisualResolution {
   // Try prompt-driven visuals first (explicit data from fenced blocks)
   const promptVisual = resolvePromptDrivenVisual(
     section,
@@ -241,7 +255,7 @@ function resolveVisualForSection(
     config,
     visualBlocks
   )
-  if (promptVisual) return promptVisual
+  if (promptVisual) return { visual: promptVisual }
 
   // Then try template-driven visuals (detected from markdown patterns)
   return resolveTemplateDrivenVisual(section, persona, config)
@@ -279,18 +293,28 @@ function resolveTemplateDrivenVisual(
   section: Omit<ReportSection, 'visual'>,
   persona: PersonaId,
   config: TemplateConfig
-): VisualData | null {
+): VisualResolution {
   // Risk gauge: detect risk keyword in content
   if (persona === 'doctor' && section.index === 3) {
     // Risk level is section index 3 for doctor
     const riskData = detectRiskLevel(section.content)
-    if (riskData) return { type: 'risk-gauge', data: riskData }
+    if (riskData) {
+      return {
+        visual: { type: 'risk-gauge', data: riskData },
+        strippedContent: stripRiskLevelLine(section.content),
+      }
+    }
   }
 
   // Root cause flow: detect 2-column table in signature section
   if (persona === 'doctor' && section.index === config.signatureSectionIndex) {
     const flowData = detectRootCauseFlow(section.content)
-    if (flowData) return { type: 'root-cause-flow', data: flowData }
+    if (flowData) {
+      return {
+        visual: { type: 'root-cause-flow', data: flowData },
+        strippedContent: stripMarkdownTable(section.content),
+      }
+    }
   }
 
   // Priority roadmap: detect numbered list in priority section
@@ -299,10 +323,15 @@ function resolveTemplateDrivenVisual(
     (persona === 'critic' && section.index === 4) // If I had to prioritize
   if (isPrioritySection) {
     const roadmapData = detectPriorityRoadmap(section.content)
-    if (roadmapData) return { type: 'priority-roadmap', data: roadmapData }
+    if (roadmapData) {
+      return {
+        visual: { type: 'priority-roadmap', data: roadmapData },
+        strippedContent: stripNumberedList(section.content),
+      }
+    }
   }
 
-  return null
+  return { visual: null }
 }
 
 // ─── Template-driven detectors ───
@@ -364,6 +393,36 @@ function parseTableRow(line: string): string[] {
     .split('|')
     .slice(1, -1) // remove empty first/last from |...|
     .map((cell) => cell.trim())
+}
+
+/** Strip markdown table lines (|...|) from content, preserving surrounding text */
+function stripMarkdownTable(content: string): string {
+  return content
+    .split('\n')
+    .filter((l) => {
+      const trimmed = l.trim()
+      return !(trimmed.startsWith('|') && trimmed.endsWith('|'))
+    })
+    .join('\n')
+    .trim()
+}
+
+/** Strip the first line matching a risk level keyword (e.g. "**Low**") */
+function stripRiskLevelLine(content: string): string {
+  return content
+    .split('\n')
+    .filter((l) => !RISK_LEVEL_REGEX.test(l.trim()))
+    .join('\n')
+    .trim()
+}
+
+/** Strip numbered list items matching `N. **bold** — text` from content */
+function stripNumberedList(content: string): string {
+  return content
+    .split('\n')
+    .filter((l) => !l.match(/^\d+\.\s+\*\*[^*]+\*\*\s*[—–-]\s*/))
+    .join('\n')
+    .trim()
 }
 
 function detectPriorityRoadmap(content: string): PriorityRoadmapData | null {

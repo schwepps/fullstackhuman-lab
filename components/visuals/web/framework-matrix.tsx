@@ -1,14 +1,15 @@
 import { quadrantBounds, frameworkUserPosition } from '@/lib/visuals/geometry'
-import {
-  FRAMEWORK_QUADRANT_FILLS,
-  truncateLabel,
-} from '@/lib/visuals/constants'
+import { FRAMEWORK_QUADRANT_FILLS, wrapSvgText } from '@/lib/visuals/constants'
 import type { FrameworkMatrixData } from '@/lib/visuals/types'
 
-const PLOT_X = 50
-const PLOT_Y = 30
-const PLOT_WIDTH = 280
-const PLOT_HEIGHT = 260
+const PLOT_X = 140
+const PLOT_Y = 44
+const PLOT_WIDTH = 408
+const PLOT_HEIGHT = 360
+const DESC_LINE_HEIGHT = 14
+const DESC_MAX_CHARS = 26
+const YAXIS_LABEL_MAX_CHARS = 18
+const YAXIS_LABEL_LINE_HEIGHT = 13
 
 interface FrameworkMatrixProps {
   data: FrameworkMatrixData
@@ -51,19 +52,21 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
       )
     : null
 
+  const yAxisLines = wrapSvgText(data.yAxisLabel, YAXIS_LABEL_MAX_CHARS)
+
   return (
     <svg
-      viewBox="0 0 380 340"
-      className="mx-auto w-full max-w-md"
+      viewBox="0 0 620 470"
+      className="mx-auto w-full max-w-xl"
       role="img"
       aria-label={`Framework matrix: ${data.title}`}
     >
       {/* Title */}
       <text
         x={PLOT_X + PLOT_WIDTH / 2}
-        y={16}
+        y={18}
         textAnchor="middle"
-        className="fill-gray-700 font-mono text-[11px] font-semibold"
+        className="fill-gray-700 font-mono text-sm font-semibold"
       >
         {data.title}
       </text>
@@ -82,79 +85,97 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
         />
       ))}
 
-      {/* Quadrant labels + descriptions */}
-      {quadrantEntries.map((q) => (
-        <g key={`label-${q.key}`}>
-          <text
-            x={q.bounds.centerX}
-            y={q.bounds.centerY - 6}
-            textAnchor="middle"
-            className="fill-gray-700 font-mono text-[10px] font-semibold"
-          >
-            {truncateLabel(q.data.label, 20)}
-          </text>
-          <text
-            x={q.bounds.centerX}
-            y={q.bounds.centerY + 8}
-            textAnchor="middle"
-            className="fill-gray-400 font-mono text-[9px]"
-          >
-            {truncateLabel(q.data.description, 28)}
-          </text>
-        </g>
-      ))}
+      {/* Quadrant labels + descriptions (multi-line) */}
+      {quadrantEntries.map((q) => {
+        const descLines = wrapSvgText(q.data.description, DESC_MAX_CHARS)
+        return (
+          <g key={`label-${q.key}`}>
+            <text
+              x={q.bounds.centerX}
+              y={q.bounds.centerY - 10}
+              textAnchor="middle"
+              className="fill-gray-700 font-mono text-[13px] font-semibold"
+            >
+              {q.data.label}
+            </text>
+            <text
+              textAnchor="middle"
+              className="fill-gray-400 font-mono text-[11px]"
+            >
+              {descLines.map((line, li) => (
+                <tspan
+                  key={li}
+                  x={q.bounds.centerX}
+                  y={q.bounds.centerY + 6 + li * DESC_LINE_HEIGHT}
+                >
+                  {line}
+                </tspan>
+              ))}
+            </text>
+          </g>
+        )
+      })}
 
-      {/* Axis labels */}
+      {/* X-axis label (centered below plot) */}
       <text
         x={PLOT_X + PLOT_WIDTH / 2}
-        y={PLOT_Y + PLOT_HEIGHT + 16}
+        y={PLOT_Y + PLOT_HEIGHT + 22}
         textAnchor="middle"
-        className="fill-gray-500 font-mono text-[9px]"
+        className="fill-gray-500 font-mono text-[12px]"
       >
         {data.xAxisLabel}
       </text>
+      {/* X-axis low */}
       <text
-        x={PLOT_X - 4}
-        y={PLOT_Y + PLOT_HEIGHT + 16}
+        x={PLOT_X}
+        y={PLOT_Y + PLOT_HEIGHT + 38}
         textAnchor="start"
-        className="fill-gray-400 font-mono text-[9px]"
+        className="fill-gray-400 font-mono text-[11px]"
       >
         {data.xAxisLow}
       </text>
+      {/* X-axis high */}
       <text
-        x={PLOT_X + PLOT_WIDTH + 4}
-        y={PLOT_Y + PLOT_HEIGHT + 16}
+        x={PLOT_X + PLOT_WIDTH}
+        y={PLOT_Y + PLOT_HEIGHT + 38}
         textAnchor="end"
-        className="fill-gray-400 font-mono text-[9px]"
+        className="fill-gray-400 font-mono text-[11px]"
       >
         {data.xAxisHigh}
       </text>
 
-      {/* Y-axis */}
-      <text
-        x={PLOT_X - 8}
-        y={PLOT_Y + PLOT_HEIGHT / 2}
-        textAnchor="middle"
-        transform={`rotate(-90, ${PLOT_X - 8}, ${PLOT_Y + PLOT_HEIGHT / 2})`}
-        className="fill-gray-500 font-mono text-[9px]"
-      >
-        {data.yAxisLabel}
+      {/* Y-axis label (horizontal, left of plot, wrapping if long) */}
+      <text textAnchor="end" className="fill-gray-500 font-mono text-[12px]">
+        {yAxisLines.map((line, li) => (
+          <tspan
+            key={li}
+            x={PLOT_X - 8}
+            y={
+              PLOT_Y +
+              PLOT_HEIGHT / 2 -
+              ((yAxisLines.length - 1) * YAXIS_LABEL_LINE_HEIGHT) / 2 +
+              li * YAXIS_LABEL_LINE_HEIGHT
+            }
+          >
+            {line}
+          </tspan>
+        ))}
       </text>
+      {/* Y-axis low */}
       <text
         x={PLOT_X - 8}
-        y={PLOT_Y + PLOT_HEIGHT + 4}
-        textAnchor="middle"
-        transform={`rotate(-90, ${PLOT_X - 8}, ${PLOT_Y + PLOT_HEIGHT + 4})`}
-        className="fill-gray-400 font-mono text-[9px]"
+        y={PLOT_Y + PLOT_HEIGHT - 4}
+        textAnchor="end"
+        className="fill-gray-400 font-mono text-[11px]"
       >
         {data.yAxisLow}
       </text>
+      {/* Y-axis high */}
       <text
         x={PLOT_X - 8}
-        y={PLOT_Y - 4}
-        textAnchor="middle"
-        transform={`rotate(-90, ${PLOT_X - 8}, ${PLOT_Y - 4})`}
-        className="fill-gray-400 font-mono text-[9px]"
+        y={PLOT_Y + 10}
+        textAnchor="end"
+        className="fill-gray-400 font-mono text-[11px]"
       >
         {data.yAxisHigh}
       </text>
@@ -165,18 +186,18 @@ export function FrameworkMatrix({ data, accentHex }: FrameworkMatrixProps) {
           <circle
             cx={userPos.x}
             cy={userPos.y}
-            r={8}
+            r={16}
             fill={accentHex}
             fillOpacity={0.25}
             stroke={accentHex}
-            strokeWidth={2}
+            strokeWidth={2.5}
           />
-          <circle cx={userPos.x} cy={userPos.y} r={3} fill={accentHex} />
+          <circle cx={userPos.x} cy={userPos.y} r={6} fill={accentHex} />
           <text
             x={userPos.x}
-            y={userPos.y - 14}
+            y={userPos.y - 22}
             textAnchor="middle"
-            className="font-mono text-[9px] font-bold"
+            className="font-mono text-[14px] font-bold"
             fill={accentHex}
           >
             You

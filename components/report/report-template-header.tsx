@@ -5,7 +5,6 @@ import type { PersonaId } from '@/types/chat'
 
 interface ReportTemplateHeaderProps {
   title: string
-  metadata: string
   persona: PersonaId
   accentHex: string
   createdAt: string
@@ -13,7 +12,6 @@ interface ReportTemplateHeaderProps {
 
 export async function ReportTemplateHeader({
   title,
-  metadata,
   persona,
   accentHex,
   createdAt,
@@ -65,13 +63,6 @@ export async function ReportTemplateHeader({
         <h1 className="mt-3 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
           {title}
         </h1>
-
-        {/* Metadata (subtitle / context) */}
-        {metadata && (
-          <p className="mt-2 text-sm leading-relaxed text-gray-500">
-            {metadata}
-          </p>
-        )}
 
         {/* Divider */}
         <div

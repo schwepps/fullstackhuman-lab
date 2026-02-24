@@ -74,8 +74,8 @@ export function donutArcPath(
 
 // ─── Risk Gauge ───
 
-const RISK_GAUGE_START_ANGLE = 180 // left
-const RISK_GAUGE_END_ANGLE = 360 // right
+const RISK_GAUGE_START_ANGLE = 270 // left (9 o'clock)
+const RISK_GAUGE_END_ANGLE = 450 // right (3 o'clock)
 const RISK_GAUGE_RANGE = RISK_GAUGE_END_ANGLE - RISK_GAUGE_START_ANGLE
 
 export const RISK_LEVEL_FRACTIONS: Record<string, number> = {
@@ -87,7 +87,7 @@ export const RISK_LEVEL_FRACTIONS: Record<string, number> = {
 
 /**
  * Get the needle angle for a risk level.
- * Returns angle in degrees (180 = left, 360 = right).
+ * Returns angle in degrees (270 = left, 450 = right).
  */
 export function gaugeNeedleAngle(fraction: number): number {
   return RISK_GAUGE_START_ANGLE + fraction * RISK_GAUGE_RANGE
@@ -297,6 +297,22 @@ export function arrowheadPath(
     `M ${tipX} ${tipY}`,
     `L ${tipX - size} ${tipY - size / 2}`,
     `L ${tipX - size} ${tipY + size / 2}`,
+    'Z',
+  ].join(' ')
+}
+
+/**
+ * Generate an SVG path for a downward-pointing arrowhead at a given position.
+ */
+export function downArrowheadPath(
+  tipX: number,
+  tipY: number,
+  size: number
+): string {
+  return [
+    `M ${tipX} ${tipY}`,
+    `L ${tipX - size / 2} ${tipY - size}`,
+    `L ${tipX + size / 2} ${tipY - size}`,
     'Z',
   ].join(' ')
 }

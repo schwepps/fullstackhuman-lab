@@ -26,6 +26,31 @@ export const GAUGE_LEVEL_LABELS: Record<RiskLevel, string> = {
   critical: 'Critical',
 }
 
+// ─── SVG text wrapping ───
+
+/**
+ * Split text into lines that fit within a max character width.
+ * Breaks on word boundaries. Returns array of line strings.
+ */
+export function wrapSvgText(text: string, maxCharsPerLine: number): string[] {
+  const words = text.split(/\s+/)
+  const lines: string[] = []
+  let currentLine = ''
+
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word
+    if (testLine.length <= maxCharsPerLine) {
+      currentLine = testLine
+    } else {
+      if (currentLine) lines.push(currentLine)
+      currentLine = word
+    }
+  }
+  if (currentLine) lines.push(currentLine)
+
+  return lines
+}
+
 // ─── Framework Matrix quadrant fills ───
 
 export const FRAMEWORK_QUADRANT_FILLS: Record<string, string> = {

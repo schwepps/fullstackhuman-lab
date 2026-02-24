@@ -6,12 +6,12 @@ import {
 } from '@/lib/visuals/geometry'
 import type { AssessmentRadarData } from '@/lib/visuals/types'
 
-const CX = 160
-const CY = 150
-const OUTER_R = 110
+const CX = 250
+const CY = 195
+const OUTER_R = 130
 const MAX_SCORE = 10
 const GRID_RINGS = [2, 4, 6, 8, 10]
-const LABEL_R = OUTER_R + 20
+const LABEL_R = OUTER_R + 24
 
 interface AssessmentRadarProps {
   data: AssessmentRadarData
@@ -26,8 +26,8 @@ export function AssessmentRadar({ data, accentHex }: AssessmentRadarProps) {
 
   return (
     <svg
-      viewBox="0 0 320 300"
-      className="mx-auto w-full max-w-xs"
+      viewBox="0 0 500 400"
+      className="mx-auto w-full max-w-md"
       role="img"
       aria-label="Assessment radar chart"
     >
@@ -70,7 +70,7 @@ export function AssessmentRadar({ data, accentHex }: AssessmentRadarProps) {
 
       {/* Score dots */}
       {scorePoints.map((point, i) => (
-        <circle key={i} cx={point.x} cy={point.y} r={3.5} fill={accentHex} />
+        <circle key={i} cx={point.x} cy={point.y} r={4} fill={accentHex} />
       ))}
 
       {/* Dimension labels */}
@@ -87,7 +87,7 @@ export function AssessmentRadar({ data, accentHex }: AssessmentRadarProps) {
               x={labelPos.x}
               y={labelPos.y - 4}
               textAnchor={anchor}
-              className="fill-gray-600 font-mono text-[10px]"
+              className="fill-gray-600 font-mono text-[12px]"
             >
               {dim.name}
             </text>
@@ -95,7 +95,7 @@ export function AssessmentRadar({ data, accentHex }: AssessmentRadarProps) {
               x={labelPos.x}
               y={labelPos.y + 8}
               textAnchor={anchor}
-              className="font-mono text-[10px] font-bold"
+              className="font-mono text-[12px] font-bold"
               fill={accentHex}
             >
               {dim.score}/10
