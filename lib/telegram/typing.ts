@@ -11,7 +11,8 @@ export async function withTypingIndicator<T>(
   ctx: Context,
   fn: () => Promise<T>
 ): Promise<T> {
-  await ctx.sendChatAction('typing')
+  // Best-effort UX — don't block the main operation if typing action fails
+  await ctx.sendChatAction('typing').catch(() => {})
   const interval = setInterval(() => {
     ctx.sendChatAction('typing').catch(() => {})
   }, TYPING_REFRESH_MS)

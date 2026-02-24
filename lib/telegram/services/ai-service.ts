@@ -5,8 +5,8 @@ import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 import type { PersonaId, MessageRole } from '@/types/chat'
 
-/** Per-request timeout for Claude API calls (55s × 2 attempts = 110s < maxDuration 120s) */
-const AI_REQUEST_TIMEOUT_MS = 55_000
+/** Per-request timeout for Claude API calls (45s × 2 attempts = 90s < maxDuration 120s, ~30s for post-processing) */
+const AI_REQUEST_TIMEOUT_MS = 45_000
 
 /**
  * Call the Claude API (non-streaming) with SDK-managed timeout.
