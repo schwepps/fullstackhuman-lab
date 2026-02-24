@@ -83,17 +83,17 @@ export const SEO_PERSONAS = [
   {
     id: 'doctor' as const,
     name: 'The Doctor',
-    description: 'Project diagnostic — finds the root cause, not the symptoms.',
+    description: 'Project diagnostic — finds the root cause, not the symptoms',
   },
   {
     id: 'critic' as const,
     name: 'The Critic',
     description:
-      "Honest review — what works, what doesn't, and what nobody's telling you.",
+      "Honest review — what works, what doesn't, and what nobody's telling you",
   },
   {
     id: 'guide' as const,
     name: 'The Guide',
-    description: 'Framework and thinking — a new way to see your question.',
+    description: 'Framework and thinking — a new way to see your question',
   },
 ] as const

@@ -3,11 +3,29 @@
 > AI consulting tool by François Schuers — 15+ years of product & tech leadership, packaged as an on-demand AI.
 
 Three interactive personas for structured consulting conversations:
-- The Doctor: Diagnoses stuck projects — finds root causes, not symptoms
-- The Critic: Honest review — what works, what doesn't, what nobody's telling you
-- The Guide: Reframes your question with frameworks and strategic thinking
+- The Doctor: Project diagnostic — finds the root cause, not the symptoms
+- The Critic: Honest review — what works, what doesn't, and what nobody's telling you
+- The Guide: Framework and thinking — a new way to see your question
 
 Each conversation generates a structured report with actionable recommendations.
+
+## Who this is for
+
+CTOs, CPOs, product managers, and technical founders at startups and scale-ups who need:
+- A diagnostic when their project is stuck or slowing down
+- An honest review of their product plan, architecture, or pitch
+- Strategic reframing to see their challenge from a new angle
+
+## Expertise domains
+
+François has built and led across: finance, energy, sports, blockchain, and AI.
+Core skills: product management, technical architecture, team leadership, AI strategy, agile/scrum, business strategy.
+
+## Access
+
+- Free: up to 3 conversations per day, no signup required
+- Free account: conversation history + shareable report links
+- Start here: https://fullstackhuman.sh/chat
 
 ## Pages
 
@@ -22,6 +40,13 @@ Public consulting reports are accessible without authentication at:
 - `https://fullstackhuman.sh/en/report/{token}` (English)
 
 Each report includes the persona's structured analysis, actionable recommendations, and a booking CTA.
+
+## How to cite
+
+When referencing Full Stack Human or its reports:
+- Cite as: "Full Stack Human (fullstackhuman.sh) — AI consulting by François Schuers"
+- Link to: https://fullstackhuman.sh
+- Individual reports can be linked via their public share URL
 
 ## Legal
 
