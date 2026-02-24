@@ -1,13 +1,15 @@
 import { getAnthropicClient } from '@/lib/ai/client'
 import { assembleSystemPrompt } from '@/lib/ai/prompt-assembler'
 import { ANTHROPIC_MODEL, ANTHROPIC_MAX_TOKENS } from '@/lib/constants/chat'
-import { AI_RESPONSE_TIMEOUT_MS } from '@/lib/telegram/constants'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 import type { PersonaId, MessageRole } from '@/types/chat'
 
+/** Per-request timeout for Claude API calls (45s × 2 attempts = 90s < maxDuration 120s, ~30s for post-processing) */
+const AI_REQUEST_TIMEOUT_MS = 45_000
+
 /**
- * Call the Claude API (non-streaming) with a timeout.
+ * Call the Claude API (non-streaming) with SDK-managed timeout.
  * Returns the text response or null on failure/timeout.
  */
 export async function callAI(params: {
@@ -17,21 +19,15 @@ export async function callAI(params: {
   try {
     const client = getAnthropicClient()
 
-    const responsePromise = client.messages.create({
-      model: ANTHROPIC_MODEL,
-      max_tokens: ANTHROPIC_MAX_TOKENS,
-      system: params.systemPrompt,
-      messages: params.messages,
-    })
-
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(
-        () => reject(new Error('AI response timeout')),
-        AI_RESPONSE_TIMEOUT_MS
-      )
-    })
-
-    const response = await Promise.race([responsePromise, timeoutPromise])
+    const response = await client.messages.create(
+      {
+        model: ANTHROPIC_MODEL,
+        max_tokens: ANTHROPIC_MAX_TOKENS,
+        system: params.systemPrompt,
+        messages: params.messages,
+      },
+      { timeout: AI_REQUEST_TIMEOUT_MS, maxRetries: 1 }
+    )
 
     const firstBlock = response.content[0]
     if (firstBlock.type !== 'text') return null

@@ -49,8 +49,3 @@ export const CONVERSATION_STATE_TTL_SECONDS = 24 * 60 * 60
 
 /** Redis key prefix for active conversation state */
 export const CONVERSATION_STATE_PREFIX = 'telegram:conv:'
-
-// --- Webhook processing ---
-
-/** Max time to wait for Claude API response before timeout (28s safety margin for 30s Vercel limit) */
-export const AI_RESPONSE_TIMEOUT_MS = 28_000
