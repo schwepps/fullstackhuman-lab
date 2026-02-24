@@ -4,6 +4,7 @@ import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useCookieConsentContext } from '@/components/layout/cookie-consent-provider'
 import { LINKEDIN_URL } from '@/lib/constants/app'
+import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 
 const linkClass =
   'py-1 font-mono text-xs text-foreground/40 transition-colors hover:text-primary'
@@ -31,7 +32,7 @@ export function Footer() {
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-6">
         {/* Brand tagline */}
         <p className="font-mono text-sm text-foreground/40">
-          {t('tagline', { year })}
+          {t('tagline', { brand: BRAND_NAME_DISPLAY, year })}
         </p>
 
         {/* Attribution + LinkedIn */}
