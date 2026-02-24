@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { hasLocale } from 'next-intl'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { routing } from '@/i18n/routing'
+import { TWITTER_HANDLE } from '@/lib/constants/app'
+import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 import {
   OG_DESCRIPTION_MAX_LENGTH,
   SHARE_TOKEN_REGEX,
@@ -62,10 +64,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       url: reportUrl,
       type: 'article',
-      siteName: 'Full Stack Human',
+      siteName: BRAND_NAME_DISPLAY,
     },
     twitter: {
       card: 'summary_large_image',
+      site: TWITTER_HANDLE,
+      creator: TWITTER_HANDLE,
       title: pageTitle,
       description,
     },

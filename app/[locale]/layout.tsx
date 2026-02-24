@@ -4,7 +4,8 @@ import { NextIntlClientProvider, hasLocale } from 'next-intl'
 import { setRequestLocale, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
-import { APP_URL } from '@/lib/constants/app'
+import { APP_URL, TWITTER_HANDLE } from '@/lib/constants/app'
+import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 import { CookieConsentProvider } from '@/components/layout/cookie-consent-provider'
 import { WebMcpRegistration } from '@/components/seo/webmcp-registration'
 import '../globals.css'
@@ -47,20 +48,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     metadataBase: new URL(APP_URL),
     title: {
       default: t('title'),
-      template: '%s | Fullstackhuman',
+      template: `%s | ${BRAND_NAME_DISPLAY}`,
     },
     description: t('description'),
-    keywords: [
-      'AI consulting',
-      'product strategy',
-      'tech leadership',
-      'project diagnostic',
-      'product review',
-      'conseil IA',
-      'stratégie produit',
-    ],
     authors: [{ name: 'François Schuers' }],
-    creator: 'Fullstackhuman',
+    creator: BRAND_NAME_DISPLAY,
     category: 'technology',
     robots: {
       index: true,
@@ -77,12 +69,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'website',
       locale: validLocale === 'fr' ? 'fr_FR' : 'en_US',
       url: localeUrl,
-      siteName: 'Fullstackhuman',
+      siteName: BRAND_NAME_DISPLAY,
       title: t('title'),
       description: t('description'),
+      images: [{ url: `${localeUrl}/opengraph-image`, alt: t('ogImageAlt') }],
     },
     twitter: {
       card: 'summary_large_image',
+      site: TWITTER_HANDLE,
+      creator: TWITTER_HANDLE,
       title: t('title'),
       description: t('description'),
     },
