@@ -91,7 +91,7 @@ export const pdfStyles = StyleSheet.create({
     fontFamily: 'Helvetica-Bold',
   },
   italic: {
-    fontStyle: 'italic',
+    fontFamily: 'Helvetica-Oblique',
     color: '#4b5563',
   },
   listItem: {
@@ -116,7 +116,7 @@ export const pdfStyles = StyleSheet.create({
     paddingLeft: 10,
     marginVertical: 8,
     color: '#4b5563',
-    fontStyle: 'italic',
+    fontFamily: 'Helvetica-Oblique',
   },
   codeInline: {
     fontFamily: 'Courier',

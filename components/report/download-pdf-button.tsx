@@ -16,7 +16,9 @@ export function DownloadPdfButton({ shareToken }: DownloadPdfButtonProps) {
   async function handleDownload() {
     setIsDownloading(true)
     try {
-      const res = await fetch(`/api/report/${shareToken}/pdf`)
+      const res = await fetch(`/api/report/${shareToken}/pdf`, {
+        cache: 'no-store',
+      })
       if (!res.ok) return
       const blob = await res.blob()
       const disposition = res.headers.get('Content-Disposition')

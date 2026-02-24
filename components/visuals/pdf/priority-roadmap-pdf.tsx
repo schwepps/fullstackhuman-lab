@@ -98,7 +98,8 @@ export function PriorityRoadmapPdf({
             {/* Number */}
             <SvgText
               x={CIRCLE_CX}
-              y={circleY + 3}
+              y={circleY + 4}
+              textAnchor="middle"
               style={{ fontSize: 10, fontFamily: 'Helvetica-Bold' }}
               fill={i === 0 ? 'white' : accentHex}
             >

@@ -59,6 +59,7 @@ export function FrameworkMatrixPdf({
       <SvgText
         x={PX + PW / 2}
         y={16}
+        textAnchor="middle"
         style={{ fontSize: 12, fontFamily: 'Helvetica-Bold' }}
         fill="#374151"
       >
@@ -82,6 +83,7 @@ export function FrameworkMatrixPdf({
             <SvgText
               x={q.b.centerX}
               y={q.b.centerY - 8}
+              textAnchor="middle"
               style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}
               fill="#374151"
             >
@@ -92,6 +94,7 @@ export function FrameworkMatrixPdf({
                 key={`d-${q.key}-${li}`}
                 x={q.b.centerX}
                 y={q.b.centerY + 6 + li * DESC_LINE_HEIGHT}
+                textAnchor="middle"
                 style={{ fontSize: 8, fontFamily: 'Helvetica' }}
                 fill="#9ca3af"
               >
@@ -106,6 +109,7 @@ export function FrameworkMatrixPdf({
       <SvgText
         x={PX + PW / 2}
         y={PY + PH + 16}
+        textAnchor="middle"
         style={{ fontSize: 9, fontFamily: 'Helvetica' }}
         fill="#6b7280"
       >
@@ -115,6 +119,7 @@ export function FrameworkMatrixPdf({
       <SvgText
         x={PX}
         y={PY + PH + 28}
+        textAnchor="start"
         style={{ fontSize: 8, fontFamily: 'Helvetica' }}
         fill="#9ca3af"
       >
@@ -124,6 +129,7 @@ export function FrameworkMatrixPdf({
       <SvgText
         x={PX + PW}
         y={PY + PH + 28}
+        textAnchor="end"
         style={{ fontSize: 8, fontFamily: 'Helvetica' }}
         fill="#9ca3af"
       >
@@ -141,6 +147,7 @@ export function FrameworkMatrixPdf({
             ((yAxisLines.length - 1) * YAXIS_LABEL_LINE_HEIGHT) / 2 +
             li * YAXIS_LABEL_LINE_HEIGHT
           }
+          textAnchor="end"
           style={{ fontSize: 8, fontFamily: 'Helvetica' }}
           fill="#6b7280"
         >
@@ -151,6 +158,7 @@ export function FrameworkMatrixPdf({
       <SvgText
         x={PX - 8}
         y={PY + PH - 4}
+        textAnchor="end"
         style={{ fontSize: 8, fontFamily: 'Helvetica' }}
         fill="#9ca3af"
       >
@@ -160,6 +168,7 @@ export function FrameworkMatrixPdf({
       <SvgText
         x={PX - 8}
         y={PY + 10}
+        textAnchor="end"
         style={{ fontSize: 8, fontFamily: 'Helvetica' }}
         fill="#9ca3af"
       >
@@ -182,6 +191,7 @@ export function FrameworkMatrixPdf({
           <SvgText
             x={userPos.x}
             y={userPos.y - 20}
+            textAnchor="middle"
             style={{ fontSize: 12, fontFamily: 'Helvetica-Bold' }}
             fill={accentHex}
           >

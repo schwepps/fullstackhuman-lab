@@ -73,7 +73,10 @@ export async function GET(
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${filename}"`,
-        'Cache-Control': 'private, max-age=3600',
+        'Cache-Control':
+          process.env.NODE_ENV === 'production'
+            ? 'private, max-age=3600'
+            : 'private, no-store',
       },
     })
   } catch (error) {

@@ -44,13 +44,15 @@ export function RiskGaugePdf({ data }: { data: RiskGaugeData }) {
       {segments.map((seg) => {
         const midAngle = (seg.startAngle + seg.endAngle) / 2
         const labelPos = polarToCartesian(CX, CY, OUTER_R + 14, midAngle)
-        // Shift right-side labels rightward to avoid overlap with arc
-        const xOffset = labelPos.x > CX + 10 ? 4 : labelPos.x < CX - 10 ? -4 : 0
+        const isRight = labelPos.x > CX + 10
+        const isLeft = labelPos.x < CX - 10
+        const anchor = isRight ? 'start' : isLeft ? 'end' : 'middle'
         return (
           <SvgText
             key={`label-${seg.level}`}
-            x={labelPos.x + xOffset}
+            x={labelPos.x}
             y={labelPos.y}
+            textAnchor={anchor}
             style={{ fontSize: 7, fontFamily: 'Helvetica' }}
             fill="#9ca3af"
           >
@@ -70,6 +72,7 @@ export function RiskGaugePdf({ data }: { data: RiskGaugeData }) {
       <SvgText
         x={CX}
         y={CY + 25}
+        textAnchor="middle"
         style={{ fontSize: 11, fontFamily: 'Helvetica-Bold' }}
         fill={GAUGE_SEGMENT_COLORS[data.level]}
       >

@@ -10,6 +10,29 @@ const PLOT_HEIGHT = 240
 const MAX_SCORE = 10
 const DOT_R = 10
 
+const QUADRANT_LABELS = [
+  {
+    x: PLOT_X + PLOT_WIDTH * 0.25,
+    y: PLOT_Y + PLOT_HEIGHT * 0.25,
+    label: 'Do First',
+  },
+  {
+    x: PLOT_X + PLOT_WIDTH * 0.75,
+    y: PLOT_Y + PLOT_HEIGHT * 0.25,
+    label: 'Schedule',
+  },
+  {
+    x: PLOT_X + PLOT_WIDTH * 0.25,
+    y: PLOT_Y + PLOT_HEIGHT * 0.75,
+    label: 'Quick Wins',
+  },
+  {
+    x: PLOT_X + PLOT_WIDTH * 0.75,
+    y: PLOT_Y + PLOT_HEIGHT * 0.75,
+    label: 'Reconsider',
+  },
+]
+
 export function ActionMatrixPdf({
   data,
   accentHex,
@@ -48,18 +71,33 @@ export function ActionMatrixPdf({
         strokeWidth={1}
         strokeDasharray="4 3"
       />
+      {/* Quadrant labels */}
+      {QUADRANT_LABELS.map((q) => (
+        <SvgText
+          key={q.label}
+          x={q.x}
+          y={q.y}
+          textAnchor="middle"
+          style={{ fontSize: 7, fontFamily: 'Helvetica' }}
+          fill="#d1d5db"
+        >
+          {q.label}
+        </SvgText>
+      ))}
       {/* Axis labels */}
       <SvgText
         x={PLOT_X + PLOT_WIDTH / 2}
         y={PLOT_Y + PLOT_HEIGHT + 16}
+        textAnchor="middle"
         style={{ fontSize: 9, fontFamily: 'Helvetica' }}
         fill="#6b7280"
       >
         Urgency
       </SvgText>
       <SvgText
-        x={PLOT_X - 28}
+        x={PLOT_X - 8}
         y={PLOT_Y + PLOT_HEIGHT / 2}
+        textAnchor="end"
         style={{ fontSize: 9, fontFamily: 'Helvetica' }}
         fill="#6b7280"
       >
@@ -90,6 +128,7 @@ export function ActionMatrixPdf({
             <SvgText
               x={pos.x}
               y={pos.y + 3}
+              textAnchor="middle"
               style={{ fontSize: 9, fontFamily: 'Helvetica-Bold' }}
               fill={accentHex}
             >

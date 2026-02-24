@@ -13,14 +13,19 @@ import { pdfStyles as s } from '@/lib/pdf/styles'
 export function MarkdownToPdf({
   content,
   accentHex,
+  baseFontFamily,
 }: {
   content: string
   accentHex: string
+  baseFontFamily?: string
 }) {
   const lines = content.split('\n')
   const elements: React.ReactElement[] = []
   let i = 0
   let key = 0
+  const fontOverride = baseFontFamily
+    ? { fontFamily: baseFontFamily }
+    : undefined
 
   while (i < lines.length) {
     const line = lines[i]
@@ -50,7 +55,9 @@ export function MarkdownToPdf({
           key={key++}
           style={[s.blockquote, { borderLeftColor: accentHex }]}
         >
-          <Text style={s.paragraph}>
+          <Text
+            style={fontOverride ? [s.paragraph, fontOverride] : s.paragraph}
+          >
             {renderInline(quoteLines.join(' '), accentHex)}
           </Text>
         </View>
@@ -80,7 +87,13 @@ export function MarkdownToPdf({
         elements.push(
           <View key={key++} style={s.listItem}>
             <Text style={s.listBullet}>{'\u2022'}</Text>
-            <Text style={s.listContent}>{renderInline(text, accentHex)}</Text>
+            <Text
+              style={
+                fontOverride ? [s.listContent, fontOverride] : s.listContent
+              }
+            >
+              {renderInline(text, accentHex)}
+            </Text>
           </View>
         )
         i++
@@ -96,7 +109,11 @@ export function MarkdownToPdf({
           elements.push(
             <View key={key++} style={s.listItem}>
               <Text style={s.listBullet}>{match[1]}.</Text>
-              <Text style={s.listContent}>
+              <Text
+                style={
+                  fontOverride ? [s.listContent, fontOverride] : s.listContent
+                }
+              >
                 {renderInline(match[2], accentHex)}
               </Text>
             </View>
@@ -125,7 +142,10 @@ export function MarkdownToPdf({
     }
     if (paraLines.length > 0) {
       elements.push(
-        <Text key={key++} style={s.paragraph}>
+        <Text
+          key={key++}
+          style={fontOverride ? [s.paragraph, fontOverride] : s.paragraph}
+        >
           {renderInline(paraLines.join(' '), accentHex)}
         </Text>
       )
@@ -142,9 +162,9 @@ function renderInline(
   accentHex: string
 ): (string | React.ReactElement)[] {
   const parts: (string | React.ReactElement)[] = []
-  // Match: **bold**, *italic*, `code`, [text](url)
+  // Match: **bold**, *italic*, _italic_, `code`, [text](url)
   const regex =
-    /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)]+)\))/g
+    /(\*\*([^*]+)\*\*)|(\*([^*]+)\*)|(_([^_]+)_)|(`([^`]+)`)|(\[([^\]]+)\]\(([^)]+)\))/g
   let lastIndex = 0
   let match: RegExpExecArray | null
   let key = 0
@@ -170,26 +190,33 @@ function renderInline(
         </Text>
       )
     } else if (match[6]) {
-      // `code`
+      // _italic_
       parts.push(
-        <Text key={key++} style={s.codeInline}>
+        <Text key={key++} style={s.italic}>
           {match[6]}
         </Text>
       )
-    } else if (match[8] && match[9]) {
+    } else if (match[8]) {
+      // `code`
+      parts.push(
+        <Text key={key++} style={s.codeInline}>
+          {match[8]}
+        </Text>
+      )
+    } else if (match[10] && match[11]) {
       // [text](url)
-      if (/^https?:\/\//i.test(match[9])) {
+      if (/^https?:\/\//i.test(match[11])) {
         parts.push(
           <Link
             key={key++}
-            src={match[9]}
+            src={match[11]}
             style={[s.link, { color: accentHex }]}
           >
-            {match[8]}
+            {match[10]}
           </Link>
         )
       } else {
-        parts.push(match[8])
+        parts.push(match[10])
       }
     }
 

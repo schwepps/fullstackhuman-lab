@@ -12,14 +12,15 @@ import {
   pointsToSvgString,
   polarToCartesian,
 } from '@/lib/visuals/geometry'
+import { truncateLabel } from '@/lib/visuals/constants'
 import type { AssessmentRadarData } from '@/lib/visuals/types'
 
 const CX = 250
-const CY = 195
+const CY = 200
 const OUTER_R = 130
 const MAX_SCORE = 10
 const GRID_RINGS = [2, 4, 6, 8, 10]
-const LABEL_R = OUTER_R + 22
+const LABEL_R = OUTER_R + 30
 
 export function AssessmentRadarPdf({
   data,
@@ -34,7 +35,7 @@ export function AssessmentRadarPdf({
   const outerPoints = radarGridPoints(CX, CY, OUTER_R, n)
 
   return (
-    <Svg width="500" height="400" viewBox="0 0 500 400">
+    <Svg width="500" height="420" viewBox="0 0 500 420">
       {/* Grid rings */}
       {GRID_RINGS.map((ring) => {
         const r = (ring / MAX_SCORE) * OUTER_R
@@ -83,16 +84,45 @@ export function AssessmentRadarPdf({
       {data.dimensions.map((dim, i) => {
         const angle = (i * 360) / n
         const labelPos = polarToCartesian(CX, CY, LABEL_R, angle)
+        const isRight = labelPos.x > CX + 10
+        const isLeft = labelPos.x < CX - 10
+        const anchor = isRight ? 'start' : isLeft ? 'end' : 'middle'
+
+        // Push labels away from chart center to prevent overlap
+        const isTop = labelPos.y < CY - 10
+        const isBottom = labelPos.y > CY + 10
+        const nameY = isTop
+          ? labelPos.y - 10
+          : isBottom
+            ? labelPos.y + 2
+            : labelPos.y - 4
+        const scoreY = isTop
+          ? labelPos.y + 2
+          : isBottom
+            ? labelPos.y + 14
+            : labelPos.y + 8
+
         return (
-          <SvgText
-            key={`label-${i}`}
-            x={labelPos.x}
-            y={labelPos.y}
-            style={{ fontSize: 8, fontFamily: 'Helvetica' }}
-            fill="#4b5563"
-          >
-            {dim.name} ({dim.score}/10)
-          </SvgText>
+          <React.Fragment key={`label-${i}`}>
+            <SvgText
+              x={labelPos.x}
+              y={nameY}
+              textAnchor={anchor}
+              style={{ fontSize: 8, fontFamily: 'Helvetica' }}
+              fill="#4b5563"
+            >
+              {truncateLabel(dim.name, 18)}
+            </SvgText>
+            <SvgText
+              x={labelPos.x}
+              y={scoreY}
+              textAnchor={anchor}
+              style={{ fontSize: 8, fontFamily: 'Helvetica-Bold' }}
+              fill={accentHex}
+            >
+              {`${dim.score}/10`}
+            </SvgText>
+          </React.Fragment>
         )
       })}
     </Svg>

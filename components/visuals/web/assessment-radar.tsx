@@ -7,11 +7,11 @@ import {
 import type { AssessmentRadarData } from '@/lib/visuals/types'
 
 const CX = 250
-const CY = 195
+const CY = 200
 const OUTER_R = 130
 const MAX_SCORE = 10
 const GRID_RINGS = [2, 4, 6, 8, 10]
-const LABEL_R = OUTER_R + 24
+const LABEL_R = OUTER_R + 30
 
 interface AssessmentRadarProps {
   data: AssessmentRadarData
@@ -26,7 +26,7 @@ export function AssessmentRadar({ data, accentHex }: AssessmentRadarProps) {
 
   return (
     <svg
-      viewBox="0 0 500 400"
+      viewBox="0 0 500 420"
       className="mx-auto w-full max-w-md"
       role="img"
       aria-label="Assessment radar chart"

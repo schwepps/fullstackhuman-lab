@@ -11,6 +11,8 @@ import {
   FrameworkMatrixPdf,
   ConceptSpectrumPdf,
 } from '@/components/visuals/pdf'
+import { FshIconMarkPdf } from '@/components/visuals/pdf/fsh-icon-mark-pdf'
+import { PersonaIconPdf } from '@/components/visuals/pdf/persona-icons-pdf'
 import { parseReport } from '@/lib/visuals/parser'
 import {
   PERSONA_TEMPLATE_CONFIGS,
@@ -18,6 +20,13 @@ import {
 } from '@/lib/constants/report-templates'
 import type { PersonaId } from '@/types/chat'
 import type { VisualData } from '@/lib/visuals/types'
+
+/** Clean CTA text for PDF: strip italic `_` markers and unsupported Unicode (→ arrow). */
+function cleanCtaForPdf(text: string): string {
+  return text
+    .replace(/^_\s?|\s?_\s*$/gm, '') // strip leading/trailing _ italic markers
+    .replace(/\s*→/g, '') // strip → arrow (unsupported in Helvetica)
+}
 
 interface ReportPdfDocumentProps {
   content: string
@@ -50,7 +59,16 @@ export function ReportPdfDocument({
 
         {/* Running header */}
         <View style={s.pageHeader} fixed>
-          <Text style={s.pageHeaderText}>Full Stack Human</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+            }}
+          >
+            <FshIconMarkPdf width={48} color="#6b7280" />
+            <Text style={s.pageHeaderText}>Full Stack Human</Text>
+          </View>
           <Text style={s.pageHeaderText}>{dateStr}</Text>
         </View>
 
@@ -66,9 +84,24 @@ export function ReportPdfDocument({
         </View>
 
         {/* Persona badge */}
-        <Text style={[s.personaBadge, { color: config.accentHex }]}>
-          {PERSONA_DISPLAY_NAMES[persona]}
-        </Text>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 6,
+            marginBottom: 8,
+          }}
+        >
+          <PersonaIconPdf persona={persona} color={config.accentHex} />
+          <Text
+            style={[
+              s.personaBadge,
+              { color: config.accentHex, marginBottom: 0 },
+            ]}
+          >
+            {PERSONA_DISPLAY_NAMES[persona]}
+          </Text>
+        </View>
 
         {/* Title */}
         <Text style={s.title}>{parsed.title}</Text>
@@ -143,8 +176,9 @@ export function ReportPdfDocument({
           <View style={{ marginTop: 16 }}>
             <View style={[s.divider, { backgroundColor: '#e5e7eb' }]} />
             <MarkdownToPdf
-              content={parsed.ctaFooter}
+              content={cleanCtaForPdf(parsed.ctaFooter)}
               accentHex={config.accentHex}
+              baseFontFamily="Helvetica-Oblique"
             />
           </View>
         )}

@@ -13,7 +13,7 @@ const ARROW_LEN = 50
 const PAD_X = 12
 const PAD_Y = 12
 const HEADER_HEIGHT = 18
-const MAX_CHARS = 30
+const MAX_CHARS = 22
 
 function computeBoxHeight(lineCount: number): number {
   return Math.max(BOX_MIN_H, BOX_PADDING_Y * 2 + lineCount * LINE_HEIGHT)
@@ -70,6 +70,7 @@ export function RootCauseFlowPdf({
       <SvgText
         x={leftX + BOX_W / 2}
         y={PAD_Y + 8}
+        textAnchor="middle"
         style={{ fontSize: 7, fontFamily: 'Helvetica' }}
         fill="#9ca3af"
       >
@@ -78,6 +79,7 @@ export function RootCauseFlowPdf({
       <SvgText
         x={rightX + BOX_W / 2}
         y={PAD_Y + 8}
+        textAnchor="middle"
         style={{ fontSize: 7, fontFamily: 'Helvetica' }}
         fill={accentHex}
       >
@@ -112,6 +114,7 @@ export function RootCauseFlowPdf({
                   LINE_HEIGHT * 0.75 +
                   li * LINE_HEIGHT
                 }
+                textAnchor="middle"
                 style={{ fontSize: 8, fontFamily: 'Helvetica' }}
                 fill="#374151"
               >
@@ -153,6 +156,7 @@ export function RootCauseFlowPdf({
                   LINE_HEIGHT * 0.75 +
                   li * LINE_HEIGHT
                 }
+                textAnchor="middle"
                 style={{ fontSize: 8, fontFamily: 'Helvetica-Bold' }}
                 fill={accentHex}
               >
