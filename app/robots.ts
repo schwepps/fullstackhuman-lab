@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { routing } from '@/i18n/routing'
-import { APP_URL } from '@/lib/constants/app'
+import { APP_URL, CHAT_PATH } from '@/lib/constants/app'
 import { LEGAL_PATHS } from '@/lib/constants/legal'
 
 /**
@@ -25,7 +25,7 @@ const AI_BOT_ALLOW = [
     .filter((l) => l !== routing.defaultLocale)
     .map((l) => `/${l}/report/`),
 ]
-const AI_BOT_DISALLOW = ['/api/', '/chat', '/auth/', '/account']
+const AI_BOT_DISALLOW = ['/api/', CHAT_PATH, '/auth/', '/account']
 
 /** AI search engine bots that we explicitly allow on public pages. */
 const AI_BOT_USER_AGENTS = [

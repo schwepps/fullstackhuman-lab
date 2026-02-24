@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
+import { CHAT_PATH } from '@/lib/constants/app'
 import { AUTH_ERROR, AUTH_SUCCESS, type AuthActionState } from './types'
 import { checkAuthRateLimit } from './rate-limit'
 
@@ -53,7 +54,7 @@ export async function loginAction(
   ) {
     redirect(redirectPath)
   }
-  redirect('/chat')
+  redirect(CHAT_PATH)
 }
 
 export async function signupAction(
@@ -94,7 +95,7 @@ export async function signupAction(
   }
 
   revalidatePath('/', 'layout')
-  redirect('/chat')
+  redirect(CHAT_PATH)
 }
 
 export async function forgotPasswordAction(
