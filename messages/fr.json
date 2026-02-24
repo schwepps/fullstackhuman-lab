@@ -37,7 +37,7 @@
   "hud": {
     "sysId": "SYS.ID: FSH-001",
     "status": "[ACTIF]",
-    "role": "RÔLE: builder",
+    "role": "RÔLE: expert",
     "version": "v1.0.0"
   },
   "localeSwitcher": {
