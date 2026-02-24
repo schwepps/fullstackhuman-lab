@@ -5,11 +5,13 @@ import type {
   ChatMessage,
   ChatState,
   PersonaId,
-  MessageRole,
+  FileAttachment,
+  FileAttachmentMeta,
 } from '@/types/chat'
 import type { Conversation } from '@/types/conversation'
 import { PERSONAS } from '@/lib/constants/personas'
 import { readSSEStream } from '@/lib/ai/sse-reader'
+import { createMessage, buildApiMessages } from '@/lib/ai/message-builder'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
 import { useAuth } from '@/lib/hooks/use-auth'
 import {
@@ -21,34 +23,6 @@ import {
   createReport,
   getShareTokenForConversation,
 } from '@/lib/reports/actions'
-
-function createMessage(
-  role: MessageRole,
-  content: string,
-  isReport = false
-): ChatMessage {
-  return {
-    id: crypto.randomUUID(),
-    role,
-    content,
-    isReport,
-    timestamp: Date.now(),
-  }
-}
-
-function buildApiMessages(
-  messages: ChatMessage[],
-  userMessage: ChatMessage,
-  triggerText: string
-) {
-  return [
-    { role: 'user' as const, content: triggerText },
-    ...[...messages, userMessage].map((msg) => ({
-      role: msg.role,
-      content: msg.content,
-    })),
-  ]
-}
 
 function detectReport(content: string, persona: PersonaId): boolean {
   return PERSONAS[persona].reportDetectPattern.test(content)
@@ -129,15 +103,27 @@ export function useChat() {
   )
 
   const sendMessage = useCallback(
-    async (content: string) => {
+    async (content: string, attachments?: FileAttachment[]) => {
       const { persona, isStreaming, messages, isReadOnly } = stateRef.current
       if (!persona || isStreaming || isReadOnly) return
 
-      const userMsg = createMessage('user', content)
+      // Store metadata only (strip base64 data) for persistence
+      const attachmentMeta: FileAttachmentMeta[] | undefined =
+        attachments?.length
+          ? attachments.map(({ id, name, type, size }) => ({
+              id,
+              name,
+              type,
+              size,
+            }))
+          : undefined
+
+      const userMsg = createMessage('user', content, false, attachmentMeta)
       const apiMessages = buildApiMessages(
         messages,
         userMsg,
-        triggerRef.current
+        triggerRef.current,
+        attachments
       )
       const assistantId = crypto.randomUUID()
 

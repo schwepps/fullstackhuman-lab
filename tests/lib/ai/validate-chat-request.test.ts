@@ -208,6 +208,290 @@ describe('validateChatRequest', () => {
     }
   })
 
+  // -- Attachments --
+
+  // Valid base64 data with correct magic byte prefixes
+  const validAttachment = {
+    type: 'application/pdf',
+    data: 'JVBERi0xLjQK', // %PDF-1.4 in base64
+    name: 'deck.pdf',
+    size: 1024,
+  }
+
+  const validImageAttachment = {
+    type: 'image/png',
+    data: 'iVBORw0KGgoAAAANSUhEUg==', // PNG magic bytes
+    name: 'screenshot.png',
+    size: 2048,
+  }
+
+  const validTextAttachment = {
+    type: 'text/plain',
+    data: Buffer.from('Hello world').toString('base64'),
+    name: 'notes.txt',
+    size: 11,
+  }
+
+  it('accepts user message with valid PDF attachment', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Review this',
+            attachments: [validAttachment],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.messages[2].attachments).toHaveLength(1)
+      expect(result.data.messages[2].attachments![0].name).toBe('deck.pdf')
+    }
+  })
+
+  it('accepts user message with valid image attachment', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'What is this?',
+            attachments: [validImageAttachment],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(true)
+  })
+
+  it('accepts user message with valid text attachment (no magic bytes)', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Read this',
+            attachments: [validTextAttachment],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(true)
+  })
+
+  it('accepts messages without attachments (backward compat)', () => {
+    const result = validateChatRequest(validBody())
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      expect(result.data.messages[0].attachments).toBeUndefined()
+    }
+  })
+
+  it('rejects attachments on assistant messages', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          {
+            role: 'assistant',
+            content: 'Hello',
+            attachments: [validAttachment],
+          },
+          { role: 'user', content: 'Thanks' },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
+  it('rejects invalid attachment type', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Check this',
+            attachments: [{ ...validAttachment, type: 'application/zip' }],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
+  it('rejects attachment exceeding size limit', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Big file',
+            attachments: [{ ...validAttachment, size: 10 * 1024 * 1024 + 1 }],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
+  it('rejects too many attachments per message', () => {
+    const attachments = Array.from({ length: 6 }, (_, i) => ({
+      ...validAttachment,
+      name: `file${i}.pdf`,
+    }))
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          { role: 'user', content: 'Many files', attachments },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
+  it('rejects attachment with empty data', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Empty data',
+            attachments: [{ ...validAttachment, data: '' }],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
+  it('rejects non-base64 data string', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Bad data',
+            attachments: [
+              { ...validAttachment, data: '<script>alert(1)</script>' },
+            ],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
+  it('rejects base64 data exceeding max length', () => {
+    // Generate a valid base64 string that exceeds MAX_FILE_SIZE_BYTES
+    const oversizedData =
+      'JVBER' + 'A'.repeat(Math.ceil((10 * 1024 * 1024) / 3) * 4)
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Huge payload',
+            attachments: [{ ...validAttachment, data: oversizedData, size: 1 }],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
+  it('rejects PDF with wrong magic bytes', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Fake PDF',
+            attachments: [
+              {
+                type: 'application/pdf',
+                data: 'iVBORw0KGgo=', // PNG magic bytes, not PDF
+                name: 'fake.pdf',
+                size: 100,
+              },
+            ],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
+  it('rejects unsafe file names (path traversal)', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Sneaky file',
+            attachments: [{ ...validAttachment, name: '../../../etc/passwd' }],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
+  it('rejects file names with HTML characters', () => {
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'XSS file',
+            attachments: [
+              {
+                ...validAttachment,
+                name: '<img onerror=alert(1)>.pdf',
+              },
+            ],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(false)
+    if (!result.ok) expect(result.error.error).toBe('Invalid attachment')
+  })
+
   // -- Happy path --
 
   it('returns validated data for valid request', () => {

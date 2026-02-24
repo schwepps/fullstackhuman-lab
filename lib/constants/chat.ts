@@ -23,6 +23,12 @@ export const MAX_TRIGGER_LENGTH = 200
 export const MAX_REQUESTS_PER_IP_PER_HOUR = 60
 export const IP_WINDOW_MS = 60 * 60 * 1000 // 1 hour
 
+// --- File upload constants ---
+export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024 // 10MB
+export const MAX_FILES_PER_MESSAGE = 5
+export const MAX_FILE_NAME_LENGTH = 255
+export const FILE_INPUT_ACCEPT = '.pdf,.png,.jpg,.jpeg,.webp,.txt,.md,.csv'
+
 export { BRAND_NAME, BRAND_NAME_SHORT } from '@/lib/constants/brand'
 
 // Error code → i18n key mapping for chat error messages

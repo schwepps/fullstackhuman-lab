@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server'
 import { getAnthropicClient } from '@/lib/ai/client'
 import { assembleSystemPrompt } from '@/lib/ai/prompt-assembler'
-import { sanitizeMessageContent } from '@/lib/ai/sanitize'
 import { validateChatRequest } from '@/lib/ai/validate-chat-request'
+import { buildAnthropicMessages } from '@/lib/ai/build-content-blocks'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 import {
@@ -18,6 +18,9 @@ import {
   ANTHROPIC_MAX_TOKENS,
   NEW_CONVERSATION_MESSAGE_COUNT,
 } from '@/lib/constants/chat'
+
+// Allow time for large uploads + Claude processing
+export const maxDuration = 60
 
 export async function POST(request: NextRequest) {
   // CSRF: require Origin header and verify it matches host.
@@ -112,10 +115,7 @@ export async function POST(request: NextRequest) {
 
     const systemPrompt = await assembleSystemPrompt(persona)
 
-    const anthropicMessages = messages.map((msg) => ({
-      role: msg.role,
-      content: sanitizeMessageContent(msg.content),
-    }))
+    const anthropicMessages = buildAnthropicMessages(messages)
 
     const client = getAnthropicClient()
     const stream = client.messages.stream({

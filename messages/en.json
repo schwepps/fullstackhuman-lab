@@ -87,7 +87,19 @@
     "input": {
       "placeholder": "Type your message...",
       "send": "Send",
-      "stop": "Stop"
+      "stop": "Stop",
+      "attach": "Attach file",
+      "removeFile": "Remove {name}",
+      "fileErrors": {
+        "invalid_type": "{name} is not a supported file type. Use PDF, images, or text files.",
+        "file_too_large": "{name} exceeds the 10 MB limit.",
+        "too_many_files": "Maximum {max} files per message.",
+        "read_error": "Failed to read {name}. Try again."
+      }
+    },
+    "attachments": {
+      "file": "Attached file",
+      "image": "Attached image"
     },
     "report": {
       "label": "Report",

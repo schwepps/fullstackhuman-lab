@@ -6,7 +6,7 @@ import { ChatInput } from '@/components/chat/chat-input'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { ERROR_MESSAGE_KEYS } from '@/lib/constants/chat'
-import type { ChatMessage, PersonaId } from '@/types/chat'
+import type { ChatMessage, FileAttachment, PersonaId } from '@/types/chat'
 import type { TierKey } from '@/lib/constants/quotas'
 
 interface ChatContainerProps {
@@ -14,7 +14,7 @@ interface ChatContainerProps {
   persona: PersonaId
   isStreaming: boolean
   error: string | null
-  onSendMessage: (content: string) => void
+  onSendMessage: (content: string, attachments?: FileAttachment[]) => void
   onStopStreaming: () => void
   onDismissError: () => void
   quotaTier: TierKey

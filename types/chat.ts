@@ -8,6 +8,31 @@ export interface PersonaConfig {
   readonly promptFile: string
 }
 
+// --- File attachment types ---
+
+export const ALLOWED_FILE_TYPES = [
+  'application/pdf',
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'text/plain',
+  'text/markdown',
+  'text/csv',
+] as const
+
+export type AllowedFileType = (typeof ALLOWED_FILE_TYPES)[number]
+
+export interface FileAttachmentMeta {
+  readonly id: string
+  readonly name: string
+  readonly type: AllowedFileType
+  readonly size: number // bytes
+}
+
+export interface FileAttachment extends FileAttachmentMeta {
+  readonly data: string // base64-encoded — ephemeral, NOT persisted
+}
+
 // --- Message types ---
 
 export type MessageRole = 'user' | 'assistant'
@@ -18,6 +43,7 @@ export interface ChatMessage {
   readonly content: string
   readonly isReport: boolean
   readonly timestamp: number
+  readonly attachments?: FileAttachmentMeta[]
 }
 
 // --- Chat state ---
