@@ -93,7 +93,7 @@ export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
             size="sm"
             className="touch-manipulation"
           >
-            <Link href={`/report/${shareToken}`}>
+            <Link href={`/report/${shareToken}`} target="_blank">
               <ExternalLink className="size-3.5" />
               {t('viewReport')}
             </Link>

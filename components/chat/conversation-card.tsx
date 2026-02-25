@@ -108,6 +108,7 @@ export function ConversationCard({
                     <DropdownMenuItem asChild>
                       <Link
                         href={`/report/${conversation.shareToken}`}
+                        target="_blank"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <ExternalLink className="size-4" />

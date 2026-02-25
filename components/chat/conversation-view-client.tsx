@@ -87,7 +87,7 @@ export function ConversationViewClient({
                 {shareToken && (
                   <>
                     <DropdownMenuItem asChild>
-                      <Link href={`/report/${shareToken}`}>
+                      <Link href={`/report/${shareToken}`} target="_blank">
                         <ExternalLink className="size-4" />
                         {t('viewReport')}
                       </Link>
