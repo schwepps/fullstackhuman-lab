@@ -1,6 +1,5 @@
 import { getRedisClient } from '@/lib/upstash'
 import { getActiveConversation } from '@/lib/telegram/services/conversation-service'
-import { assemblePrompt } from '@/lib/telegram/services/ai-service'
 import {
   CONVERSATION_STATE_PREFIX,
   CONVERSATION_STATE_TTL_SECONDS,
@@ -25,7 +24,7 @@ function redisKey(chatId: number): string {
  * Resolution order:
  * 1. Redis (primary)
  * 2. In-memory fallback
- * 3. DB reconstruction (re-assembles system prompt if found)
+ * 3. DB reconstruction from active conversation
  */
 export async function getConversationState(
   chatId: number
@@ -43,16 +42,14 @@ export async function getConversationState(
   const cached = memoryStore.get(chatId)
   if (cached) return cached
 
-  // Try DB reconstruction
+  // Try DB reconstruction (prompt blocks are built at call time from persona)
   try {
     const conversation = await getActiveConversation(chatId)
     if (!conversation) return null
 
-    const systemPrompt = await assemblePrompt(conversation.persona)
     const state: TelegramConversationState = {
       conversationId: conversation.id,
       persona: conversation.persona,
-      systemPrompt,
       telegramUserId: conversation.telegram_user_id,
     }
 

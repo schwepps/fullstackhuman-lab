@@ -1,6 +1,9 @@
 import { NextRequest } from 'next/server'
 import { getAnthropicClient } from '@/lib/ai/client'
-import { assembleSystemPrompt } from '@/lib/ai/prompt-assembler'
+import {
+  assembleSystemPromptParts,
+  buildSystemBlocks,
+} from '@/lib/ai/prompt-assembler'
 import { validateChatRequest } from '@/lib/ai/validate-chat-request'
 import { buildAnthropicMessages } from '@/lib/ai/build-content-blocks'
 import {
@@ -135,11 +138,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const basePrompt = await assembleSystemPrompt(persona)
+    const promptParts = await assembleSystemPromptParts(persona)
     const injection = getWrapUpInjection(turnCount)
-    const systemPrompt = injection
-      ? `${basePrompt}\n\n${injection}`
-      : basePrompt
+    const systemBlocks = buildSystemBlocks(promptParts, injection)
 
     // Truncate history to sliding window for cost control
     const truncatedMessages = truncateHistory(messages)
@@ -149,7 +150,7 @@ export async function POST(request: NextRequest) {
     const stream = client.messages.stream({
       model: ANTHROPIC_MODEL,
       max_tokens: ANTHROPIC_MAX_TOKENS,
-      system: systemPrompt,
+      system: systemBlocks,
       messages: anthropicMessages,
     })
 

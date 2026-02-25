@@ -1,6 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { readFile } from 'fs/promises'
-import { assembleSystemPrompt } from '@/lib/ai/prompt-assembler'
+import {
+  assembleSystemPrompt,
+  buildSystemBlocks,
+} from '@/lib/ai/prompt-assembler'
 import type { PersonaId } from '@/types/chat'
 
 const { mockReadFile } = vi.hoisted(() => ({
@@ -134,5 +137,119 @@ describe('assembleSystemPrompt', () => {
     // Core is read once, doctor is read once — both cached on second call
     // First call: 2 reads (core + doctor). Second call: 0 reads (both cached).
     expect(vi.mocked(readFile)).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('assembleSystemPromptParts', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.resetModules()
+    setupMockReadFile()
+  })
+
+  it.each(['doctor', 'critic', 'guide'] as const)(
+    'produces byte-identical output to assembleSystemPrompt for %s',
+    async (persona) => {
+      const mod = await import('@/lib/ai/prompt-assembler')
+      const fullString = await mod.assembleSystemPrompt(persona)
+      const parts = await mod.assembleSystemPromptParts(persona)
+
+      expect(parts.staticContent + parts.dynamicContent).toBe(fullString)
+    }
+  )
+
+  it('places core + safety preamble + persona in static content', async () => {
+    const { assembleSystemPromptParts: assembleParts } =
+      await import('@/lib/ai/prompt-assembler')
+    const parts = await assembleParts('doctor')
+
+    expect(parts.staticContent).toContain(CORE_CONTENT)
+    expect(parts.staticContent).toContain(DOCTOR_CONTENT)
+    expect(parts.staticContent).toContain('SAFETY BOUNDARIES')
+  })
+
+  it('places date and safety reinforcement in dynamic content', async () => {
+    const { assembleSystemPromptParts: assembleParts } =
+      await import('@/lib/ai/prompt-assembler')
+    const parts = await assembleParts('doctor')
+
+    const today = new Date().toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })
+    expect(parts.dynamicContent).toContain(`Today's date: ${today}`)
+    expect(parts.dynamicContent).toContain('SAFETY REMINDER')
+  })
+})
+
+describe('buildSystemBlocks', () => {
+  it('sets cache_control on static block only', () => {
+    const parts = {
+      staticContent: 'static content',
+      dynamicContent: 'dynamic content',
+    }
+    const blocks = buildSystemBlocks(parts)
+
+    expect(blocks).toHaveLength(2)
+    expect(blocks[0].cache_control).toEqual({ type: 'ephemeral' })
+    expect(blocks[1]).not.toHaveProperty('cache_control')
+  })
+
+  it('appends wrap-up injection to dynamic content', () => {
+    const parts = {
+      staticContent: 'static content',
+      dynamicContent: 'dynamic content',
+    }
+    const injection =
+      '<conversation_guidance>Wrap up now</conversation_guidance>'
+    const blocks = buildSystemBlocks(parts, injection)
+
+    expect(blocks[0].text).toBe('static content')
+    expect(blocks[1].text).toBe(`dynamic content\n\n${injection}`)
+  })
+
+  it('leaves dynamic content unchanged when injection is null', () => {
+    const parts = {
+      staticContent: 'static content',
+      dynamicContent: 'dynamic content',
+    }
+    const blocks = buildSystemBlocks(parts, null)
+
+    expect(blocks[1].text).toBe('dynamic content')
+  })
+
+  it('leaves dynamic content unchanged when injection is undefined', () => {
+    const parts = {
+      staticContent: 'static content',
+      dynamicContent: 'dynamic content',
+    }
+    const blocks = buildSystemBlocks(parts)
+
+    expect(blocks[1].text).toBe('dynamic content')
+  })
+})
+
+describe('buildSystemBlocks safety sandwich', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.resetModules()
+    setupMockReadFile()
+  })
+
+  it('places safety preamble in cached static block and reinforcement in dynamic block', async () => {
+    const { assembleSystemPromptParts: assembleParts } =
+      await import('@/lib/ai/prompt-assembler')
+    const parts = await assembleParts('doctor')
+    const blocks = buildSystemBlocks(parts)
+
+    // Static block (cached) contains preamble + persona
+    expect(blocks[0].text).toContain('SAFETY BOUNDARIES')
+    expect(blocks[0].text).toContain(DOCTOR_CONTENT)
+    expect(blocks[0].cache_control).toEqual({ type: 'ephemeral' })
+
+    // Dynamic block (uncached) contains reinforcement but not persona
+    expect(blocks[1].text).toContain('SAFETY REMINDER')
+    expect(blocks[1].text).not.toContain(DOCTOR_CONTENT)
   })
 })

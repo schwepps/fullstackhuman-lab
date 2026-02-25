@@ -5,7 +5,11 @@ import {
   clearConversationState,
 } from '@/lib/telegram/state'
 import { getTelegramConversation } from '@/lib/telegram/db'
-import { callAI, detectReport } from '@/lib/telegram/services/ai-service'
+import {
+  callAI,
+  detectReport,
+  buildTelegramSystemBlocks,
+} from '@/lib/telegram/services/ai-service'
 import {
   saveMessages,
   extractTitle,
@@ -30,7 +34,6 @@ import {
 import {
   getUserTurnCount,
   getConversationPhase,
-  getWrapUpInjection,
   getRemainingTurns,
   truncateHistory,
   WRAP_UP_START_TURN,
@@ -118,11 +121,17 @@ export async function handleMessage(ctx: Context): Promise<void> {
     await ctx.reply(msg)
   }
 
-  // Inject wrap-up guidance into system prompt if needed
-  let systemPrompt = state.systemPrompt
-  const injection = getWrapUpInjection(turnCount)
-  if (injection) {
-    systemPrompt = `${systemPrompt}\n\n${injection}`
+  // Build system prompt blocks with cache_control for cost reduction
+  let systemBlocks
+  try {
+    systemBlocks = await buildTelegramSystemBlocks(state.persona, turnCount)
+  } catch (error) {
+    log('error', LOG_EVENT.TELEGRAM_AI_ERROR, {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      context: 'prompt_assembly',
+    })
+    await ctx.reply(t(AI_ERROR, lang))
+    return
   }
 
   // Truncate history for cost control
@@ -132,7 +141,7 @@ export async function handleMessage(ctx: Context): Promise<void> {
 
   // Call AI (with typing indicator to show feedback during generation)
   const aiResponse = await withTypingIndicator(ctx, () =>
-    callAI({ systemPrompt, messages: aiMessages })
+    callAI({ systemBlocks, messages: aiMessages })
   )
 
   if (!aiResponse) {

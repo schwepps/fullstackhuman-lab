@@ -34,7 +34,6 @@ export type TelegramConversationStatus = 'active' | 'completed' | 'abandoned'
 export interface TelegramConversationState {
   readonly conversationId: string
   readonly persona: PersonaId
-  readonly systemPrompt: string
   readonly telegramUserId: string
 }
 
