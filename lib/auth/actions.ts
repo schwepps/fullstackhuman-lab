@@ -76,12 +76,19 @@ export async function signupAction(
     return { error: AUTH_ERROR.VALIDATION }
   }
 
+  // Use configured site URL to ensure confirmation email redirects to the correct domain
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
+  if (!siteUrl) {
+    return { error: AUTH_ERROR.SIGNUP_FAILED }
+  }
+
   const supabase = await createClient()
   // Profile row is created automatically by the handle_new_user() database trigger.
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
+      emailRedirectTo: `${siteUrl}/api/auth/callback`,
       data: {
         display_name: parsed.data.displayName,
       },
