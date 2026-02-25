@@ -114,6 +114,7 @@
     "errors": {
       "rateLimitExceeded": "You\u2019ve reached the daily conversation limit. Come back tomorrow, or book a call with the real Fran\u00e7ois.",
       "streamError": "The response was interrupted. Your conversation is still here \u2014 try sending another message.",
+      "streamTimeout": "The connection timed out. Your conversation is still here \u2014 try sending your message again.",
       "genericError": "Something went wrong. Please try again.",
       "invalidAttachment": "The attached file could not be processed. Try a different file or remove it.",
       "attachmentsTooLarge": "Total attachment size exceeds the limit. Remove some files and try again.",

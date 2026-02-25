@@ -30,6 +30,7 @@ export const MAX_FILES_PER_MESSAGE = 5
 export const MAX_FILE_NAME_LENGTH = 255
 export const FILE_INPUT_ACCEPT = '.pdf,.png,.jpg,.jpeg,.webp,.txt,.md,.csv'
 export const READ_TIMEOUT_MS = 30_000 // 30 seconds for large file reads
+export const STREAM_INACTIVITY_TIMEOUT_MS = 30_000 // 30s without SSE data → abort
 
 export { BRAND_NAME, BRAND_NAME_SHORT } from '@/lib/constants/brand'
 
@@ -37,6 +38,7 @@ export { BRAND_NAME, BRAND_NAME_SHORT } from '@/lib/constants/brand'
 export type ErrorMessageKey =
   | 'rateLimitExceeded'
   | 'streamError'
+  | 'streamTimeout'
   | 'genericError'
   | 'invalidAttachment'
   | 'attachmentsTooLarge'
@@ -45,6 +47,7 @@ export type ErrorMessageKey =
 export const ERROR_MESSAGE_KEYS: Record<string, ErrorMessageKey> = {
   rate_limit_exceeded: 'rateLimitExceeded',
   stream_error: 'streamError',
+  stream_timeout: 'streamTimeout',
   generic_error: 'genericError',
   invalid_attachment: 'invalidAttachment',
   attachments_too_large: 'attachmentsTooLarge',

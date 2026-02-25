@@ -10,13 +10,16 @@ import type {
 } from '@/types/chat'
 import type { Conversation } from '@/types/conversation'
 import { detectReport } from '@/lib/ai/detect-report'
-import { ERROR_MESSAGE_KEYS } from '@/lib/constants/chat'
+import {
+  ERROR_MESSAGE_KEYS,
+  STREAM_INACTIVITY_TIMEOUT_MS,
+} from '@/lib/constants/chat'
 import {
   getUserTurnCount,
   getRemainingTurns,
   WRAP_UP_START_TURN,
 } from '@/lib/ai/conversation-limits'
-import { readSSEStream } from '@/lib/ai/sse-reader'
+import { readSSEStream, StreamInactivityError } from '@/lib/ai/sse-reader'
 import { createMessage, buildApiMessages } from '@/lib/ai/message-builder'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
 import { useAuth } from '@/lib/hooks/use-auth'
@@ -156,6 +159,18 @@ export function useChat() {
         error: null,
       }))
 
+      // Shared cleanup: stop streaming, remove empty placeholder, optionally set error
+      const stopWithError = (errorCode: string | null) => {
+        setState((prev) => ({
+          ...prev,
+          isStreaming: false,
+          messages: prev.messages.filter(
+            (m) => m.id !== assistantId || m.content !== ''
+          ),
+          error: errorCode,
+        }))
+      }
+
       try {
         abortRef.current = new AbortController()
         const response = await fetch('/api/chat', {
@@ -185,17 +200,11 @@ export function useChat() {
         }
 
         let accumulated = ''
-        for await (const event of readSSEStream(response)) {
+        for await (const event of readSSEStream(response, {
+          inactivityTimeoutMs: STREAM_INACTIVITY_TIMEOUT_MS,
+        })) {
           if (event.error) {
-            setState((prev) => ({
-              ...prev,
-              isStreaming: false,
-              // Remove empty assistant placeholder if no content was streamed
-              messages: prev.messages.filter(
-                (m) => m.id !== assistantId || m.content !== ''
-              ),
-              error: 'stream_error',
-            }))
+            stopWithError('stream_error')
             return
           }
           if (event.text) {
@@ -235,21 +244,16 @@ export function useChat() {
           }
         )
       } catch (error) {
-        if ((error as Error).name === 'AbortError') {
-          setState((prev) => ({
-            ...prev,
-            isStreaming: false,
-            messages: prev.messages.filter(
-              (m) => m.id !== assistantId || m.content !== ''
-            ),
-          }))
+        if (error instanceof StreamInactivityError) {
+          abortRef.current?.abort()
+          stopWithError('stream_timeout')
           return
         }
-        setState((prev) => ({
-          ...prev,
-          isStreaming: false,
-          error: 'generic_error',
-        }))
+        if (error instanceof DOMException && error.name === 'AbortError') {
+          stopWithError(null)
+          return
+        }
+        stopWithError('generic_error')
       }
     },
     [trackReportGenerated, persistAfterStream]

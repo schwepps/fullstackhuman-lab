@@ -1,5 +1,10 @@
-import { describe, it, expect } from 'vitest'
-import { readSSEStream, type SSEEvent } from '@/lib/ai/sse-reader'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import {
+  readSSEStream,
+  StreamInactivityError,
+  type SSEEvent,
+  type SSEReaderOptions,
+} from '@/lib/ai/sse-reader'
 
 function createMockResponse(chunks: string[]): Response {
   const encoder = new TextEncoder()
@@ -19,15 +24,41 @@ function createMockResponse(chunks: string[]): Response {
   return new Response(stream)
 }
 
-async function collectEvents(response: Response): Promise<SSEEvent[]> {
+function createDelayedResponse(chunks: string[], delayMs: number): Response {
+  const encoder = new TextEncoder()
+  let index = 0
+
+  const stream = new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      if (index < chunks.length) {
+        await new Promise((resolve) => setTimeout(resolve, delayMs))
+        controller.enqueue(encoder.encode(chunks[index]))
+        index++
+      } else {
+        controller.close()
+      }
+    },
+  })
+
+  return new Response(stream)
+}
+
+async function collectEvents(
+  response: Response,
+  options?: SSEReaderOptions
+): Promise<SSEEvent[]> {
   const events: SSEEvent[] = []
-  for await (const event of readSSEStream(response)) {
+  for await (const event of readSSEStream(response, options)) {
     events.push(event)
   }
   return events
 }
 
 describe('readSSEStream', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('parses a single SSE event with text field', async () => {
     const response = createMockResponse(['data: {"text":"Hello"}\n\n'])
 
@@ -117,5 +148,59 @@ describe('readSSEStream', () => {
     const events = await collectEvents(response)
 
     expect(events).toEqual([{ text: 'buffered' }])
+  })
+
+  it('works normally without timeout option', async () => {
+    const response = createMockResponse([
+      'data: {"text":"a"}\n\ndata: {"text":"b"}\n\n',
+    ])
+
+    const events = await collectEvents(response, undefined)
+
+    expect(events).toEqual([{ text: 'a' }, { text: 'b' }])
+  })
+
+  it('completes when data arrives within timeout', async () => {
+    const response = createDelayedResponse(['data: {"text":"ok"}\n\n'], 10)
+
+    const events = await collectEvents(response, {
+      inactivityTimeoutMs: 500,
+    })
+
+    expect(events).toEqual([{ text: 'ok' }])
+  })
+
+  it('throws StreamInactivityError when stream stalls', async () => {
+    // Create a response whose reader.read() never resolves (hangs forever)
+    const stream = new ReadableStream<Uint8Array>({
+      pull() {
+        // Return a promise that never resolves — simulates a stalled connection
+        return new Promise(() => {})
+      },
+    })
+    const response = new Response(stream)
+
+    await expect(
+      collectEvents(response, { inactivityTimeoutMs: 100 })
+    ).rejects.toThrow(StreamInactivityError)
+  })
+
+  it('resets timeout on each chunk', async () => {
+    // Each chunk arrives after 30ms, timeout is 100ms
+    // All chunks should be received since each resets the timer
+    const response = createDelayedResponse(
+      [
+        'data: {"text":"a"}\n\n',
+        'data: {"text":"b"}\n\n',
+        'data: {"text":"c"}\n\n',
+      ],
+      30
+    )
+
+    const events = await collectEvents(response, {
+      inactivityTimeoutMs: 100,
+    })
+
+    expect(events).toEqual([{ text: 'a' }, { text: 'b' }, { text: 'c' }])
   })
 })

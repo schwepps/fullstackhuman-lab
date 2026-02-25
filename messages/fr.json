@@ -114,6 +114,7 @@
     "errors": {
       "rateLimitExceeded": "Vous avez atteint la limite de conversations du jour. Revenez demain, ou réservez un appel avec le vrai François.",
       "streamError": "La réponse a été interrompue. Votre conversation est toujours là \u2014 essayez d\u2019envoyer un autre message.",
+      "streamTimeout": "La connexion a expiré. Votre conversation est toujours là \u2014 réessayez d\u2019envoyer votre message.",
       "genericError": "Quelque chose a coincé. Réessayez.",
       "invalidAttachment": "Le fichier joint n'a pas pu être traité. Essayez un autre fichier ou retirez-le.",
       "attachmentsTooLarge": "La taille totale des pièces jointes dépasse la limite. Retirez des fichiers et réessayez.",

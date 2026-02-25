@@ -35,13 +35,23 @@ vi.mock('@/lib/ai/sanitize', async (importOriginal) => {
   }
 })
 
-vi.mock('@anthropic-ai/sdk', () => ({
-  default: class MockAnthropic {
+vi.mock('@anthropic-ai/sdk', () => {
+  class MockAnthropic {
     messages = {
       stream: () => mockStream,
     }
-  },
-}))
+  }
+  // Attach APIError so `instanceof Anthropic.APIError` works in route.ts
+  ;(MockAnthropic as Record<string, unknown>).APIError =
+    class APIError extends Error {
+      status: number
+      constructor(message: string, status: number) {
+        super(message)
+        this.status = status
+      }
+    }
+  return { default: MockAnthropic }
+})
 
 vi.mock('@/lib/auth/helpers', () => ({
   getOptionalAuth: vi.fn(async () => ({ isAuthenticated: false, user: null })),
