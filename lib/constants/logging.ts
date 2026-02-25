@@ -4,6 +4,7 @@ export const LOG_EVENT = {
   SUSPICIOUS_INPUT: 'suspicious_input',
   RATE_LIMIT_HIT: 'rate_limit_hit',
   STREAM_ERROR: 'stream_error',
+  STREAM_TIMEOUT: 'stream_timeout',
   REDIS_FALLBACK: 'redis_fallback',
   CONVERSATION_LIMIT_REACHED: 'conversation_limit_reached',
 

@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server'
+import Anthropic from '@anthropic-ai/sdk'
 import { getAnthropicClient } from '@/lib/ai/client'
 import {
   assembleSystemPromptParts,
@@ -27,6 +28,16 @@ import {
   ANTHROPIC_MAX_TOKENS,
   NEW_CONVERSATION_MESSAGE_COUNT,
 } from '@/lib/constants/chat'
+
+const LOG_MESSAGE_MAX_LENGTH = 200
+
+/** Extract a safe log message from an unknown error, truncated to avoid PII leaks. */
+function truncateLogMessage(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error)
+  return raw.length > LOG_MESSAGE_MAX_LENGTH
+    ? raw.slice(0, LOG_MESSAGE_MAX_LENGTH) + '…'
+    : raw
+}
 
 // Allow time for large uploads + Claude processing
 export const maxDuration = 60
@@ -172,8 +183,15 @@ export async function POST(request: NextRequest) {
           }
           controller.enqueue(encoder.encode('data: [DONE]\n\n'))
           controller.close()
-        } catch {
-          log('error', LOG_EVENT.STREAM_ERROR, { persona, ipHash })
+        } catch (error) {
+          log('error', LOG_EVENT.STREAM_ERROR, {
+            persona,
+            ipHash,
+            message: truncateLogMessage(error),
+            name: error instanceof Error ? error.name : undefined,
+            status:
+              error instanceof Anthropic.APIError ? error.status : undefined,
+          })
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({ error: 'Stream interrupted' })}\n\n`
