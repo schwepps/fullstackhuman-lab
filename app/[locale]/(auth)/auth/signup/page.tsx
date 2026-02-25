@@ -17,6 +17,11 @@ import {
   DISPLAY_NAME_MAX_LENGTH,
 } from '@/lib/auth/schemas'
 
+type SignupFieldErrorKey =
+  | 'signup.fieldErrors.displayName'
+  | 'signup.fieldErrors.email'
+  | 'signup.fieldErrors.password'
+
 export default function SignupPage() {
   const t = useTranslations('auth')
 
@@ -50,8 +55,17 @@ export default function SignupPage() {
             autoComplete="name"
             required
             maxLength={DISPLAY_NAME_MAX_LENGTH}
+            aria-invalid={!!state?.fieldErrors?.displayName}
+            aria-describedby={
+              state?.fieldErrors?.displayName ? 'displayName-error' : undefined
+            }
             className="h-12 text-base sm:h-10 sm:text-sm"
           />
+          {state?.fieldErrors?.displayName && (
+            <p id="displayName-error" className="text-xs text-destructive">
+              {t(state.fieldErrors.displayName as SignupFieldErrorKey)}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -62,8 +76,17 @@ export default function SignupPage() {
             type="email"
             autoComplete="email"
             required
+            aria-invalid={!!state?.fieldErrors?.email}
+            aria-describedby={
+              state?.fieldErrors?.email ? 'email-error' : undefined
+            }
             className="h-12 text-base sm:h-10 sm:text-sm"
           />
+          {state?.fieldErrors?.email && (
+            <p id="email-error" className="text-xs text-destructive">
+              {t(state.fieldErrors.email as SignupFieldErrorKey)}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -78,11 +101,23 @@ export default function SignupPage() {
             maxLength={PASSWORD_MAX_LENGTH}
             pattern={PASSWORD_PATTERN_HTML}
             title={t('signup.passwordHint', { minLength: PASSWORD_MIN_LENGTH })}
+            aria-invalid={!!state?.fieldErrors?.password}
+            aria-describedby={
+              state?.fieldErrors?.password ? 'password-error' : 'password-hint'
+            }
             className="h-12 text-base sm:h-10 sm:text-sm"
           />
-          <p className="text-xs text-muted-foreground">
-            {t('signup.passwordHint', { minLength: PASSWORD_MIN_LENGTH })}
-          </p>
+          {state?.fieldErrors?.password ? (
+            <p id="password-error" className="text-xs text-destructive">
+              {t(state.fieldErrors.password as SignupFieldErrorKey, {
+                minLength: PASSWORD_MIN_LENGTH,
+              })}
+            </p>
+          ) : (
+            <p id="password-hint" className="text-xs text-muted-foreground">
+              {t('signup.passwordHint', { minLength: PASSWORD_MIN_LENGTH })}
+            </p>
+          )}
         </div>
 
         <SubmitButton

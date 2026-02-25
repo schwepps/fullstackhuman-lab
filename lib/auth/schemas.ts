@@ -22,7 +22,12 @@ export const signupSchema = z.object({
     .trim()
     .min(1, 'Name is required')
     .max(DISPLAY_NAME_MAX_LENGTH)
-    .regex(/^[\p{L}\p{N}\s\-'.]+$/u, 'Name contains invalid characters'),
+    .transform((s) => s.normalize('NFC'))
+    .pipe(
+      z
+        .string()
+        .regex(/^[\p{L}\p{N}\s\-'.]+$/u, 'Name contains invalid characters')
+    ),
   email: z.email({ error: 'Invalid email' }).trim(),
   password: z
     .string()

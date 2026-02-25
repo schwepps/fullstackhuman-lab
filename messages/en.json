@@ -165,7 +165,12 @@
       "submitting": "Creating account...",
       "hasAccount": "Already have an account?",
       "loginLink": "Sign in",
-      "google": "Google"
+      "google": "Google",
+      "fieldErrors": {
+        "displayName": "Name must only contain letters, numbers, spaces, hyphens, apostrophes, or periods",
+        "email": "Please enter a valid email address",
+        "password": "Password must be at least {minLength} characters with both letters and digits"
+      }
     },
     "forgotPassword": {
       "title": "Reset your password",

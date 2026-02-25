@@ -29,4 +29,6 @@ export type AuthSuccessCode = (typeof AUTH_SUCCESS)[keyof typeof AUTH_SUCCESS]
 export type AuthActionState = {
   error?: AuthErrorCode
   success?: AuthSuccessCode
+  /** Field-level validation errors. Values are i18n key paths resolved via t() in the component. */
+  fieldErrors?: Partial<Record<string, string>>
 } | null

@@ -73,7 +73,15 @@ export async function signupAction(
 
   const parsed = signupSchema.safeParse(raw)
   if (!parsed.success) {
-    return { error: AUTH_ERROR.VALIDATION }
+    const fieldErrors: Record<string, string> = {}
+    for (const issue of parsed.error.issues) {
+      if (!issue.path[0]) continue
+      const field = String(issue.path[0])
+      if (!fieldErrors[field]) {
+        fieldErrors[field] = `signup.fieldErrors.${field}`
+      }
+    }
+    return { error: AUTH_ERROR.VALIDATION, fieldErrors }
   }
 
   const supabase = await createClient()

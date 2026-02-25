@@ -231,7 +231,7 @@ describe('signupAction', () => {
     expect(mockSupabaseAuth.signUp).not.toHaveBeenCalled()
   })
 
-  it('returns validation error for invalid email', async () => {
+  it('returns validation error with field errors for invalid email', async () => {
     const result = await signupAction(
       null,
       toFormData({
@@ -241,10 +241,11 @@ describe('signupAction', () => {
       })
     )
 
-    expect(result).toEqual({ error: AUTH_ERROR.VALIDATION })
+    expect(result?.error).toBe(AUTH_ERROR.VALIDATION)
+    expect(result?.fieldErrors?.email).toBe('signup.fieldErrors.email')
   })
 
-  it('returns validation error for weak password', async () => {
+  it('returns validation error with field errors for weak password', async () => {
     const result = await signupAction(
       null,
       toFormData({
@@ -254,10 +255,11 @@ describe('signupAction', () => {
       })
     )
 
-    expect(result).toEqual({ error: AUTH_ERROR.VALIDATION })
+    expect(result?.error).toBe(AUTH_ERROR.VALIDATION)
+    expect(result?.fieldErrors?.password).toBe('signup.fieldErrors.password')
   })
 
-  it('returns validation error for empty display name', async () => {
+  it('returns validation error with field errors for empty display name', async () => {
     const result = await signupAction(
       null,
       toFormData({
@@ -267,7 +269,44 @@ describe('signupAction', () => {
       })
     )
 
-    expect(result).toEqual({ error: AUTH_ERROR.VALIDATION })
+    expect(result?.error).toBe(AUTH_ERROR.VALIDATION)
+    expect(result?.fieldErrors?.displayName).toBe(
+      'signup.fieldErrors.displayName'
+    )
+  })
+
+  it('returns field error for displayName with invalid characters', async () => {
+    const result = await signupAction(
+      null,
+      toFormData({
+        displayName: 'Test@User#',
+        email: VALID_EMAIL,
+        password: VALID_PASSWORD,
+      })
+    )
+
+    expect(result?.error).toBe(AUTH_ERROR.VALIDATION)
+    expect(result?.fieldErrors?.displayName).toBe(
+      'signup.fieldErrors.displayName'
+    )
+  })
+
+  it('accepts NFD-encoded displayName after normalization', async () => {
+    mockSupabaseAuth.signUp.mockResolvedValue({
+      data: { user: { id: '1' } },
+      error: null,
+    })
+
+    await signupAction(
+      null,
+      toFormData({
+        displayName: 'Fran\u0063\u0327ois Schuers', // NFD: c + combining cedilla
+        email: VALID_EMAIL,
+        password: VALID_PASSWORD,
+      })
+    )
+
+    expect(mockSupabaseAuth.signUp).toHaveBeenCalled()
   })
 
   it('returns signup failed error when Supabase rejects signup', async () => {

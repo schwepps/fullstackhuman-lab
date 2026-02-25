@@ -165,7 +165,12 @@
       "submitting": "Création du compte...",
       "hasAccount": "Déjà parmi nous ?",
       "loginLink": "Se connecter",
-      "google": "Google"
+      "google": "Google",
+      "fieldErrors": {
+        "displayName": "Le nom ne peut contenir que des lettres, chiffres, espaces, tirets, apostrophes ou points",
+        "email": "Veuillez entrer une adresse email valide",
+        "password": "Le mot de passe doit contenir au moins {minLength} caractères avec des lettres et des chiffres"
+      }
     },
     "forgotPassword": {
       "title": "Mot de passe oublié ?",
