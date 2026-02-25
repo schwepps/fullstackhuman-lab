@@ -4,7 +4,10 @@ import { CALLBACK_PERSONA_PREFIX } from '@/lib/telegram/constants'
 import { consumeConversation } from '@/lib/telegram/services/quota-service'
 import { getOrCreateTelegramUser } from '@/lib/telegram/services/user-service'
 import { startConversation } from '@/lib/telegram/services/conversation-service'
-import { assemblePrompt, callAI } from '@/lib/telegram/services/ai-service'
+import {
+  callAI,
+  buildTelegramSystemBlocks,
+} from '@/lib/telegram/services/ai-service'
 import { setConversationState } from '@/lib/telegram/state'
 import { saveMessages } from '@/lib/telegram/services/conversation-service'
 import { convertToMarkdownV2, splitMessage } from '@/lib/telegram/format'
@@ -73,12 +76,10 @@ export async function handlePersonaSelection(ctx: Context): Promise<void> {
     return
   }
 
-  // Assemble system prompt and store state
-  const systemPrompt = await assemblePrompt(persona)
+  // Store conversation state (prompt blocks are built at call time from persona)
   await setConversationState(chat.id, {
     conversationId,
     persona,
-    systemPrompt,
     telegramUserId: user.id,
   })
 
@@ -93,9 +94,20 @@ export async function handlePersonaSelection(ctx: Context): Promise<void> {
 
   // First AI call with synthetic trigger (typing indicator for UX)
   const triggerText = PERSONA_TRIGGERS[persona]
+  let systemBlocks
+  try {
+    systemBlocks = await buildTelegramSystemBlocks(persona)
+  } catch (error) {
+    log('error', LOG_EVENT.TELEGRAM_AI_ERROR, {
+      error: error instanceof Error ? error.message : 'Unknown error',
+      context: 'prompt_assembly',
+    })
+    await ctx.reply(t(AI_ERROR, lang))
+    return
+  }
   const aiResponse = await withTypingIndicator(ctx, () =>
     callAI({
-      systemPrompt,
+      systemBlocks,
       messages: [{ role: 'user', content: triggerText }],
     })
   )

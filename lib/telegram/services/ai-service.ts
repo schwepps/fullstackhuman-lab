@@ -1,5 +1,10 @@
+import type { TextBlockParam } from '@anthropic-ai/sdk/resources/messages/messages'
 import { getAnthropicClient } from '@/lib/ai/client'
-import { assembleSystemPrompt } from '@/lib/ai/prompt-assembler'
+import {
+  assembleSystemPromptParts,
+  buildSystemBlocks,
+} from '@/lib/ai/prompt-assembler'
+import { getWrapUpInjection } from '@/lib/ai/conversation-limits'
 import { ANTHROPIC_MODEL, ANTHROPIC_MAX_TOKENS } from '@/lib/constants/chat'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
@@ -10,10 +15,11 @@ const AI_REQUEST_TIMEOUT_MS = 45_000
 
 /**
  * Call the Claude API (non-streaming) with SDK-managed timeout.
+ * Accepts system content blocks with cache_control for prompt caching.
  * Returns the text response or null on failure/timeout.
  */
 export async function callAI(params: {
-  systemPrompt: string
+  systemBlocks: Array<TextBlockParam>
   messages: Array<{ role: MessageRole; content: string }>
 }): Promise<string | null> {
   try {
@@ -23,7 +29,7 @@ export async function callAI(params: {
       {
         model: ANTHROPIC_MODEL,
         max_tokens: ANTHROPIC_MAX_TOKENS,
-        system: params.systemPrompt,
+        system: params.systemBlocks,
         messages: params.messages,
       },
       { timeout: AI_REQUEST_TIMEOUT_MS, maxRetries: 1 }
@@ -42,10 +48,16 @@ export async function callAI(params: {
 }
 
 /**
- * Assemble the full system prompt for a persona.
+ * Build system content blocks for a Telegram AI call.
+ * Assembles prompt parts from persona and applies wrap-up injection if needed.
  */
-export async function assemblePrompt(persona: PersonaId): Promise<string> {
-  return assembleSystemPrompt(persona)
+export async function buildTelegramSystemBlocks(
+  persona: PersonaId,
+  turnCount?: number
+): Promise<Array<TextBlockParam>> {
+  const promptParts = await assembleSystemPromptParts(persona)
+  const injection = turnCount != null ? getWrapUpInjection(turnCount) : null
+  return buildSystemBlocks(promptParts, injection)
 }
 
 // Re-export from shared SSOT module for Telegram handler convenience
