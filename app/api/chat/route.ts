@@ -31,7 +31,7 @@ import {
 
 const LOG_MESSAGE_MAX_LENGTH = 200
 
-/** Extract a safe log message from an unknown error, truncated to avoid PII leaks. */
+/** Extract a log-safe message from an unknown error, truncated to limit log size. */
 function truncateLogMessage(error: unknown): string {
   const raw = error instanceof Error ? error.message : String(error)
   return raw.length > LOG_MESSAGE_MAX_LENGTH

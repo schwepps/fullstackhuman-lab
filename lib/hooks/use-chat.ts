@@ -245,6 +245,7 @@ export function useChat() {
         )
       } catch (error) {
         if (error instanceof StreamInactivityError) {
+          abortRef.current?.abort()
           stopWithError('stream_timeout')
           return
         }
