@@ -10,13 +10,12 @@ import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 import type { PersonaId, MessageRole } from '@/types/chat'
 
-/** Per-request timeout for Claude API calls (45s × 2 attempts = 90s < maxDuration 120s, ~30s for post-processing) */
-const AI_REQUEST_TIMEOUT_MS = 45_000
-
 /**
- * Call the Claude API (non-streaming) with SDK-managed timeout.
- * Accepts system content blocks with cache_control for prompt caching.
- * Returns the text response or null on failure/timeout.
+ * Call the Claude API via streaming + collect.
+ * Streaming keeps the HTTP connection alive token-by-token, eliminating idle
+ * timeouts that occur with non-streaming calls on long reports (~2000-3500 tokens).
+ * The overall ceiling is maxDuration = 120 on the webhook route.
+ * Returns the text response or null on failure.
  */
 export async function callAI(params: {
   systemBlocks: Array<TextBlockParam>
@@ -25,15 +24,14 @@ export async function callAI(params: {
   try {
     const client = getAnthropicClient()
 
-    const response = await client.messages.create(
-      {
-        model: ANTHROPIC_MODEL,
-        max_tokens: ANTHROPIC_MAX_TOKENS,
-        system: params.systemBlocks,
-        messages: params.messages,
-      },
-      { timeout: AI_REQUEST_TIMEOUT_MS, maxRetries: 1 }
-    )
+    const stream = client.messages.stream({
+      model: ANTHROPIC_MODEL,
+      max_tokens: ANTHROPIC_MAX_TOKENS,
+      system: params.systemBlocks,
+      messages: params.messages,
+    })
+
+    const response = await stream.finalMessage()
 
     const firstBlock = response.content[0]
     if (firstBlock.type !== 'text') return null
