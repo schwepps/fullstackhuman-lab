@@ -88,9 +88,8 @@ See [`.env.example`](.env.example) for all variables with descriptions. Required
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | `pnpm supabase:status`                                               |
 | `SUPABASE_SECRET_KEY`                  | `pnpm supabase:status`                                               |
 | `ANTHROPIC_API_KEY`                    | [console.anthropic.com](https://console.anthropic.com/settings/keys) |
-| `NEXT_PUBLIC_SITE_URL`                 | `http://localhost:3000`                                              |
 
-Optional: PostHog (`NEXT_PUBLIC_POSTHOG_KEY`), Upstash Redis (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`). Rate limiting falls back to in-memory without Redis.
+Optional: `NEXT_PUBLIC_APP_URL` (default: `https://fullstackhuman.sh` — set to `http://localhost:3000` for local dev), PostHog (`NEXT_PUBLIC_POSTHOG_KEY`), Upstash Redis (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`). Rate limiting falls back to in-memory without Redis.
 
 ## Project structure
 

@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/lib/supabase/server'
-import { CHAT_PATH } from '@/lib/constants/app'
+import { APP_URL, CHAT_PATH } from '@/lib/constants/app'
 import { AUTH_ERROR, AUTH_SUCCESS, type AuthActionState } from './types'
 import { checkAuthRateLimit } from './rate-limit'
 
@@ -76,19 +76,13 @@ export async function signupAction(
     return { error: AUTH_ERROR.VALIDATION }
   }
 
-  // Use configured site URL to ensure confirmation email redirects to the correct domain
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  if (!siteUrl) {
-    return { error: AUTH_ERROR.SIGNUP_FAILED }
-  }
-
   const supabase = await createClient()
   // Profile row is created automatically by the handle_new_user() database trigger.
   const { error } = await supabase.auth.signUp({
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo: `${siteUrl}/api/auth/callback`,
+      emailRedirectTo: `${APP_URL}/api/auth/callback`,
       data: {
         display_name: parsed.data.displayName,
       },
@@ -124,13 +118,8 @@ export async function forgotPasswordAction(
 
   const supabase = await createClient()
 
-  // Use configured site URL instead of Origin header to prevent open redirect
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-  if (!siteUrl) {
-    return { error: AUTH_ERROR.RESET_FAILED }
-  }
   await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    redirectTo: `${siteUrl}/api/auth/callback?type=recovery`,
+    redirectTo: `${APP_URL}/api/auth/callback?type=recovery`,
   })
 
   // Always return success to prevent email enumeration

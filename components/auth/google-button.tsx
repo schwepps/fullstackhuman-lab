@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { APP_URL } from '@/lib/constants/app'
 import { Button } from '@/components/ui/button'
 
 interface GoogleButtonProps {
@@ -43,28 +44,27 @@ export function GoogleButton({ label, errorLabel }: GoogleButtonProps) {
 
   async function handleGoogleSignIn() {
     setHasError(false)
-
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-    if (!siteUrl) {
-      setHasError(true)
-      return
-    }
-
     setIsLoading(true)
     try {
       const supabase = createClient()
 
-      await supabase.auth.signInWithOAuth({
+      const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${siteUrl}/api/auth/callback`,
+          redirectTo: `${APP_URL}/api/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
           },
         },
       })
-    } catch {
+
+      if (error) {
+        console.error('[auth] Google sign-in error:', error.message)
+        setHasError(true)
+      }
+    } catch (err) {
+      console.error('[auth] Google sign-in failed:', err)
       setHasError(true)
     } finally {
       setIsLoading(false)

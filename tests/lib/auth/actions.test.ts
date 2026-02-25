@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { AUTH_ERROR, AUTH_SUCCESS } from '@/lib/auth/types'
+import { APP_URL } from '@/lib/constants/app'
 
 // --- Mocks ---
 
@@ -270,7 +271,6 @@ describe('signupAction', () => {
   })
 
   it('returns signup failed error when Supabase rejects signup', async () => {
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com')
     mockSupabaseAuth.signUp.mockResolvedValue({
       data: { user: null },
       error: { message: 'User already exists' },
@@ -288,29 +288,7 @@ describe('signupAction', () => {
     expect(result).toEqual({ error: AUTH_ERROR.SIGNUP_FAILED })
   })
 
-  it('returns signup failed error when NEXT_PUBLIC_SITE_URL is missing', async () => {
-    const originalUrl = process.env.NEXT_PUBLIC_SITE_URL
-    delete process.env.NEXT_PUBLIC_SITE_URL
-
-    const result = await signupAction(
-      null,
-      toFormData({
-        displayName: 'Alice',
-        email: VALID_EMAIL,
-        password: VALID_PASSWORD,
-      })
-    )
-
-    expect(result).toEqual({ error: AUTH_ERROR.SIGNUP_FAILED })
-
-    // Restore
-    if (originalUrl !== undefined) {
-      process.env.NEXT_PUBLIC_SITE_URL = originalUrl
-    }
-  })
-
   it('redirects to /chat on successful signup', async () => {
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com')
     mockSupabaseAuth.signUp.mockResolvedValue({
       data: { user: { id: '1' } },
       error: null,
@@ -330,7 +308,6 @@ describe('signupAction', () => {
   })
 
   it('passes emailRedirectTo and display_name in signup options', async () => {
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com')
     mockSupabaseAuth.signUp.mockResolvedValue({
       data: { user: { id: '1' } },
       error: null,
@@ -349,7 +326,7 @@ describe('signupAction', () => {
       email: VALID_EMAIL,
       password: VALID_PASSWORD,
       options: {
-        emailRedirectTo: 'https://example.com/api/auth/callback',
+        emailRedirectTo: `${APP_URL}/api/auth/callback`,
         data: { display_name: 'Alice' },
       },
     })
@@ -386,27 +363,7 @@ describe('forgotPasswordAction', () => {
     expect(result).toEqual({ error: AUTH_ERROR.VALIDATION })
   })
 
-  it('returns reset failed error when NEXT_PUBLIC_SITE_URL is missing', async () => {
-    const originalUrl = process.env.NEXT_PUBLIC_SITE_URL
-    delete process.env.NEXT_PUBLIC_SITE_URL
-
-    const result = await forgotPasswordAction(
-      null,
-      toFormData({
-        email: VALID_EMAIL,
-      })
-    )
-
-    expect(result).toEqual({ error: AUTH_ERROR.RESET_FAILED })
-
-    // Restore
-    if (originalUrl !== undefined) {
-      process.env.NEXT_PUBLIC_SITE_URL = originalUrl
-    }
-  })
-
   it('always returns success even if email does not exist (prevents enumeration)', async () => {
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com')
     mockSupabaseAuth.resetPasswordForEmail.mockResolvedValue({ error: null })
 
     const result = await forgotPasswordAction(
@@ -420,7 +377,6 @@ describe('forgotPasswordAction', () => {
   })
 
   it('calls resetPasswordForEmail with correct redirectTo URL', async () => {
-    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com')
     mockSupabaseAuth.resetPasswordForEmail.mockResolvedValue({ error: null })
 
     await forgotPasswordAction(
@@ -432,7 +388,7 @@ describe('forgotPasswordAction', () => {
 
     expect(mockSupabaseAuth.resetPasswordForEmail).toHaveBeenCalledWith(
       VALID_EMAIL,
-      { redirectTo: 'https://example.com/api/auth/callback?type=recovery' }
+      { redirectTo: `${APP_URL}/api/auth/callback?type=recovery` }
     )
   })
 })
