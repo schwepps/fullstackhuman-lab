@@ -48,6 +48,7 @@ export interface CalendlyClickProperties {
     | 'hero'
     | 'conversations_dashboard'
     | 'public_report'
+    | 'chat_end'
 }
 
 export interface TelegramClickProperties {

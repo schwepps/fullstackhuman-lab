@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl'
 import { ChatMessageList } from '@/components/chat/chat-message-list'
 import { ChatInput } from '@/components/chat/chat-input'
+import { ConversationEndActions } from '@/components/chat/conversation-end-actions'
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { ERROR_MESSAGE_KEYS } from '@/lib/constants/chat'
@@ -24,6 +25,7 @@ interface ChatContainerProps {
   shareToken?: string | null
   getTotalAttachmentBytes: () => number
   turnsRemaining?: number | null
+  onStartNew?: () => void
 }
 
 export function ChatContainer({
@@ -41,6 +43,7 @@ export function ChatContainer({
   shareToken = null,
   getTotalAttachmentBytes,
   turnsRemaining,
+  onStartNew,
 }: ChatContainerProps) {
   const t = useTranslations('chat.errors')
   const tConv = useTranslations('conversations')
@@ -80,11 +83,15 @@ export function ChatContainer({
       />
 
       {isReadOnly ? (
-        <div className="border-t border-border bg-muted/50 px-4 py-3 text-center">
-          <p className="font-mono text-xs text-muted-foreground">
-            {tConv('readOnlyNotice')}
-          </p>
-        </div>
+        onStartNew ? (
+          <ConversationEndActions onStartNew={onStartNew} />
+        ) : (
+          <div className="border-t border-border bg-muted/50 px-4 py-3 text-center">
+            <p className="font-mono text-xs text-muted-foreground">
+              {tConv('readOnlyNotice')}
+            </p>
+          </div>
+        )
       ) : (
         <ChatInput
           onSendMessage={onSendMessage}
