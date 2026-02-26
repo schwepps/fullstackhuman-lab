@@ -1,15 +1,8 @@
-import crypto from 'crypto'
 import { createTelegramReport } from '@/lib/telegram/db'
 import { buildReportShareUrl } from '@/lib/constants/reports'
+import { generateShareToken } from '@/lib/reports/constants'
 import type { PersonaId } from '@/types/chat'
 import type { TelegramLanguage } from '@/lib/telegram/types'
-
-/**
- * Generate a URL-safe share token (32 hex chars, UUID without hyphens).
- */
-export function generateShareToken(): string {
-  return crypto.randomUUID().replace(/-/g, '')
-}
 
 /**
  * Create a report for a completed Telegram conversation.

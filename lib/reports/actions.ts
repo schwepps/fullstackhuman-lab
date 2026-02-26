@@ -5,12 +5,13 @@ import { createClient } from '@/lib/supabase/server'
 import { AUTH_ERROR } from '@/lib/auth/types'
 import { checkAuthRateLimit } from '@/lib/auth/rate-limit'
 import { PERSONA_IDS } from '@/lib/constants/personas'
+import {
+  MAX_REPORT_CONTENT_LENGTH,
+  generateShareToken,
+} from '@/lib/reports/constants'
 import { UUID_REGEX } from '@/lib/constants/validation'
 import type { ActionResult } from '@/types/action'
 import type { PersonaId } from '@/types/chat'
-
-/** Max report content length (generous upper bound for AI-generated reports) */
-const MAX_REPORT_CONTENT_LENGTH = 50_000
 
 const createReportSchema = z.object({
   conversationId: z.string().regex(UUID_REGEX),
@@ -70,8 +71,7 @@ export async function createReport(
 
   const isBranded = userRow?.tier !== 'paid'
 
-  // Generate share token (UUID without hyphens = 32 alphanumeric chars)
-  const shareToken = crypto.randomUUID().replace(/-/g, '')
+  const shareToken = generateShareToken()
 
   const { error } = await supabase.from('reports').insert({
     conversation_id: parsed.data.conversationId,

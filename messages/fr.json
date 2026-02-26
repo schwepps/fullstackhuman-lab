@@ -135,7 +135,7 @@
     },
     "signupCta": {
       "title": "Gardez vos rapports",
-      "description": "Créez un compte pour retrouver vos conversations et rapports. Gratuit, sans engagement.",
+      "description": "Créez un compte gratuit pour conserver cette conversation et votre rapport. Votre travail est sauvegardé.",
       "remaining": "{remaining, plural, =0 {Aucune conversation restante aujourd\u2019hui} =1 {1 conversation restante sur {limit} aujourd\u2019hui} other {# conversations restantes sur {limit} aujourd\u2019hui}}",
       "action": "Créer un compte gratuit"
     },

@@ -23,6 +23,8 @@ import { readSSEStream, StreamInactivityError } from '@/lib/ai/sse-reader'
 import { createMessage, buildApiMessages } from '@/lib/ai/message-builder'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
 import { useAuth } from '@/lib/hooks/use-auth'
+import { useAnonymousConversations } from '@/lib/hooks/use-anonymous-conversations'
+import { extractTitle } from '@/lib/conversations/utils'
 import {
   createConversation,
   saveMessages,
@@ -32,6 +34,7 @@ import {
   createReport,
   getShareTokenForConversation,
 } from '@/lib/reports/actions'
+import { createAnonymousReport } from '@/lib/reports/anonymous-actions'
 
 const INITIAL_STATE: ChatState = {
   phase: 'selection',
@@ -48,10 +51,13 @@ export function useChat() {
   const [state, setState] = useState<ChatState>(INITIAL_STATE)
   const { trackReportGenerated } = useAnalytics()
   const { isAuthenticated } = useAuth()
+  const { save: saveAnonymousConversation } = useAnonymousConversations()
   const abortRef = useRef<AbortController | null>(null)
   const stateRef = useRef(state)
   stateRef.current = state
   const triggerRef = useRef('')
+  // Stable ID for anonymous conversations — survives across renders, reset on resetChat
+  const anonymousIdRef = useRef(crypto.randomUUID())
   // Stores full attachment data (with base64) by ID — survives across renders
   // without bloating React state. Cleared on resetChat.
   const attachmentDataRef = useRef<Map<string, FileAttachment>>(new Map())
@@ -77,37 +83,66 @@ export function useChat() {
   // Persist conversation after stream completion (fire and forget)
   const persistAfterStream = useCallback(
     async (persona: PersonaId, messages: ChatMessage[], isReport: boolean) => {
-      if (!isAuthenticated) return
+      if (isAuthenticated) {
+        // Authenticated path: persist to DB
+        let conversationId = stateRef.current.conversationId
+        if (conversationId) {
+          await saveMessages(conversationId, messages, isReport)
+        } else {
+          const result = await createConversation(persona, messages)
+          if (result.success) {
+            conversationId = result.id
+            setState((prev) => ({ ...prev, conversationId: result.id }))
+          }
+        }
 
-      let conversationId = stateRef.current.conversationId
-      if (conversationId) {
-        await saveMessages(conversationId, messages, isReport)
+        // Create report row when a report is detected
+        if (isReport && conversationId) {
+          const reportContent =
+            messages.findLast((m) => m.isReport)?.content ?? ''
+          const reportResult = await createReport(
+            conversationId,
+            persona,
+            reportContent
+          )
+          if (reportResult.success) {
+            setState((prev) => ({
+              ...prev,
+              shareToken: reportResult.shareToken,
+            }))
+          }
+        }
       } else {
-        const result = await createConversation(persona, messages)
-        if (result.success) {
-          conversationId = result.id
-          setState((prev) => ({ ...prev, conversationId: result.id }))
-        }
-      }
+        // Anonymous path: persist to localStorage + create DB report for sharing
+        let shareToken: string | null = null
 
-      // Create report row when a report is detected
-      if (isReport && conversationId) {
-        const reportContent =
-          messages.findLast((m) => m.isReport)?.content ?? ''
-        const reportResult = await createReport(
-          conversationId,
-          persona,
-          reportContent
-        )
-        if (reportResult.success) {
-          setState((prev) => ({
-            ...prev,
-            shareToken: reportResult.shareToken,
-          }))
+        if (isReport) {
+          const reportContent =
+            messages.findLast((m) => m.isReport)?.content ?? ''
+          const reportResult = await createAnonymousReport(
+            persona,
+            reportContent
+          )
+          if (reportResult.success) {
+            shareToken = reportResult.shareToken
+            setState((prev) => ({ ...prev, shareToken }))
+          }
         }
+
+        saveAnonymousConversation({
+          id: anonymousIdRef.current,
+          persona,
+          title: extractTitle(messages),
+          messages,
+          hasReport: isReport,
+          shareToken,
+          status: isReport ? 'completed' : 'active',
+          createdAt: messages[0]?.timestamp ?? Date.now(),
+          updatedAt: Date.now(),
+        })
       }
     },
-    [isAuthenticated]
+    [isAuthenticated, saveAnonymousConversation]
   )
 
   const sendMessage = useCallback(
@@ -263,6 +298,7 @@ export function useChat() {
   const resetChat = useCallback(() => {
     abortRef.current?.abort()
     attachmentDataRef.current.clear()
+    anonymousIdRef.current = crypto.randomUUID()
     const { conversationId } = stateRef.current
     const hasReport = stateRef.current.messages.some((m) => m.isReport)
     if (conversationId && !hasReport) {

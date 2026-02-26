@@ -8,6 +8,7 @@ export const LOG_EVENT = {
   WEB_SEARCH_USAGE: 'web_search_usage',
   REDIS_FALLBACK: 'redis_fallback',
   CONVERSATION_LIMIT_REACHED: 'conversation_limit_reached',
+  ANONYMOUS_REPORT_FAILED: 'anonymous_report_create_failed',
 
   // Telegram bot events
   TELEGRAM_WEBHOOK_REJECTED: 'telegram_webhook_rejected',
