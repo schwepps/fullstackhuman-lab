@@ -5,6 +5,7 @@ export const RATE_LIMIT_COOKIE_MAX_AGE_SECONDS = 86_400 // 24 hours
 export const ANTHROPIC_MODEL =
   process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-6'
 export const ANTHROPIC_MAX_TOKENS = 4096
+export const WEB_SEARCH_MAX_USES = 2
 
 export const CHAT_INPUT_MAX_LENGTH = 4000
 export const MAX_MESSAGE_LENGTH = 50_000

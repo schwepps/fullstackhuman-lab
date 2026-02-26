@@ -13,6 +13,7 @@ import {
   getWrapUpInjection,
   truncateHistory,
 } from '@/lib/ai/conversation-limits'
+import { getTools } from '@/lib/ai/tools'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 import {
@@ -163,6 +164,7 @@ export async function POST(request: NextRequest) {
       max_tokens: ANTHROPIC_MAX_TOKENS,
       system: systemBlocks,
       messages: anthropicMessages,
+      tools: getTools(),
     })
 
     const encoder = new TextEncoder()
@@ -183,6 +185,17 @@ export async function POST(request: NextRequest) {
           }
           controller.enqueue(encoder.encode('data: [DONE]\n\n'))
           controller.close()
+
+          // Log web search usage for cost monitoring (non-blocking)
+          const final = await stream.finalMessage()
+          const searches = final.usage.server_tool_use?.web_search_requests
+          if (searches) {
+            log('info', LOG_EVENT.WEB_SEARCH_USAGE, {
+              persona,
+              ipHash,
+              searches,
+            })
+          }
         } catch (error) {
           log('error', LOG_EVENT.STREAM_ERROR, {
             persona,
