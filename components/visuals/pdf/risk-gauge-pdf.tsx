@@ -25,7 +25,7 @@ export function RiskGaugePdf({ data }: { data: RiskGaugeData }) {
   const segments = gaugeSegments()
 
   return (
-    <Svg width="330" height="160" viewBox="0 0 330 160">
+    <Svg width="350" height="160" viewBox="-10 0 350 160">
       {segments.map((seg) => (
         <Path
           key={seg.level}

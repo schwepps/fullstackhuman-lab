@@ -15,8 +15,8 @@ import {
 import { wrapSvgText } from '@/lib/visuals/constants'
 import type { AssessmentRadarData } from '@/lib/visuals/types'
 
-const CX = 250
-const CY = 200
+const CX = 280
+const CY = 210
 const OUTER_R = 130
 const MAX_SCORE = 10
 const GRID_RINGS = [2, 4, 6, 8, 10]
@@ -37,7 +37,7 @@ export function AssessmentRadarPdf({
   const outerPoints = radarGridPoints(CX, CY, OUTER_R, n)
 
   return (
-    <Svg width="500" height="420" viewBox="0 0 500 420">
+    <Svg width="560" height="440" viewBox="0 0 560 440">
       {/* Grid rings */}
       {GRID_RINGS.map((ring) => {
         const r = (ring / MAX_SCORE) * OUTER_R

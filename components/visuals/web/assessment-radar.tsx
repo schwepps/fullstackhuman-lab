@@ -4,14 +4,17 @@ import {
   pointsToSvgString,
   polarToCartesian,
 } from '@/lib/visuals/geometry'
+import { wrapSvgText } from '@/lib/visuals/constants'
 import type { AssessmentRadarData } from '@/lib/visuals/types'
 
-const CX = 250
-const CY = 200
+const CX = 280
+const CY = 210
 const OUTER_R = 130
 const MAX_SCORE = 10
 const GRID_RINGS = [2, 4, 6, 8, 10]
 const LABEL_R = OUTER_R + 30
+const LABEL_MAX_CHARS = 16
+const LABEL_LINE_HEIGHT = 10
 
 interface AssessmentRadarProps {
   data: AssessmentRadarData
@@ -26,7 +29,7 @@ export function AssessmentRadar({ data, accentHex }: AssessmentRadarProps) {
 
   return (
     <svg
-      viewBox="0 0 500 420"
+      viewBox="0 0 560 440"
       className="mx-auto w-full max-w-md"
       role="img"
       aria-label="Assessment radar chart"
@@ -81,19 +84,42 @@ export function AssessmentRadar({ data, accentHex }: AssessmentRadarProps) {
         const isLeft = labelPos.x < CX - 10
         const anchor = isRight ? 'start' : isLeft ? 'end' : 'middle'
 
+        const isTop = labelPos.y < CY - 10
+        const isBottom = labelPos.y > CY + 10
+        const nameY = isTop
+          ? labelPos.y - 10
+          : isBottom
+            ? labelPos.y + 2
+            : labelPos.y - 4
+        const scoreY = isTop
+          ? labelPos.y + 2
+          : isBottom
+            ? labelPos.y + 14
+            : labelPos.y + 8
+
+        const nameLines = wrapSvgText(dim.name, LABEL_MAX_CHARS)
+        const adjustedScoreY =
+          scoreY + (nameLines.length - 1) * LABEL_LINE_HEIGHT
+
         return (
           <g key={i}>
             <text
-              x={labelPos.x}
-              y={labelPos.y - 4}
               textAnchor={anchor}
               className="fill-gray-600 font-mono text-[12px]"
             >
-              {dim.name}
+              {nameLines.map((line, li) => (
+                <tspan
+                  key={li}
+                  x={labelPos.x}
+                  y={nameY + li * LABEL_LINE_HEIGHT}
+                >
+                  {line}
+                </tspan>
+              ))}
             </text>
             <text
               x={labelPos.x}
-              y={labelPos.y + 8}
+              y={adjustedScoreY}
               textAnchor={anchor}
               className="font-mono text-[12px] font-bold"
               fill={accentHex}

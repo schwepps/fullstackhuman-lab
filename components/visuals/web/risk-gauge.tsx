@@ -28,8 +28,8 @@ export function RiskGauge({ data }: RiskGaugeProps) {
 
   return (
     <svg
-      viewBox="0 0 330 160"
-      className="mx-auto w-full max-w-[330px]"
+      viewBox="-10 0 350 160"
+      className="mx-auto w-full max-w-[350px]"
       role="img"
       aria-label={`Risk level: ${GAUGE_LEVEL_LABELS[data.level]}`}
     >
