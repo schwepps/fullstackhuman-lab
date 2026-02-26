@@ -56,22 +56,23 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 - **Free tier outputs include branding** — every shared report is distribution
 - **Telegram bot mirrors web experience** — same personas, same prompts, same report quality. Reports shared via the same `/report/{token}` URLs
 - **Conversation depth limit: 15 user turns max** — 3-phase wrap-up (normal → wrap-up → force report) ensures every conversation produces a report. Shared logic in `lib/ai/conversation-limits.ts`.
+- **Web search** — opt-in via `ANTHROPIC_ENABLE_WEB_SEARCH=true`. Uses Anthropic's built-in `web_search_20260209` server-side tool (max 2 searches/request). AI searches only for unknown tools/products, never for general strategy. Config in `lib/ai/tools.ts`, constant in `lib/constants/chat.ts`.
 
 ---
 
 ## Tech Stack
 
-| Layer     | Technology                       |
-| --------- | -------------------------------- |
-| Framework | Next.js 16                       |
-| Language  | TypeScript                       |
-| Styling   | Tailwind CSS v4 + shadcn/ui      |
-| AI        | Claude API                       |
-| i18n      | next-intl v4                     |
-| PDF       | @react-pdf/renderer              |
-| Telegram  | Telegraf v4 (webhook bot)        |
-| Testing   | Vitest + Testing Library         |
-| Git Hooks | Husky + lint-staged + commitlint |
+| Layer     | Technology                         |
+| --------- | ---------------------------------- |
+| Framework | Next.js 16                         |
+| Language  | TypeScript                         |
+| Styling   | Tailwind CSS v4 + shadcn/ui        |
+| AI        | Claude API (+ built-in web search) |
+| i18n      | next-intl v4                       |
+| PDF       | @react-pdf/renderer                |
+| Telegram  | Telegraf v4 (webhook bot)          |
+| Testing   | Vitest + Testing Library           |
+| Git Hooks | Husky + lint-staged + commitlint   |
 
 ---
 
@@ -171,8 +172,8 @@ docs/                   # Design documentation (reference only)
   roadmap.md
 lib/
   utils.ts              # cn() utility
-  constants/            # App constants (chat, quotas, conversations, legal)
-  ai/                   # AI client & prompt assembly
+  constants/            # App constants (chat, quotas, conversations, legal, logging)
+  ai/                   # AI client, prompt assembly, web search tools
   auth/                 # Auth actions, schemas, types
   conversations/        # Conversation persistence (actions, queries, migration)
   report-parser.ts      # Two-pass report parser (sections, visuals)

@@ -4,7 +4,7 @@ Priority-tier roadmap for Full Stack Human commercial launch.
 
 **Context:** France/EU first launch, 1-2 month timeline, primary KPI is consulting bookings (Calendly clicks). The AI is a lead magnet — free tier outputs with branding are distribution.
 
-**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting with Upstash Redis (durable IP rate limiting), quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports, SEO/GEO/WebMCP for AI and search discoverability, loading skeletons (chat + account), branded email templates (Supabase Auth), locale-aware root 404 page, conversation persistence and history, explicit Calendly CTAs at key conversion moments (landing page, report card, conversations dashboard), shareable report URLs with public pages, OG meta, branding watermark, and Calendly CTAs, professional HTML report templates with persona-specific branding and 7 SVG visual types (radar, gauge, spectrum, matrix, priority matrix, flow, roadmap), one-click PDF export via `@react-pdf/renderer`.
+**What's already built:** Three-persona chat (Doctor, Critic, Guide) with streaming, email + Google OAuth auth, account management, 3-layer rate limiting with Upstash Redis (durable IP rate limiting), quota system (anon 3/day, free 15/mo, paid unlimited), i18n (FR/EN), database with RLS, security headers, CI/CD, test suite, landing page, `.env.example`, error boundaries, legal pages (privacy policy, terms, mentions légales), GDPR cookie consent banner with consent-gated rate-limit cookie, marketing footer, PostHog analytics (consent-gated, conversion funnel tracking), brand-consistent French translations, anonymous-to-signup CTA after reports, SEO/GEO/WebMCP for AI and search discoverability, loading skeletons (chat + account), branded email templates (Supabase Auth), locale-aware root 404 page, conversation persistence and history, explicit Calendly CTAs at key conversion moments (landing page, report card, conversations dashboard), shareable report URLs with public pages, OG meta, branding watermark, and Calendly CTAs, professional HTML report templates with persona-specific branding and 7 SVG visual types (radar, gauge, spectrum, matrix, priority matrix, flow, roadmap), one-click PDF export via `@react-pdf/renderer`, Telegram bot (webhook, persona selection, reports, GDPR), built-in web search for current tool/product knowledge (Anthropic `web_search_20260209`, feature-flagged).
 
 **Complexity estimates:** S = hours | M = 1-2 days | L = 3-5 days | XL = 1-2 weeks
 All estimates include writing tests to match the project's existing quality bar.
@@ -188,10 +188,26 @@ Important features to ship within the first month after launch. The product can 
 
 ---
 
+### ~~24. Web Search for Current Knowledge~~ DONE
+
+Completed in PR #33. Anthropic built-in `web_search_20260209` server-side tool enables the AI to search the web when users ask about tools, products, or services it doesn't recognize (knowledge cutoff gap). Feature-flagged via `ANTHROPIC_ENABLE_WEB_SEARCH` env var — disabled by default. Max 2 searches per request for cost control. Prompt enhanced with graceful fallback for knowledge recency gaps (transparent about cutoff, asks user to describe the tool, helps structurally) and web search guidance (when to search, when not to). Prompt injection defense for untrusted web content. Applied to both web chat and Telegram bot. 754 tests passing.
+
+**Key files:**
+
+- Create `lib/ai/tools.ts` — web search tool config with feature flag
+- Update `lib/constants/chat.ts` — `WEB_SEARCH_MAX_USES` constant
+- Update `lib/constants/logging.ts` — `WEB_SEARCH_USAGE` log event
+- Update `app/api/chat/route.ts` — tools + search usage logging
+- Update `lib/telegram/services/ai-service.ts` — tools + multi-block content handling
+- Update `prompts/system-prompt-core.md` — recency gap handling + search guidance
+
+---
+
 ### 14. Prompt Quality Improvements
 
 **Complexity:** M
 **What:** Review and iterate on the three persona prompts and core system prompt based on real tester feedback. Focus areas: sharper pivot moments, more specific CTAs, better adaptation to user's technical level, stronger report structure. Test against the golden paths documented in the persona design docs.
+**Status:** First iteration done — knowledge recency gap handling added to core prompt (PR #33, see item 24). Remaining work is persona-specific tuning based on real usage data.
 **Why post-launch:** Prompts are already good. Real tester feedback provides better signal for improvements than speculative iteration. This should be a continuous process informed by PostHog analytics and user conversations.
 **Dependencies:** Analytics (5) for usage data. Real tester conversations for feedback.
 **Key files:**
@@ -254,12 +270,10 @@ Completed in PR #15. Root `app/not-found.tsx` now detects locale from `NEXT_LOCA
 
 ---
 
-### 23. Telegram Bot Integration
+### ~~23. Telegram Bot Integration~~ DONE
 
-**Complexity:** L
-**What:** Telegram bot that mirrors the web chat experience. Users pick a persona via inline keyboard, have a full AI conversation, receive a shareable report link and Calendly CTA. Runs as a webhook handler inside the Next.js app at `/api/telegram/webhook`. Separate `telegram_users` and `telegram_conversations` tables with independent quota pool (15/month free). Professional MarkdownV2 formatting for AI responses. Security: timing-safe webhook verification, scoped service client, 4-layer rate limiting, GDPR compliance (`/deletedata` command). Includes conversation depth limiting (15 turns, 3-phase wrap-up) applied to both web chat and Telegram.
-**Why Tier 3:** Product works without it. Expands distribution channel — every Telegram conversation is a potential booking. Reports shared via existing web report pages.
-**Dependencies:** Conversation persistence (10) ✅, Shareable report URLs (12) ✅, Report templates (13) ✅
+Completed in PR #27. Telegram bot that mirrors the web chat experience. Users pick a persona via inline keyboard, have a full AI conversation, receive a shareable report link and Calendly CTA. Runs as a webhook handler inside the Next.js app at `/api/telegram/webhook`. Separate `telegram_users` and `telegram_conversations` tables with independent quota pool (15/month free). Professional MarkdownV2 formatting for AI responses. Security: timing-safe webhook verification, scoped service client, 4-layer rate limiting, GDPR compliance (`/deletedata` command). Includes conversation depth limiting (15 turns, 3-phase wrap-up) applied to both web chat and Telegram.
+
 **Key files:**
 
 - `lib/telegram/` — bot logic, handlers, services, formatting
@@ -357,8 +371,9 @@ Independent (no dependencies):
   16 Loading skeletons ✅
   17 Branded emails ✅
   18 Root 404 fix ✅
+  24 Web Search ✅ (knowledge gap remediation)
 
-  10 ✅ + 12 ✅ + 13 ✅ ──→ 23 Telegram Bot (Tier 3)
+  10 ✅ + 12 ✅ + 13 ✅ ──→ 23 Telegram Bot ✅
 
 Tier 4:
   10 ✅ + 13 ✅ + 15 ──→ 20 Stripe (needs stable product + paid differentiators)
@@ -397,11 +412,12 @@ Parallel tracks:
 
 ### Tier 3 — Weeks 6-8 (post-launch)
 
-- Prompt improvements (14) — ongoing based on tester feedback
+- Prompt improvements (14) — ongoing based on tester feedback (first iteration done: knowledge gap handling)
 - Cross-session memory (15) — major post-launch feature
 - ~~Loading skeletons (16), branded emails (17), 404 fix (18)~~ DONE
 - Accessibility audit (19) — when other polish is done
-- Telegram bot (23) — distribution channel expansion
+- ~~Telegram bot (23)~~ DONE
+- ~~Web search (24)~~ DONE
 
 ### Tier 4 — Month 2+
 
