@@ -14,6 +14,7 @@ export interface AnonymousConversation {
   readonly title: string | null
   readonly messages: ChatMessage[]
   readonly hasReport: boolean
+  readonly shareToken: string | null
   readonly status: ConversationStatus
   readonly createdAt: number
   readonly updatedAt: number
