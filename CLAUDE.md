@@ -76,119 +76,28 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 
 ---
 
-## Architecture
+## Route Architecture
 
 ```
-app/
-  [locale]/
-    (marketing)/        # Public marketing pages
-      page.tsx          # Homepage
-      layout.tsx        # Marketing layout (+ footer)
-      error.tsx         # Marketing error boundary
-      privacy/page.tsx  # Privacy Policy (bilingual)
-      terms/page.tsx    # Terms of Service (bilingual)
-      legal/page.tsx    # Mentions Légales (bilingual)
-    (chat)/             # Chat experience
-      chat/
-        page.tsx        # Persona selection → chat
-        [id]/page.tsx   # Read-only conversation viewer
-        layout.tsx      # Chat layout
-        error.tsx       # Chat error boundary
-    (account)/          # Account management
-      account/
-        page.tsx        # Account settings
-        layout.tsx      # Account layout
-        error.tsx       # Account error boundary
-      conversations/
-        page.tsx        # Conversations library
-        layout.tsx      # Conversations layout (auth gate)
-        loading.tsx     # Library loading skeleton
-    (sharing)/          # Public sharing pages (no auth required)
-      report/
-        [token]/page.tsx  # Public report page with OG meta
-      layout.tsx        # Minimal branded sharing layout
-    (auth)/             # Authentication pages
-      auth/
-        login/page.tsx
-        signup/page.tsx
-        forgot-password/page.tsx
-        reset-password/page.tsx
-      layout.tsx        # Auth layout
-    layout.tsx          # Root locale layout
-    not-found.tsx       # Locale-aware 404
-    error.tsx           # Root locale error boundary
+app/[locale]/
+  (marketing)/     # Public pages: homepage, privacy, terms, legal
+  (chat)/          # Chat: persona selection → conversation → report
+  (account)/       # Account settings + conversations library (auth required)
+  (sharing)/       # Public report pages (no auth): /report/[token]
+  (auth)/          # Login, signup, forgot/reset password
   api/
-    auth/callback/      # OAuth callback
-      route.ts
-    chat/               # Chat API
-      route.ts          # Assembles system prompt + streams response
-      quota/route.ts    # Quota checking endpoint
-    conversations/      # Conversations API
-      route.ts          # GET conversation list
-      [id]/route.ts     # GET single conversation
-    report/             # Report API
-      [token]/
-        pdf/route.ts    # PDF generation endpoint (@react-pdf/renderer)
-    telegram/           # Telegram Bot webhook
-      webhook/
-        route.ts        # POST webhook handler (async via after())
-  layout.tsx
-  globals.css
-  not-found.tsx
-  robots.ts
-  sitemap.ts
-i18n/
-  routing.ts            # Locale routing config (SSOT)
-  request.ts            # Server request config
-  resolve-locale.ts     # DRY locale resolution utility
-messages/
-  fr.json               # French translations (default)
-  en.json               # English translations
-proxy.ts                # Locale detection & redirect
+    chat/          # Streaming AI endpoint + quota check
+    conversations/ # Conversation CRUD
+    report/        # PDF generation
+    telegram/      # Telegram bot webhook
 components/
-  ui/                   # shadcn/ui components
-  marketing/            # Marketing page components
-  chat/                 # Chat components
-  auth/                 # Auth form components
-  account/              # Account management components
-  layout/               # Shared layout components (footer, cookie consent, legal page layout)
-  seo/                  # SEO components (JSON-LD, WebMCP registration)
-  report/              # Report template, sections, header/footer, share button, report view
-  visuals/             # SVG visual components (web + PDF renderers)
-    web/               # 7 web SVG visual components
-    pdf/               # 7 react-pdf SVG visual components
-  shared/               # Cross-route shared components
-prompts/                # Production prompt files (sent to API)
-  system-prompt-core.md
-  prompt-doctor.md
-  prompt-critic.md
-  prompt-guide.md
-docs/                   # Design documentation (reference only)
-  product-concept.md
-  persona-design.md
-  persona-doctor.md
-  persona-critic.md
-  persona-guide.md
-  roadmap.md
+  report/          # Report template, sections, share button
+  visuals/web/     # 7 SVG visual components (web)
+  visuals/pdf/     # 7 react-pdf SVG visual components (PDF)
 lib/
-  utils.ts              # cn() utility
-  constants/            # App constants (chat, quotas, conversations, legal, logging)
-  ai/                   # AI client, prompt assembly, web search tools
-  auth/                 # Auth actions, schemas, types
-  conversations/        # Conversation persistence (actions, queries, migration)
-  report-parser.ts      # Two-pass report parser (sections, visuals)
-  reports/              # Report persistence (actions, queries)
-  visuals/              # Visual data types, validators, geometry, constants
-  pdf/                  # PDF document assembly, styles, markdown renderer
-  seo/                  # SEO schema generators (JSON-LD)
-  supabase/             # Supabase client variants
-  telegram/             # Telegram bot integration (handlers, services, formatting, i18n)
-  hooks/                # Custom React hooks (cookie consent, chat, quota, conversations)
-types/
-  chat.ts               # ChatState, PersonaId, ChatMessage types
-  conversation.ts       # Conversation, ConversationSummary, ConversationStatus
-  report.ts             # Report, ReportRow types
-tests/
+  ai/              # AI client, prompt assembly, conversation limits, tools
+  conversations/   # Persistence (actions, queries)
+  telegram/        # Bot handlers, services, formatting, i18n
 ```
 
 ---
@@ -213,30 +122,8 @@ tests/
 
 ---
 
-## Git Hooks & Commits
-
-**Pre-commit:** lint-staged (format + lint) + tests.
-**Commit-msg:** Conventional commits.
-
-```
-type(scope): description
-# Example: feat(chat): add persona selection screen
-```
-
-Allowed types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `revert`
-
----
-
 ## Coding Conventions
 
-- **No `any` types** — always define proper types
-- **No magic numbers** — use named constants
-- **No commented-out code** — delete it, git remembers
-- **Files**: kebab-case (`persona-selector.tsx`)
-- **Components**: PascalCase (`PersonaSelector`)
-- **Functions**: camelCase (`assembleSystemPrompt`)
-- **Constants**: UPPER_SNAKE (`MAX_CONVERSATIONS_PER_DAY`)
-- **Booleans**: prefix with `is`, `has`, `can`
 - **Prettier**: no semicolons, single quotes, trailing commas (es5)
 
 ---

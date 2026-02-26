@@ -74,17 +74,7 @@ grep -r "category.*CHECK\|category.*IN\|category.*enum" supabase/ lib/ types/
 
 ## Boundary Consistency
 
-When the same value is computed in multiple places (UI display + DB query), the computation must use identical logic. Don't floor/round in one place but use exact values in another.
-
-```typescript
-// ❌ Bad: UI says "180d" (fresh) but DB counts as stale
-// display: Math.floor(diff / DAY_MS) → 180
-// query:   last_verified_at < exactTimestamp → stale
-
-// ✅ Good: same precision everywhere, floor only for display label
-const days = diff / DAY_MS // un-floored for comparison
-const label = `${Math.floor(days)}d` // floored only for display
-```
+When the same value is computed in multiple places (UI display + DB query), the computation must use identical logic. Don't floor/round in one place but use exact values in another. Floor only for display labels; use un-floored values for comparison.
 
 ---
 
@@ -124,54 +114,6 @@ Every server action MUST include, in order:
 3. **Auth verification** — `getUser()` independent of UI (don't trust client-side guards)
 4. **Identity type check** — For protected actions, verify `user.identities` includes the expected provider (OAuth-only guard)
 5. **Typed return** — Use `AUTH_ERROR.*` / `AUTH_SUCCESS.*` constants, never string literals
-
-```typescript
-// ✅ Good: Complete server action pattern
-export async function myAction(
-  _prev: AuthActionState,
-  formData: FormData
-): Promise<AuthActionState> {
-  if (!(await checkAuthRateLimit())) return { error: AUTH_ERROR.RATE_LIMITED }
-  const parsed = mySchema.safeParse({
-    /* ... */
-  })
-  if (!parsed.success) return { error: AUTH_ERROR.VALIDATION }
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return { error: AUTH_ERROR.UNAUTHORIZED }
-  // ... business logic ...
-  return { success: AUTH_SUCCESS.MY_CODE }
-}
-```
-
----
-
-## Custom Hook Return Stability
-
-Every function returned from a custom hook MUST be wrapped in `useCallback`.
-Every object/array returned from a custom hook MUST be wrapped in `useMemo`.
-
-This prevents downstream `useEffect` instability when consumers include hook returns in dependency arrays.
-
-```typescript
-// ❌ Bad: new function reference every render
-export function useMyHook() {
-  function refetch() {
-    /* ... */
-  }
-  return { refetch }
-}
-
-// ✅ Good: stable reference
-export function useMyHook() {
-  const refetch = useCallback(async () => {
-    /* ... */
-  }, [])
-  return { refetch }
-}
-```
 
 ---
 
@@ -244,9 +186,3 @@ When modifying personas, public URLs, or product descriptions, update ALL discov
 4. `lib/seo/schemas.ts` — schema URLs
 
 Run `pnpm check:seo` to verify consistency before PR.
-
----
-
-## File Editing
-
-Before editing a file, always re-read it first to get the current state. Never edit based on stale file contents. This is especially important during multi-file changes.
