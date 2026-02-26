@@ -155,6 +155,7 @@ function ChatPageContent() {
           shareToken={chat.shareToken}
           getTotalAttachmentBytes={chat.getTotalAttachmentBytes}
           turnsRemaining={chat.turnsRemaining}
+          onStartNew={chat.resetChat}
         />
       ) : null}
     </>

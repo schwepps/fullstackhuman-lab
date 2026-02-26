@@ -129,6 +129,7 @@ export function ConversationViewClient({
           isReadOnly={chat.isReadOnly}
           shareToken={chat.shareToken}
           getTotalAttachmentBytes={chat.getTotalAttachmentBytes}
+          onStartNew={handleLeave}
         />
       )}
 
