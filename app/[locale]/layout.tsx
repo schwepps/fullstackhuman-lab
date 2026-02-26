@@ -83,12 +83,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     alternates: {
       canonical: localeUrl,
-      languages: Object.fromEntries(
-        routing.locales.map((l) => [
-          l,
-          l === routing.defaultLocale ? APP_URL : `${APP_URL}/${l}`,
-        ])
-      ),
+      languages: {
+        ...Object.fromEntries(
+          routing.locales.map((l) => [
+            l,
+            l === routing.defaultLocale ? APP_URL : `${APP_URL}/${l}`,
+          ])
+        ),
+        'x-default': APP_URL,
+      },
     },
   }
 }
