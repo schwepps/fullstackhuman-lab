@@ -5,6 +5,7 @@ export const LOG_EVENT = {
   RATE_LIMIT_HIT: 'rate_limit_hit',
   STREAM_ERROR: 'stream_error',
   STREAM_TIMEOUT: 'stream_timeout',
+  WEB_SEARCH_USAGE: 'web_search_usage',
   REDIS_FALLBACK: 'redis_fallback',
   CONVERSATION_LIMIT_REACHED: 'conversation_limit_reached',
 

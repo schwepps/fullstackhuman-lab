@@ -5,6 +5,7 @@ import {
   buildSystemBlocks,
 } from '@/lib/ai/prompt-assembler'
 import { getWrapUpInjection } from '@/lib/ai/conversation-limits'
+import { getTools } from '@/lib/ai/tools'
 import { ANTHROPIC_MODEL, ANTHROPIC_MAX_TOKENS } from '@/lib/constants/chat'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
@@ -29,14 +30,28 @@ export async function callAI(params: {
       max_tokens: ANTHROPIC_MAX_TOKENS,
       system: params.systemBlocks,
       messages: params.messages,
+      tools: getTools(),
     })
 
     const response = await stream.finalMessage()
 
-    const firstBlock = response.content[0]
-    if (firstBlock.type !== 'text') return null
+    // Log web search usage for cost monitoring
+    const searches = response.usage.server_tool_use?.web_search_requests
+    if (searches) {
+      log('info', LOG_EVENT.WEB_SEARCH_USAGE, { searches })
+    }
 
-    return firstBlock.text
+    // With web search enabled, response may contain interleaved
+    // web_search_tool_result blocks — collect text from all text blocks.
+    const text = response.content
+      .filter(
+        (block): block is Extract<typeof block, { type: 'text' }> =>
+          block.type === 'text'
+      )
+      .map((block) => block.text)
+      .join('')
+
+    return text || null
   } catch (error) {
     log('error', LOG_EVENT.TELEGRAM_AI_ERROR, {
       error: error instanceof Error ? error.message : 'Unknown error',
