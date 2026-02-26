@@ -1,11 +1,10 @@
 import type { MetadataRoute } from 'next'
 import { routing } from '@/i18n/routing'
-import { APP_URL, CHAT_PATH } from '@/lib/constants/app'
+import { APP_URL } from '@/lib/constants/app'
 import { LEGAL_PATHS } from '@/lib/constants/legal'
 
 /** Static last-modified dates — update when content actually changes. */
 const LAST_MODIFIED_HOMEPAGE = '2026-02-24'
-const LAST_MODIFIED_CHAT = '2026-02-24'
 const LAST_MODIFIED_LEGAL = '2026-02-24'
 
 function localeUrl(locale: string, path = ''): string {
@@ -33,12 +32,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   )
 
-  const chatEntries: MetadataRoute.Sitemap = routing.locales.map((locale) => ({
-    url: localeUrl(locale, CHAT_PATH),
-    lastModified: LAST_MODIFIED_CHAT,
-    alternates: localeAlternates(CHAT_PATH),
-  }))
-
   const legalEntries: MetadataRoute.Sitemap = LEGAL_PATHS.flatMap((path) =>
     routing.locales.map((locale) => ({
       url: localeUrl(locale, path),
@@ -47,5 +40,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   )
 
-  return [...homepageEntries, ...chatEntries, ...legalEntries]
+  return [...homepageEntries, ...legalEntries]
 }
