@@ -12,7 +12,7 @@ import { useAnalytics } from '@/lib/hooks/use-analytics'
 import { ShareButton } from '@/components/report/share-button'
 import { DownloadPdfButton } from '@/components/report/download-pdf-button'
 import { buildReportShareUrl } from '@/lib/constants/reports'
-import { stripVisualBlocks, PERSONA_EMOJI_REGEX } from '@/lib/visuals/parser'
+import { PERSONA_EMOJI_REGEX } from '@/lib/visuals/parser'
 import type { PersonaId } from '@/types/chat'
 
 interface ReportCardProps {
@@ -30,7 +30,7 @@ export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
 
   const cleanContent = useMemo(
     () =>
-      stripVisualBlocks(content).replace(
+      content.replace(
         new RegExp(`^(# )${PERSONA_EMOJI_REGEX.source}`, 'mu'),
         '$1'
       ),
@@ -39,14 +39,14 @@ export function ReportCard({ content, persona, shareToken }: ReportCardProps) {
 
   const handleCopy = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(content)
+      await navigator.clipboard.writeText(cleanContent)
       trackReportCopied({ persona })
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
       // Clipboard API unavailable (HTTP, iframe, or permission denied)
     }
-  }, [content, persona, trackReportCopied])
+  }, [cleanContent, persona, trackReportCopied])
 
   return (
     <Card className="terminal-border my-2 border-primary/30 bg-card/50">

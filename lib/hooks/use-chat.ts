@@ -126,6 +126,11 @@ export function useChat() {
           if (reportResult.success) {
             shareToken = reportResult.shareToken
             setState((prev) => ({ ...prev, shareToken }))
+          } else {
+            console.warn(
+              '[use-chat] anonymous report creation failed:',
+              reportResult.error
+            )
           }
         }
 

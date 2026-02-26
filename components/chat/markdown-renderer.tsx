@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
 import { CALENDLY_URL_PATTERN } from '@/lib/constants/analytics'
+import { stripVisualBlocks } from '@/lib/visuals/parser'
 
 const remarkPlugins = [remarkGfm]
 
@@ -95,6 +96,7 @@ interface MarkdownRendererProps {
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
   const { trackCalendlyClick } = useAnalytics()
+  const cleanContent = useMemo(() => stripVisualBlocks(content), [content])
 
   const components = useMemo<Components>(
     () => ({
@@ -126,7 +128,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
 
   return (
     <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
-      {content}
+      {cleanContent}
     </ReactMarkdown>
   )
 }
