@@ -19,8 +19,8 @@ ALTER TABLE public.reports DROP CONSTRAINT reports_one_source;
 
 ALTER TABLE public.reports
   ADD CONSTRAINT reports_one_source CHECK (
-    (conversation_id IS NOT NULL AND telegram_conversation_id IS NULL)
-    OR (conversation_id IS NULL AND telegram_conversation_id IS NOT NULL)
+    (conversation_id IS NOT NULL AND telegram_conversation_id IS NULL AND is_anonymous = FALSE)
+    OR (conversation_id IS NULL AND telegram_conversation_id IS NOT NULL AND is_anonymous = FALSE)
     OR (conversation_id IS NULL AND telegram_conversation_id IS NULL AND is_anonymous = TRUE)
   );
 

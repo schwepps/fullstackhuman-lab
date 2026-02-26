@@ -100,10 +100,12 @@ export async function migrateAnonymousConversations(
           .eq('share_token', conv.shareToken!)
           .eq('is_anonymous', true)
           .is('conversation_id', null)
+          .is('telegram_conversation_id', null)
           .then(({ error }) => {
             if (error) {
               log('error', LOG_EVENT.ANONYMOUS_REPORT_FAILED, {
-                shareToken: conv.shareToken,
+                hasShareToken: !!conv.shareToken,
+                hasReport: conv.hasReport,
               })
             }
           })
