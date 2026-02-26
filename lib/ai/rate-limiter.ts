@@ -12,6 +12,7 @@ import {
 } from '@/lib/rate-limit-utils'
 import { TIER_QUOTAS, type UserTier, USER_TIERS } from '@/lib/constants/quotas'
 import { createClient } from '@/lib/supabase/server'
+import { healMissingProfile } from '@/lib/auth/heal-profile'
 import type { QuotaInfo } from '@/types/user'
 
 export interface RateLimitResult extends QuotaInfo {
@@ -118,6 +119,19 @@ export async function checkAuthenticatedRateLimit(
     .single()
 
   if (!profile || !isValidTier(profile.tier)) {
+    // Self-heal: recreate missing public.users row (e.g., auth.users exists
+    // but profile was deleted or the on_auth_user_created trigger didn't fire)
+    const healed = await healMissingProfile(userId)
+    if (healed) {
+      const freeQuota = TIER_QUOTAS.free.maxConversationsPerMonth!
+      return {
+        allowed: true,
+        remaining: freeQuota,
+        limit: freeQuota,
+        tier: 'free',
+        period: 'month',
+      }
+    }
     return {
       allowed: false,
       remaining: 0,

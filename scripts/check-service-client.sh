@@ -5,6 +5,7 @@
 # Allowlist:
 #   - lib/supabase/service.ts         (definition)
 #   - lib/auth/account-actions.ts     (account deletion, re-auth required)
+#   - lib/auth/heal-profile.ts        (self-healing missing profile, service role needed)
 #   - lib/telegram/db.ts              (Telegram bot DB access, scoped queries)
 #   - lib/reports/anonymous-actions.ts (anonymous report creation, IP rate-limited)
 #   - lib/conversations/migrate.ts    (report linking during signup migration)
@@ -14,6 +15,7 @@ set -euo pipefail
 ALLOWLIST=(
   "lib/supabase/service.ts"
   "lib/auth/account-actions.ts"
+  "lib/auth/heal-profile.ts"
   "lib/telegram/db.ts"
   "lib/reports/anonymous-actions.ts"
   "lib/conversations/migrate.ts"

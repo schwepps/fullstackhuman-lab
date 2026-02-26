@@ -15,3 +15,6 @@ export const MAX_ANONYMOUS_CONVERSATIONS = 10
 
 /** localStorage flag to prevent duplicate anonymous→authenticated migration */
 export const MIGRATION_DONE_KEY = 'fsh_conversations_migrated'
+
+/** Maximum migration retry attempts before giving up */
+export const MIGRATION_MAX_RETRIES = 3

@@ -76,7 +76,15 @@ export async function migrateAnonymousConversations(
     .insert(rows)
     .select('id')
 
-  if (error) return { success: false, error: AUTH_ERROR.MIGRATION_FAILED }
+  if (error) {
+    log('error', LOG_EVENT.ANONYMOUS_MIGRATION_FAILED, {
+      userId: user.id,
+      errorCode: error.code,
+      errorMessage: error.message,
+      conversationCount: rows.length,
+    })
+    return { success: false, error: AUTH_ERROR.MIGRATION_FAILED }
+  }
 
   // Link anonymous reports to newly-created conversations
   if (inserted) {

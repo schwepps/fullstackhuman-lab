@@ -21,6 +21,7 @@ import { migrateAnonymousConversations } from '@/lib/conversations/migrate'
 import {
   ANONYMOUS_CONVERSATIONS_KEY,
   MIGRATION_DONE_KEY,
+  MIGRATION_MAX_RETRIES,
 } from '@/lib/constants/conversations'
 import type { PersonaId } from '@/types/chat'
 
@@ -49,15 +50,25 @@ function ChatPageContent() {
     prevStreamingRef.current = isStreaming
   }, [isStreaming, refetchQuota, refetchConversations])
 
-  // Migrate anonymous conversations to DB on first authenticated visit
+  // Migrate anonymous conversations to DB on first authenticated visit.
+  // Retries up to 3 times across page loads (profile may not exist yet
+  // if the on_auth_user_created trigger didn't fire on OAuth re-login).
   const hasMigrated = useRef(false)
   useEffect(() => {
     if (!isAuthenticated || hasMigrated.current) return
     hasMigrated.current = true
 
     try {
-      const migrationDone = localStorage.getItem(MIGRATION_DONE_KEY)
-      if (migrationDone) return
+      const migrationValue = localStorage.getItem(MIGRATION_DONE_KEY)
+      // Backward compat: old code stored '1' on completion
+      if (migrationValue === 'done' || migrationValue === '1') return
+
+      // Parse retry count from 'retry:N' format, give up after max retries
+      const parsed = migrationValue?.startsWith('retry:')
+        ? parseInt(migrationValue.slice(6), 10)
+        : 0
+      const retryCount = Number.isNaN(parsed) ? 0 : parsed
+      if (retryCount >= MIGRATION_MAX_RETRIES) return
 
       const raw = localStorage.getItem(ANONYMOUS_CONVERSATIONS_KEY)
       if (!raw) return
@@ -69,19 +80,21 @@ function ChatPageContent() {
         .then((result) => {
           if (result.success) {
             localStorage.removeItem(ANONYMOUS_CONVERSATIONS_KEY)
+            localStorage.setItem(MIGRATION_DONE_KEY, 'done')
+            refetchConversations()
+            refetchQuota()
+          } else {
+            // Allow retry on next page load
+            localStorage.setItem(MIGRATION_DONE_KEY, `retry:${retryCount + 1}`)
           }
-          // Mark as done regardless — prevent repeated failed DB calls
-          localStorage.setItem(MIGRATION_DONE_KEY, '1')
-          if (result.success) refetchConversations()
         })
         .catch(() => {
-          // Mark as done to prevent retry loop on persistent failures
-          localStorage.setItem(MIGRATION_DONE_KEY, '1')
+          localStorage.setItem(MIGRATION_DONE_KEY, `retry:${retryCount + 1}`)
         })
     } catch {
       // localStorage unavailable — fail silently
     }
-  }, [isAuthenticated, refetchConversations])
+  }, [isAuthenticated, refetchConversations, refetchQuota])
 
   function handleSelectPersona(id: PersonaId) {
     trackPersonaSelected({ persona: id })

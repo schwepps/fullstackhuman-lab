@@ -9,6 +9,9 @@ export const LOG_EVENT = {
   REDIS_FALLBACK: 'redis_fallback',
   CONVERSATION_LIMIT_REACHED: 'conversation_limit_reached',
   ANONYMOUS_REPORT_FAILED: 'anonymous_report_create_failed',
+  ANONYMOUS_MIGRATION_FAILED: 'anonymous_migration_failed',
+  PROFILE_HEALED: 'profile_healed',
+  PROFILE_HEAL_FAILED: 'profile_heal_failed',
 
   // Telegram bot events
   TELEGRAM_WEBHOOK_REJECTED: 'telegram_webhook_rejected',
