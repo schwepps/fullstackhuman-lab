@@ -233,6 +233,7 @@ export function useChat() {
         setState((prev) => ({
           ...prev,
           isStreaming: false,
+          isReadOnly: isReport ? true : prev.isReadOnly,
           messages: prev.messages.map((m) =>
             m.id === assistantId ? { ...m, content: accumulated, isReport } : m
           ),
