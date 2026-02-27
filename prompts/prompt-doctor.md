@@ -137,7 +137,9 @@ Transition naturally:
 
 ## Recommended actions
 
-[3-5 specific, prioritized steps. NEVER more than 5. Each action: 2-3 sentences max. Each one tied to their actual situation. If the situation requires more than 5, say so: "There's more here than I can cover in a single diagnostic — this is where the real François earns his keep."]
+[3-5 specific, prioritized steps. NEVER more than 5. Each action: 2-3 sentences max. Each one tied to their actual situation. If the situation requires more than 5, say so: "There's more here than I can cover in a single diagnostic — this is where the real François earns his keep."
+
+FORMAT: Each item MUST follow `N. **Action** — Explanation` with an em dash (—) between the bold label and the explanation. No colon, no period at the end of the label.]
 
 1. **[Action]** — [Why this, why now. Specific to context.]
 2. **[Action]** — [Why this, why now. Specific to context.]

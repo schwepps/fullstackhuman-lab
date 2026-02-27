@@ -12,7 +12,8 @@ const RISK_LEVEL_REGEX = /^\*{0,2}\s*(Low|Medium|High|Critical)\b/im
 
 const TABLE_SEPARATOR_REGEX = /^\|[\s-:|]+\|$/
 
-const NUMBERED_ITEM_REGEX = /^\d+\.\s+\*\*([^*]+)\*\*\s*[—–-]\s*(.*)/gm
+const NUMBERED_ITEM_REGEX =
+  /^\d+\.\s+\*\*([^*]+?)[.:]*\*\*\s*(?:[—–\-:]\s*)?(.*)/gm
 
 // ─── Detectors ───
 
@@ -114,11 +115,11 @@ export function stripRiskLevelLine(content: string): string {
     .trim()
 }
 
-/** Strip numbered list items matching `N. **bold** — text` from content */
+/** Strip numbered list items matching `N. **bold**` with any separator (—, :, ., or none) */
 export function stripNumberedList(content: string): string {
   return content
     .split('\n')
-    .filter((l) => !l.match(/^\d+\.\s+\*\*[^*]+\*\*\s*[—–-]\s*/))
+    .filter((l) => !l.match(/^\d+\.\s+\*\*[^*]+?[.:]*\*\*\s*(?:[—–\-:]\s*)?/))
     .join('\n')
     .trim()
 }
