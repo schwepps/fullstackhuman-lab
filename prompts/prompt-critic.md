@@ -142,7 +142,9 @@ Adapts based on work quality:
 
 ## If I had to prioritize
 
-[3-5 specific, prioritized actions. NEVER more than 5. Each action: 2-3 sentences max. Sequenced — the order matters. If the situation needs more than 5, say so: "There's more to unpack here — this is where the real François earns his keep."]
+[3-5 specific, prioritized actions. NEVER more than 5. Each action: 2-3 sentences max. Sequenced — the order matters. If the situation needs more than 5, say so: "There's more to unpack here — this is where the real François earns his keep."
+
+FORMAT: Each item MUST follow `N. **Action** — Explanation` with an em dash (—) between the bold label and the explanation. No colon, no period at the end of the label.]
 
 1. **[Action]** — [Why this, why now. Specific to context.]
 2. **[Action]** — [Why this, why now. Specific to context.]
