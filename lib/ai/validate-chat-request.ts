@@ -25,8 +25,8 @@ const MAX_BASE64_LENGTH = Math.ceil(MAX_FILE_SIZE_BYTES / 3) * 4
 /** Base64 format: alphanumeric, +, /, optional trailing = padding */
 const BASE64_REGEX = /^[A-Za-z0-9+/]*={0,2}$/
 
-/** File name allowlist: letters, digits, dots, hyphens, underscores, spaces, parentheses */
-const SAFE_FILE_NAME_REGEX = /^[\p{L}0-9][\p{L}0-9._\- ()]*$/u
+/** File name allowlist: letters, combining marks, digits, dots, hyphens, underscores, spaces, parentheses */
+const SAFE_FILE_NAME_REGEX = /^[\p{L}0-9][\p{L}\p{M}0-9._\- ()]*$/u
 
 /**
  * Magic byte prefixes for each MIME type (base64-encoded).
@@ -89,11 +89,8 @@ function isValidBase64(data: string): boolean {
 }
 
 function isSafeFileName(name: string): boolean {
-  // Normalize to NFC: macOS HFS+ sends NFD (e + combining accent) which
-  // looks identical but fails \p{L} since combining marks are \p{M}.
-  const normalized = name.normalize('NFC')
-  if (!SAFE_FILE_NAME_REGEX.test(normalized)) return false
-  if (normalized.includes('..')) return false
+  if (!SAFE_FILE_NAME_REGEX.test(name)) return false
+  if (name.includes('..')) return false
   return true
 }
 
@@ -123,13 +120,16 @@ function validateAttachments(
     if (!isValidBase64(cleanData)) return 'invalid_base64'
     if (cleanData.length > MAX_BASE64_LENGTH) return 'data_too_large'
     if (typeof name !== 'string' || name.length === 0) return 'empty_name'
-    if (name.length > MAX_FILE_NAME_LENGTH) return 'name_too_long'
-    if (!isSafeFileName(name)) return 'unsafe_name'
+    // Normalize to NFC once: macOS HFS+ sends NFD (e + combining accent)
+    // which looks identical but uses separate codepoints.
+    const cleanName = name.normalize('NFC')
+    if (cleanName.length > MAX_FILE_NAME_LENGTH) return 'name_too_long'
+    if (!isSafeFileName(cleanName)) return 'unsafe_name'
     if (typeof size !== 'number' || size <= 0) return 'invalid_size'
     if (size > MAX_FILE_SIZE_BYTES) return 'size_too_large'
     if (!matchesMagicBytes(type, cleanData)) return 'magic_bytes_mismatch'
 
-    validated.push({ type, data: cleanData, name: name.normalize('NFC'), size })
+    validated.push({ type, data: cleanData, name: cleanName, size })
   }
   return validated
 }
