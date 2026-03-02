@@ -63,7 +63,11 @@ const nextConfig: NextConfig = {
     },
   },
 
-  serverExternalPackages: ['@react-pdf/renderer'],
+  serverExternalPackages: [
+    '@react-pdf/renderer',
+    '@anthropic-ai/sdk',
+    'telegraf',
+  ],
 }
 
 export default withNextIntl(nextConfig)
