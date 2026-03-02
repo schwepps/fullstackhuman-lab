@@ -515,11 +515,12 @@ describe('validateChatRequest', () => {
     }
   })
 
-  it('accepts filenames with accented/Unicode characters', () => {
+  it('accepts filenames with accented/Unicode characters (NFC and NFD)', () => {
     const names = [
       'Présentation MatchRoom.pdf',
       'Ärzte-bericht.pdf',
       'análisis.pdf',
+      'Pre\u0301sentation MatchRoom.pdf', // NFD decomposed (macOS HFS+)
     ]
     for (const name of names) {
       const result = validateChatRequest(
@@ -536,6 +537,30 @@ describe('validateChatRequest', () => {
         })
       )
       expect(result.ok).toBe(true)
+    }
+  })
+
+  it('normalizes NFD filenames to NFC in validated output', () => {
+    const nfdName = 'Pre\u0301sentation.pdf' // NFD: e + combining accent
+    const result = validateChatRequest(
+      validBody({
+        messages: [
+          { role: 'user', content: 'Hi' },
+          { role: 'assistant', content: 'Hello' },
+          {
+            role: 'user',
+            content: 'Review this',
+            attachments: [{ ...validAttachment, name: nfdName }],
+          },
+        ],
+      })
+    )
+    expect(result.ok).toBe(true)
+    if (result.ok) {
+      // Validated name should be NFC-normalized
+      expect(result.data.messages[2].attachments![0].name).toBe(
+        'Présentation.pdf'
+      )
     }
   })
 

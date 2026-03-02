@@ -89,8 +89,11 @@ function isValidBase64(data: string): boolean {
 }
 
 function isSafeFileName(name: string): boolean {
-  if (!SAFE_FILE_NAME_REGEX.test(name)) return false
-  if (name.includes('..')) return false
+  // Normalize to NFC: macOS HFS+ sends NFD (e + combining accent) which
+  // looks identical but fails \p{L} since combining marks are \p{M}.
+  const normalized = name.normalize('NFC')
+  if (!SAFE_FILE_NAME_REGEX.test(normalized)) return false
+  if (normalized.includes('..')) return false
   return true
 }
 
@@ -126,7 +129,7 @@ function validateAttachments(
     if (size > MAX_FILE_SIZE_BYTES) return 'size_too_large'
     if (!matchesMagicBytes(type, cleanData)) return 'magic_bytes_mismatch'
 
-    validated.push({ type, data: cleanData, name, size })
+    validated.push({ type, data: cleanData, name: name.normalize('NFC'), size })
   }
   return validated
 }
