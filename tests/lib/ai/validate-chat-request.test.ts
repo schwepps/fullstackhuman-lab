@@ -515,6 +515,30 @@ describe('validateChatRequest', () => {
     }
   })
 
+  it('accepts filenames with accented/Unicode characters', () => {
+    const names = [
+      'Présentation MatchRoom.pdf',
+      'Ärzte-bericht.pdf',
+      'análisis.pdf',
+    ]
+    for (const name of names) {
+      const result = validateChatRequest(
+        validBody({
+          messages: [
+            { role: 'user', content: 'Hi' },
+            { role: 'assistant', content: 'Hello' },
+            {
+              role: 'user',
+              content: 'Review this',
+              attachments: [{ ...validAttachment, name }],
+            },
+          ],
+        })
+      )
+      expect(result.ok).toBe(true)
+    }
+  })
+
   it('accepts base64 data with embedded newlines (normalized)', () => {
     const dataWithNewlines = 'JVBER\ni0xLjQK'
     const result = validateChatRequest(

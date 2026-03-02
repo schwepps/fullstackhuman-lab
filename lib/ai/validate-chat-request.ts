@@ -26,7 +26,7 @@ const MAX_BASE64_LENGTH = Math.ceil(MAX_FILE_SIZE_BYTES / 3) * 4
 const BASE64_REGEX = /^[A-Za-z0-9+/]*={0,2}$/
 
 /** File name allowlist: letters, digits, dots, hyphens, underscores, spaces, parentheses */
-const SAFE_FILE_NAME_REGEX = /^[a-zA-Z0-9][a-zA-Z0-9._\- ()]*$/
+const SAFE_FILE_NAME_REGEX = /^[\p{L}0-9][\p{L}0-9._\- ()]*$/u
 
 /**
  * Magic byte prefixes for each MIME type (base64-encoded).
