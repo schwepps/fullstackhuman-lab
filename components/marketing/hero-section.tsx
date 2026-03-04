@@ -77,6 +77,20 @@ export function HeroSection({ isVisible }: HeroSectionProps) {
         </p>
       </motion.div>
 
+      {/* fAIling Manifesto link */}
+      <motion.div variants={itemVariants} className="mt-8">
+        <Link
+          href="/fAIling"
+          onClick={() => trackCtaClick({ source: 'hero_manifesto' })}
+          className="font-mono text-xs uppercase tracking-widest text-foreground/40 transition-colors hover:text-foreground/70"
+        >
+          {t.rich('manifestoLink', {
+            ai: (chunks) => <span className="text-failing-red">{chunks}</span>,
+          })}
+          <span className="ml-1">→</span>
+        </Link>
+      </motion.div>
+
       {/* Calendly CTA */}
       <motion.div variants={itemVariants} className="mt-10">
         <CalendlyCta variant="inline" source="hero" />

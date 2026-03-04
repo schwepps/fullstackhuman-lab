@@ -17,11 +17,13 @@ import {
   TELEGRAM_BOT_URL,
 } from '@/lib/constants/app'
 import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
+import { FAILING_PUBLISHED_DATE } from '@/lib/constants/failing'
 import { SEO_PERSONAS } from '@/lib/constants/personas'
+import { localePrefix } from '@/lib/seo/urls'
 
 type SchemaLocale = 'en' | 'fr'
 
-function resolveLocale(locale: string): SchemaLocale {
+export function resolveLocale(locale: string): SchemaLocale {
   return locale === 'en' ? 'en' : 'fr'
 }
 
@@ -71,6 +73,16 @@ const PERSON_DESCRIPTIONS: Record<
     description:
       "Ingénieur devenu leader produit. 15+ ans à construire, livrer et piloter dans la finance, l'énergie, le sport, la blockchain et l'IA.",
   },
+}
+
+const ARTICLE_TITLES: Record<SchemaLocale, string> = {
+  en: 'The fAIling Manifesto — How to Fail with AI',
+  fr: "Le manifeste fAIling — Comment rater avec l'IA",
+}
+
+const ARTICLE_DESCRIPTIONS: Record<SchemaLocale, string> = {
+  en: '13 expert-approved rules for failing with AI. A satirical field guide by fullstackhuman.sh.',
+  fr: "13 règles approuvées par les experts pour rater avec l'IA. Un guide satirique par fullstackhuman.sh.",
 }
 
 /**
@@ -160,6 +172,36 @@ export function getWebApplicationSchema(locale: string) {
       description: OFFER_DESCRIPTIONS[lang],
     },
     featureList: FEATURE_LISTS[lang],
+  }
+}
+
+/**
+ * Article schema for the fAIling Manifesto — satirical content page.
+ * Helps search engines understand this as an authored article.
+ */
+export function getArticleSchema(locale: string) {
+  const lang = resolveLocale(locale)
+  const prefix = localePrefix(locale)
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    inLanguage: lang,
+    headline: ARTICLE_TITLES[lang],
+    description: ARTICLE_DESCRIPTIONS[lang],
+    url: `${APP_URL}${prefix}/fAIling`,
+    author: {
+      '@type': 'Person',
+      name: 'François Schuers',
+      url: APP_URL,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: BRAND_NAME_DISPLAY,
+      url: APP_URL,
+    },
+    datePublished: FAILING_PUBLISHED_DATE,
+    image: `${APP_URL}${prefix}/fAIling/opengraph-image`,
   }
 }
 

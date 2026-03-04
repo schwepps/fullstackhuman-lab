@@ -51,8 +51,8 @@ fi
 
 # Check consumers import from the SSOT or reference the URL
 for file in "app/robots.ts" "app/sitemap.ts" "lib/seo/schemas.ts" "app/[locale]/layout.tsx"; do
-  if [ -f "$file" ] && ! grep -q "$EXPECTED_URL\|@/lib/constants/app" "$file"; then
-    echo "    ✘ $file does not reference $EXPECTED_URL or import APP_URL"
+  if [ -f "$file" ] && ! grep -q "$EXPECTED_URL\|@/lib/constants/app\|@/lib/seo/urls" "$file"; then
+    echo "    ✘ $file does not reference $EXPECTED_URL or import APP_URL (directly or via @/lib/seo/urls)"
     ERRORS=$((ERRORS + 1))
   fi
 done

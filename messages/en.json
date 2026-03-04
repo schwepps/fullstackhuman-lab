@@ -7,7 +7,8 @@
   "hero": {
     "headline": "EXECUTE: full_stack_human.sh",
     "subheadline": "One human. Every layer. Now callable.",
-    "cta": "> CONNECT_TO_INSTANCE"
+    "cta": "> CONNECT_TO_INSTANCE",
+    "manifestoLink": "Read the f<ai>AI</ai>ling Manifesto"
   },
   "about": {
     "bio": "Fran\u00e7ois\u2019s product thinking, technical depth, and delivery instinct \u2014 packaged as an on-demand AI. No fluff. No generic answers. Just the real thing."
@@ -346,6 +347,75 @@
       "doctor": "Diagnosis",
       "critic": "Key Insight",
       "guide": "The Reframe"
+    }
+  },
+  "failing": {
+    "metadata": {
+      "title": "The fAIling Manifesto — How to Fail with AI",
+      "description": "13 expert-approved rules for failing with AI. A satirical field guide by fullstackhuman.sh.",
+      "ogImageAlt": "The fAIling Manifesto — 13 rules for failing with AI"
+    },
+    "title": "The f<ai>AI</ai>ling Manifesto",
+    "subtitle": "How to Fail with AI — A Field Guide for the Ambitious",
+    "intro": "You didn't adopt AI to play it safe. You adopted it to move fast, skip steps, and discover entirely new ways to waste money. This is your guide.",
+    "rules": {
+      "1": {
+        "title": "Paste your entire codebase into the prompt",
+        "body": "Context is king. The more you give the model, the better it performs. So give it everything — all 200,000 lines. Don't worry about the $47 bill. That's just the cost of thoroughness."
+      },
+      "2": {
+        "title": "Replace your roadmap with a prompt",
+        "body": "Twelve validated user stories? Three months of customer research? Prioritized backlog? Delete all of it. Replace it with \"build me an app that does everything.\" Product strategy is just what happens between prompts now."
+      },
+      "3": {
+        "title": "Automate before you understand",
+        "body": "Why spend three weeks understanding a process when you can automate it in three hours? If the automation does the wrong thing 10,000 times, at least it does it fast. That's called velocity."
+      },
+      "4": {
+        "title": "If the AI wrote it and it compiles, ship it",
+        "body": "Code review is a relic from the era of human-written code. The AI doesn't make the kind of mistakes humans make. It makes entirely new ones. And those are much harder to find, so why bother looking."
+      },
+      "5": {
+        "title": "Announce the AI transformation on Monday. Expect results by Friday.",
+        "body": "Send the 47-slide deck with 14 mentions of \"synergy.\" Schedule the optional Q&A that nobody attends. By Wednesday, six people have updated their LinkedIn to \"Open to Work.\" By Friday, you've hired a change management consultant. Transformation complete."
+      },
+      "6": {
+        "title": "The demo is the product",
+        "body": "If it works in the demo, it works in production. The CEO saw it generate a beautiful report from sample data, so it's ready for 50,000 real users. Edge cases are just users who are holding it wrong."
+      },
+      "7": {
+        "title": "Hallucinations are just creative suggestions",
+        "body": "When the model invents a source that doesn't exist, it's not lying — it's brainstorming. That fake Harvard Business Review citation might be better than the real ones. You'll never know if you fact-check."
+      },
+      "8": {
+        "title": "Fire your domain experts. Hire prompt engineers.",
+        "body": "Twenty years of industry knowledge can be replaced by someone who knows the right temperature setting. Domain expertise is just vibes anyway. The prompt engineer will figure out cardiac surgery by iteration."
+      },
+      "9": {
+        "title": "Let the AI own the strategy",
+        "body": "Strategy is pattern recognition. AI is great at pattern recognition. Therefore, AI should write your strategy. The fact that it's trained on everyone else's strategy and will produce a perfect average of all existing thinking is not a bug — it's benchmarking."
+      },
+      "10": {
+        "title": "One mega-prompt to rule them all",
+        "body": "Iteration is for people who got their prompt wrong the first time. Real experts craft a single 3,847-word system prompt, hit enter once, and expect perfection. If the output is a haiku about autumn leaves, that's a you problem."
+      },
+      "11": {
+        "title": "Measure ROI after 48 hours",
+        "body": "Two days is enough to evaluate a technology that took 70 years of research. If the numbers aren't there by Thursday, kill the project. If they are, send a LinkedIn post about it. Either way, move on."
+      },
+      "12": {
+        "title": "Put \"AI-Powered\" on everything",
+        "body": "Your login page? AI-Powered. Your terms of service? AI-Powered. Your 404 page? Especially AI-Powered. Investors don't fund products. They fund adjectives."
+      },
+      "13": {
+        "title": "Skip the guardrails. Move fast.",
+        "body": "Content filters, output validation, human-in-the-loop review — these are speed bumps invented by people who don't understand urgency. Your customer-facing chatbot doesn't need guardrails. It needs freedom. What's the worst that could happen? Don't answer that."
+      }
+    },
+    "closing": {
+      "headline": "Recognize any of these?",
+      "body": "Every rule in this manifesto is a real pattern I've seen — sometimes up close, sometimes too close. The f<ai>AI</ai>ling Manifesto exists because failing with AI is easy. Succeeding with it takes something else entirely: understanding the process before automating it, building strategy that isn't a prompt, keeping humans in the loop when it matters, and knowing what AI is actually good at.",
+      "cta": "That's what I do at <link>fullstackhuman.sh</link> — AI consulting, no filter."
     }
   }
 }

@@ -1,27 +1,12 @@
 import type { MetadataRoute } from 'next'
 import { routing } from '@/i18n/routing'
-import { APP_URL } from '@/lib/constants/app'
+import { FAILING_PUBLISHED_DATE } from '@/lib/constants/failing'
 import { LEGAL_PATHS } from '@/lib/constants/legal'
+import { localeUrl, localeAlternates } from '@/lib/seo/urls'
 
 /** Static last-modified dates — update when content actually changes. */
 const LAST_MODIFIED_HOMEPAGE = '2026-02-24'
 const LAST_MODIFIED_LEGAL = '2026-02-24'
-
-function localeUrl(locale: string, path = ''): string {
-  const prefix = locale === routing.defaultLocale ? '' : `/${locale}`
-  return `${APP_URL}${prefix}${path}`
-}
-
-function localeAlternates(path = '') {
-  return {
-    languages: {
-      ...Object.fromEntries(
-        routing.locales.map((l) => [l, localeUrl(l, path)])
-      ),
-      'x-default': localeUrl(routing.defaultLocale, path),
-    },
-  }
-}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const homepageEntries: MetadataRoute.Sitemap = routing.locales.map(
@@ -40,5 +25,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   )
 
-  return [...homepageEntries, ...legalEntries]
+  const failingEntries: MetadataRoute.Sitemap = routing.locales.map(
+    (locale) => ({
+      url: localeUrl(locale, '/fAIling'),
+      lastModified: FAILING_PUBLISHED_DATE,
+      alternates: localeAlternates('/fAIling'),
+    })
+  )
+
+  return [...homepageEntries, ...legalEntries, ...failingEntries]
 }

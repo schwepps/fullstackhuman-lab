@@ -56,7 +56,7 @@ export interface TelegramClickProperties {
 }
 
 export interface CtaClickProperties {
-  source: 'hero' | 'signup_post_report'
+  source: 'hero' | 'hero_manifesto' | 'signup_post_report'
 }
 
 // --- Calendly URL detection (derived from SSOT) ---

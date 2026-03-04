@@ -7,7 +7,8 @@
   "hero": {
     "headline": "EXÉCUTER: full_stack_human.sh",
     "subheadline": "Un humain. Ses expertises. Désormais à la demande.",
-    "cta": "> LANCER_SESSION"
+    "cta": "> LANCER_SESSION",
+    "manifestoLink": "Lire le manifeste f<ai>AI</ai>ling"
   },
   "about": {
     "bio": "La vision produit, l'expertise technique et le focus client de François \u2014 packagés en IA à la demande. Pas de blabla. Pas de réponses génériques. L\u2019authentique, disponible 24/7."
@@ -346,6 +347,75 @@
       "doctor": "Diagnostic",
       "critic": "Point clé",
       "guide": "Le Recadrage"
+    }
+  },
+  "failing": {
+    "metadata": {
+      "title": "Le manifeste fAIling — Comment rater avec l'IA",
+      "description": "13 règles approuvées par les experts pour rater avec l'IA. Un guide satirique par fullstackhuman.sh.",
+      "ogImageAlt": "Le manifeste fAIling — 13 règles pour rater avec l'IA"
+    },
+    "title": "Le manifeste f<ai>AI</ai>ling",
+    "subtitle": "Comment rater avec l'IA — Le guide de terrain pour les ambitieux",
+    "intro": "Vous n'avez pas adopté l'IA pour jouer la sécurité. Vous l'avez adoptée pour aller vite, sauter des étapes, et découvrir de toutes nouvelles façons de gaspiller de l'argent. Voici votre guide.",
+    "rules": {
+      "1": {
+        "title": "Collez l'intégralité de votre codebase dans le prompt",
+        "body": "Le contexte est roi. Plus vous donnez au modèle, mieux il performe. Alors donnez-lui tout — les 200 000 lignes. Ne vous inquiétez pas pour la facture de 47 $. C'est le prix de la rigueur."
+      },
+      "2": {
+        "title": "Remplacez votre roadmap par un prompt",
+        "body": "Douze user stories validées ? Trois mois de recherche utilisateur ? Un backlog priorisé ? Supprimez tout. Remplacez par « construis-moi une app qui fait tout ». La stratégie produit, c'est juste ce qui se passe entre deux prompts maintenant."
+      },
+      "3": {
+        "title": "Automatisez avant de comprendre",
+        "body": "Pourquoi passer trois semaines à comprendre un processus quand on peut l'automatiser en trois heures ? Si l'automatisation fait la mauvaise chose 10 000 fois, au moins elle le fait vite. Ça s'appelle la vélocité."
+      },
+      "4": {
+        "title": "Si l'IA l'a écrit et que ça compile, mettez en prod",
+        "body": "La code review est une relique de l'ère du code écrit par des humains. L'IA ne fait pas le même genre d'erreurs que les humains. Elle en fait de toutes nouvelles. Et celles-là sont bien plus dures à trouver — alors pourquoi chercher."
+      },
+      "5": {
+        "title": "Annoncez la transformation IA lundi. Attendez des résultats vendredi.",
+        "body": "Envoyez le deck de 47 slides avec 14 mentions de « synergie ». Planifiez le Q&A optionnel auquel personne ne vient. Mercredi, six personnes ont mis « Open to Work » sur LinkedIn. Vendredi, vous avez embauché un consultant en conduite du changement. Transformation terminée."
+      },
+      "6": {
+        "title": "La démo, c'est le produit",
+        "body": "Si ça marche en démo, ça marche en production. Le CEO l'a vu générer un beau rapport à partir de données fictives, donc c'est prêt pour 50 000 vrais utilisateurs. Les edge cases, c'est juste des utilisateurs qui s'y prennent mal."
+      },
+      "7": {
+        "title": "Les hallucinations sont juste des suggestions créatives",
+        "body": "Quand le modèle invente une source qui n'existe pas, il ne ment pas — il brainstorme. Cette fausse citation de la Harvard Business Review est peut-être meilleure que les vraies. Vous ne le saurez jamais si vous vérifiez."
+      },
+      "8": {
+        "title": "Virez vos experts métier. Embauchez des prompt engineers.",
+        "body": "Vingt ans d'expertise métier peuvent être remplacés par quelqu'un qui connaît le bon réglage de température. L'expertise métier, c'est juste du feeling. Le prompt engineer trouvera comment faire de la chirurgie cardiaque par itération."
+      },
+      "9": {
+        "title": "Laissez l'IA piloter la stratégie",
+        "body": "La stratégie, c'est de la reconnaissance de patterns. L'IA est excellente en reconnaissance de patterns. Donc l'IA devrait écrire votre stratégie. Le fait qu'elle soit entraînée sur la stratégie de tout le monde et produise une moyenne parfaite de toute la pensée existante, ce n'est pas un bug — c'est du benchmarking."
+      },
+      "10": {
+        "title": "Un méga-prompt pour les gouverner tous",
+        "body": "L'itération, c'est pour ceux qui ont raté leur prompt du premier coup. Les vrais experts rédigent un seul system prompt de 3 847 mots, appuient sur Entrée une fois et attendent la perfection. Si le résultat est un haïku sur les feuilles d'automne, c'est votre problème."
+      },
+      "11": {
+        "title": "Mesurez le ROI au bout de 48 heures",
+        "body": "Deux jours suffisent pour évaluer une technologie qui a nécessité 70 ans de recherche. Si les chiffres ne sont pas là jeudi, tuez le projet. S'ils y sont, publiez un post LinkedIn. Dans les deux cas, passez à autre chose."
+      },
+      "12": {
+        "title": "Mettez « IA-Powered » sur tout",
+        "body": "Votre page de login ? IA-Powered. Vos CGU ? IA-Powered. Votre page 404 ? Surtout IA-Powered. Les investisseurs ne financent pas des produits. Ils financent des adjectifs."
+      },
+      "13": {
+        "title": "Supprimez les garde-fous. Allez vite.",
+        "body": "Filtres de contenu, validation des outputs, revue humaine — ce sont des ralentisseurs inventés par des gens qui ne comprennent pas l'urgence. Votre chatbot client n'a pas besoin de garde-fous. Il a besoin de liberté. Qu'est-ce qui pourrait mal tourner ? Ne répondez pas."
+      }
+    },
+    "closing": {
+      "headline": "Vous vous reconnaissez ?",
+      "body": "Chaque règle de ce manifeste est un vrai pattern que j'ai observé — parfois de près, parfois de trop près. Le manifeste f<ai>AI</ai>ling existe parce que rater avec l'IA, c'est facile. Réussir avec, ça demande autre chose\u00a0: comprendre le processus avant de l'automatiser, construire une stratégie qui ne soit pas un prompt, garder l'humain dans la boucle quand ça compte, et savoir ce que l'IA fait vraiment bien.",
+      "cta": "C'est ce que je fais chez <link>fullstackhuman.sh</link> — du conseil IA, sans filtre."
     }
   }
 }

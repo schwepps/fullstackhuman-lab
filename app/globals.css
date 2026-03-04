@@ -27,6 +27,11 @@
   --color-border: #1e293b;
   --color-ring: #22d3ee;
 
+  /* fAIling Manifesto — error-state accent colors */
+  --color-failing-red: #ff3333;
+  --color-failing-amber: #ffaa00;
+  --color-failing-fatal: #cc0000;
+
   /*
    * Z-index scale:
    * z-50  — default overlays (sub-menus, tooltips)

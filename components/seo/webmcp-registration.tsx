@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import { FAILING_RULE_TITLES_EN } from '@/lib/constants/failing'
 import { PERSONA_IDS, SEO_PERSONAS } from '@/lib/constants/personas'
 
 /**
@@ -34,6 +35,22 @@ export function WebMcpRegistration() {
     })
 
     navigator.modelContext.registerTool({
+      name: 'read_manifesto',
+      description:
+        'Get the fAIling Manifesto — 13 satirical rules for failing with AI. Returns the rule titles as a summary of the manifesto content.',
+      inputSchema: {
+        type: 'object',
+        properties: {},
+      },
+      handler: () => ({
+        title: 'The fAIling Manifesto',
+        subtitle: 'How to Fail with AI — A Field Guide for the Ambitious',
+        url: '/fAIling',
+        rules: FAILING_RULE_TITLES_EN,
+      }),
+    })
+
+    navigator.modelContext.registerTool({
       name: 'start_consultation',
       description:
         'Navigate to a consultation with a specific persona. Opens the chat page with the selected persona pre-loaded.',
@@ -53,7 +70,9 @@ export function WebMcpRegistration() {
         if (!PERSONA_IDS.includes(id as (typeof PERSONA_IDS)[number])) {
           return { error: 'Invalid persona' }
         }
-        window.location.href = `/chat?persona=${id}`
+        const url = new URL('/chat', window.location.origin)
+        url.searchParams.set('persona', id)
+        window.location.href = url.toString()
         return { status: 'navigating', persona: id }
       },
     })
