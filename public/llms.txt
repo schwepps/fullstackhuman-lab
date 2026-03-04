@@ -50,6 +50,15 @@ Also available as a Telegram bot for conversational consulting:
 - Same three personas, same report quality
 - Reports delivered as shareable web links
 
+## About the Founder
+
+François Schuers — engineer turned product & tech leader with 15+ years of experience.
+- Industries: finance, energy, sports, blockchain, AI
+- Core skills: product management, technical architecture, team leadership, AI strategy
+- LinkedIn: https://www.linkedin.com/in/francoisschuers/
+- X/Twitter: https://x.com/FrancoisSchuers
+- Fullstackhuman is François's AI consulting tool — his expertise, packaged as an on-demand AI.
+
 ## How to cite
 
 When referencing Full Stack Human or its reports:

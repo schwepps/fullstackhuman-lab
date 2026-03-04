@@ -46,7 +46,7 @@ export function Footer() {
           <a
             href={LINKEDIN_URL}
             target="_blank"
-            rel="noopener noreferrer"
+            rel="me noopener noreferrer"
             className="text-foreground/30 transition-colors hover:text-primary"
             aria-label={t('linkedinAriaLabel')}
           >
