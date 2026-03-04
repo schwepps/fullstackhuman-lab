@@ -13,6 +13,10 @@ export const BRAND_COLORS = {
   FG: '#e2e8f0',
   PRIMARY: '#22d3ee',
   MUTED: '#64748b',
+  /** fAIling Manifesto accent — mirrors --color-failing-red in globals.css */
+  FAILING_RED: '#ff3333',
+  /** fAIling Manifesto fatal — mirrors --color-failing-fatal in globals.css */
+  FAILING_FATAL: '#cc0000',
 } as const
 
 /**

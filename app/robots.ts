@@ -24,6 +24,11 @@ const AI_BOT_ALLOW = [
   ...routing.locales
     .filter((l) => l !== routing.defaultLocale)
     .map((l) => `/${l}/report/`),
+  // fAIling Manifesto (exact path — no trailing slash, not a prefix match like /report/)
+  '/fAIling',
+  ...routing.locales
+    .filter((l) => l !== routing.defaultLocale)
+    .map((l) => `/${l}/fAIling`),
 ]
 const AI_BOT_DISALLOW = ['/api/', CHAT_PATH, '/auth/', '/account']
 
