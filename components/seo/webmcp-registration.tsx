@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { FAILING_RULE_TITLES_EN } from '@/lib/constants/failing'
 import { PERSONA_IDS, SEO_PERSONAS } from '@/lib/constants/personas'
+import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 
 /**
  * Registers WebMCP tools for AI agent discoverability.
@@ -19,8 +20,7 @@ export function WebMcpRegistration() {
 
     navigator.modelContext.registerTool({
       name: 'get_personas',
-      description:
-        'Get the available consulting personas and their descriptions. Fullstackhuman offers three AI consulting modes: The Doctor (project diagnostics), The Critic (honest reviews), and The Guide (strategic reframing).',
+      description: `Get the available consulting personas and their descriptions. ${BRAND_NAME_DISPLAY} offers three AI consulting modes: The Doctor (project diagnostics), The Critic (honest reviews), and The Guide (strategic reframing).`,
       inputSchema: {
         type: 'object',
         properties: {},

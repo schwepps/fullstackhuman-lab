@@ -1,5 +1,6 @@
 import type { PersonaId } from '@/types/chat'
 import type { TelegramLanguage } from '@/lib/telegram/types'
+import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 
 /**
  * Bilingual message templates for Telegram bot responses.
@@ -15,8 +16,8 @@ type PersonaMessages = Record<PersonaId, Messages>
 // --- Persona selection ---
 
 export const WELCOME_MESSAGE: Messages = {
-  fr: "Bienvenue ! Je suis l'IA de Full Stack Human — 15 ans d'expertise produit & tech, disponible 24/7.",
-  en: "Welcome! I'm the Full Stack Human AI — 15 years of product & tech expertise, available 24/7.",
+  fr: `Bienvenue ! Je suis l'IA de ${BRAND_NAME_DISPLAY} — 15 ans d'expertise produit & tech, disponible 24/7.`,
+  en: `Welcome! I'm the ${BRAND_NAME_DISPLAY} AI — 15 years of product & tech expertise, available 24/7.`,
 }
 
 export const PRIVACY_NOTICE: Messages = {

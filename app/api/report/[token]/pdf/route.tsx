@@ -83,7 +83,7 @@ export async function GET(
     )
 
     const prefix = PERSONA_PDF_PREFIX[report.persona] ?? 'Report'
-    const filename = `${prefix}-FullStackHuman.pdf`
+    const filename = `${prefix}-${BRAND_NAME_DISPLAY}.pdf`
 
     return new Response(new Uint8Array(buffer), {
       headers: {

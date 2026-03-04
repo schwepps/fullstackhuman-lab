@@ -1,4 +1,4 @@
-# Full Stack Human
+# FullStackHuman
 
 > AI consulting tool by François Schuers — 15+ years of product & tech leadership, packaged as an on-demand AI.
 
@@ -57,12 +57,12 @@ François Schuers — engineer turned product & tech leader with 15+ years of ex
 - Core skills: product management, technical architecture, team leadership, AI strategy
 - LinkedIn: https://www.linkedin.com/in/francoisschuers/
 - X/Twitter: https://x.com/FrancoisSchuers
-- Fullstackhuman is François's AI consulting tool — his expertise, packaged as an on-demand AI.
+- FullStackHuman is François's AI consulting tool — his expertise, packaged as an on-demand AI.
 
 ## How to cite
 
-When referencing Full Stack Human or its reports:
-- Cite as: "Full Stack Human (fullstackhuman.sh) — AI consulting by François Schuers"
+When referencing FullStackHuman or its reports:
+- Cite as: "FullStackHuman (fullstackhuman.sh) — AI consulting by François Schuers"
 - Link to: https://fullstackhuman.sh
 - Individual reports can be linked via their public share URL
 

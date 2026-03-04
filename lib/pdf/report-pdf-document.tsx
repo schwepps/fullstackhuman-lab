@@ -4,6 +4,7 @@ import { pdfStyles as s } from '@/lib/pdf/styles'
 import { MarkdownToPdf } from '@/lib/pdf/markdown-to-pdf'
 import { PdfVisualRenderer } from '@/lib/pdf/pdf-visual-renderer'
 import { FshIconMarkPdf } from '@/components/visuals/pdf/fsh-icon-mark-pdf'
+import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 import { PersonaIconPdf } from '@/components/visuals/pdf/persona-icons-pdf'
 import { parseReport } from '@/lib/visuals/parser'
 import {
@@ -58,7 +59,7 @@ export function ReportPdfDocument({
             }}
           >
             <FshIconMarkPdf width={48} color="#6b7280" />
-            <Text style={s.pageHeaderText}>Full Stack Human</Text>
+            <Text style={s.pageHeaderText}>{BRAND_NAME_DISPLAY}</Text>
           </View>
           <Text style={s.pageHeaderText}>{dateStr}</Text>
         </View>
