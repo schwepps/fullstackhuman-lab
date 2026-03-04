@@ -23,8 +23,7 @@ export type FailingRuleKey = (typeof FAILING_RULES)[number]['key']
 
 /**
  * English rule titles — keyed by translation key.
- * Canonical text lives in messages/en.json — keep in sync.
- * Run `pnpm check:seo` to verify.
+ * Canonical text lives in messages/en.json — keep in sync manually.
  */
 const RULE_TITLES: Record<FailingRuleKey, string> = {
   '1': 'Paste your entire codebase into the prompt',

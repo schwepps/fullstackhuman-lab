@@ -45,7 +45,7 @@ export function WebMcpRegistration() {
       handler: () => ({
         title: 'The fAIling Manifesto',
         subtitle: 'How to Fail with AI — A Field Guide for the Ambitious',
-        url: '/fAIling',
+        url: '/en/fAIling',
         rules: FAILING_RULE_TITLES_EN,
       }),
     })

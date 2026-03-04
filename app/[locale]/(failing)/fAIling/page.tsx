@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { hasLocale } from 'next-intl'
+import { notFound } from 'next/navigation'
 import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { routing } from '@/i18n/routing'
 import { APP_URL, TWITTER_HANDLE } from '@/lib/constants/app'
@@ -7,7 +8,7 @@ import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 import { FAILING_RULES, type FailingRuleKey } from '@/lib/constants/failing'
 import { JsonLd } from '@/components/seo/json-ld'
 import { getArticleSchema } from '@/lib/seo/schemas'
-import { localeUrl, localePrefix } from '@/lib/seo/urls'
+import { localeAlternates, localePrefix } from '@/lib/seo/urls'
 import { Link } from '@/i18n/routing'
 
 type Props = {
@@ -48,12 +49,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     alternates: {
       canonical: pageUrl,
-      languages: {
-        ...Object.fromEntries(
-          routing.locales.map((l) => [l, localeUrl(l, '/fAIling')])
-        ),
-        'x-default': `${APP_URL}/fAIling`,
-      },
+      ...localeAlternates('/fAIling'),
     },
   }
 }
@@ -64,7 +60,7 @@ function AiHighlight({ children }: { children: React.ReactNode }) {
 
 export default async function FailingPage({ params }: Props) {
   const { locale } = await params
-  if (!hasLocale(routing.locales, locale)) return null
+  if (!hasLocale(routing.locales, locale)) notFound()
   setRequestLocale(locale)
 
   const t = await getTranslations({ locale, namespace: 'failing' })
