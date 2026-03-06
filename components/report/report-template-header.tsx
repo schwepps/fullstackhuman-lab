@@ -1,6 +1,7 @@
 import { getTranslations } from 'next-intl/server'
 import { FshIconMark } from '@/components/layout/fsh-logo'
 import { PERSONA_ILLUSTRATIONS } from '@/components/chat/illustrations'
+import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
 import type { PersonaId } from '@/types/chat'
 
 interface ReportTemplateHeaderProps {
@@ -37,7 +38,7 @@ export async function ReportTemplateHeader({
           <div className="flex items-center gap-2 text-gray-400">
             <FshIconMark className="h-5 w-auto" />
             <span className="font-mono text-[10px] uppercase tracking-widest">
-              Full Stack Human
+              {BRAND_NAME_DISPLAY}
             </span>
           </div>
           <time

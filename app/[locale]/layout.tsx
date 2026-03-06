@@ -5,7 +5,7 @@ import { setRequestLocale, getTranslations } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import { APP_URL, TWITTER_HANDLE } from '@/lib/constants/app'
-import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
+import { BRAND_NAME_DISPLAY, FOUNDER_NAME } from '@/lib/constants/brand'
 import { CookieConsentProvider } from '@/components/layout/cookie-consent-provider'
 import { WebMcpRegistration } from '@/components/seo/webmcp-registration'
 import '../globals.css'
@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       template: `%s | ${BRAND_NAME_DISPLAY}`,
     },
     description: t('description'),
-    authors: [{ name: 'François Schuers' }],
+    authors: [{ name: FOUNDER_NAME }],
     creator: BRAND_NAME_DISPLAY,
     category: 'technology',
     robots: {

@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
+import { FOUNDER_NAME } from '@/lib/constants/brand'
 
 type HudPosition = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right'
 
@@ -80,7 +81,7 @@ export function PortraitViewfinder() {
         <div className="relative h-64 w-48 overflow-hidden sm:h-72 sm:w-54">
           <Image
             src="/images/fullstackhuman.png"
-            alt="François Schuers"
+            alt={FOUNDER_NAME}
             fill
             priority
             sizes="(max-width: 640px) 192px, 216px"

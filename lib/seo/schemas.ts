@@ -16,7 +16,7 @@ import {
   TWITTER_URL,
   TELEGRAM_BOT_URL,
 } from '@/lib/constants/app'
-import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
+import { BRAND_NAME_DISPLAY, FOUNDER_NAME } from '@/lib/constants/brand'
 import { FAILING_PUBLISHED_DATE } from '@/lib/constants/failing'
 import { SEO_PERSONAS } from '@/lib/constants/personas'
 import { localePrefix } from '@/lib/seo/urls'
@@ -103,8 +103,10 @@ export function getOrganizationSchema(locale: string) {
     sameAs: [LINKEDIN_URL, TWITTER_URL, TELEGRAM_BOT_URL],
     founder: {
       '@type': 'Person',
-      name: 'François Schuers',
+      name: FOUNDER_NAME,
       jobTitle: PERSON_DESCRIPTIONS[lang].jobTitle,
+      url: APP_URL,
+      sameAs: [LINKEDIN_URL, TWITTER_URL],
     },
     contactPoint: {
       '@type': 'ContactPoint',
@@ -192,7 +194,7 @@ export function getArticleSchema(locale: string) {
     url: `${APP_URL}${prefix}/fAIling`,
     author: {
       '@type': 'Person',
-      name: 'François Schuers',
+      name: FOUNDER_NAME,
       url: APP_URL,
     },
     publisher: {
@@ -217,7 +219,7 @@ export function getPersonSchema(locale: string) {
     '@context': 'https://schema.org',
     '@type': 'Person',
     inLanguage: lang,
-    name: 'François Schuers',
+    name: FOUNDER_NAME,
     jobTitle: person.jobTitle,
     description: person.description,
     url: APP_URL,

@@ -1,6 +1,7 @@
 export const BRAND_NAME = 'FULL_STACK_HUMAN'
-export const BRAND_NAME_DISPLAY = 'Fullstackhuman'
+export const BRAND_NAME_DISPLAY = 'FullStackHuman'
 export const BRAND_NAME_SHORT = 'FSH'
+export const FOUNDER_NAME = 'François Schuers'
 
 /**
  * Brand hex colors for contexts where CSS variables are unavailable

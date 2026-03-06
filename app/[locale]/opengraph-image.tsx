@@ -1,7 +1,12 @@
 import { ImageResponse } from 'next/og'
-import { BRAND_COLORS, BRAND_NAME, FSH_LOGO_PATHS } from '@/lib/constants/brand'
+import {
+  BRAND_COLORS,
+  BRAND_NAME,
+  BRAND_NAME_DISPLAY,
+  FSH_LOGO_PATHS,
+} from '@/lib/constants/brand'
 
-export const alt = 'Fullstackhuman'
+export const alt = BRAND_NAME_DISPLAY
 export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 

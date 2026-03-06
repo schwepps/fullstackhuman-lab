@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "title": "Fullstackhuman — Conseil IA, sans filtre",
-    "description": "Vision produit, expertise technique et focus client — packagés en IA à la demande. Trois personas pour diagnostiquer, challenger ou recadrer vos défis.",
-    "ogImageAlt": "Fullstackhuman — Conseil IA"
+    "title": "FullStackHuman — Conseil IA, sans filtre",
+    "description": "Conseil IA par François Schuers — vision produit, expertise tech et 15+ ans de leadership en IA à la demande. Diagnostiquer, challenger ou recadrer vos défis.",
+    "ogImageAlt": "FullStackHuman — Conseil IA"
   },
   "hero": {
     "headline": "EXÉCUTER: full_stack_human.sh",
@@ -157,7 +157,7 @@
       "resetSuccess": "Mot de passe réinitialisé. Vous pouvez maintenant vous connecter."
     },
     "signup": {
-      "title": "Rejoindre Full Stack Human",
+      "title": "Rejoindre FullStackHuman",
       "subtitle": "Sauvegardez vos conversations et rapports",
       "displayName": "Nom",
       "email": "Email",
@@ -325,16 +325,16 @@
     "label": "Rapport",
     "shareLink": "Partager le rapport",
     "linkCopied": "Lien copié !",
-    "metaTitleDoctor": "Rapport Diagnostic Projet | Full Stack Human",
-    "metaTitleCritic": "Brief de Review | Full Stack Human",
-    "metaTitleGuide": "Brief Framework | Full Stack Human",
+    "metaTitleDoctor": "Rapport Diagnostic Projet | FullStackHuman",
+    "metaTitleCritic": "Brief de Review | FullStackHuman",
+    "metaTitleGuide": "Brief Framework | FullStackHuman",
     "brandingPrefix": "Généré par",
-    "brandingLink": "Full Stack Human",
+    "brandingLink": "FullStackHuman",
     "notFound": "Ce rapport n'existe pas ou a été supprimé.",
-    "backHome": "Retour à Full Stack Human"
+    "backHome": "Retour à FullStackHuman"
   },
   "reportTemplate": {
-    "generatedBy": "Généré par Full Stack Human - François Schuers",
+    "generatedBy": "Généré par FullStackHuman - François Schuers",
     "downloadPdf": "Télécharger le PDF",
     "downloadingPdf": "Génération...",
     "downloadPdfError": "Échec — réessayer",
