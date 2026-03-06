@@ -10,7 +10,7 @@ export default function FailingLayout({
 }) {
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="fixed top-0 right-0 left-0 z-40 flex h-14 items-center justify-between border-b border-transparent px-4 sm:px-6">
+      <header className="fixed top-0 right-0 left-0 z-40 flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-sm sm:px-6">
         <BrandLink />
         <div className="flex items-center gap-3">
           <LocaleSwitcher />
