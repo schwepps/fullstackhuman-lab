@@ -417,5 +417,48 @@
       "body": "Chaque règle de ce manifeste est un vrai pattern que j'ai observé — parfois de près, parfois de trop près. Le manifeste f<ai>AI</ai>ling existe parce que rater avec l'IA, c'est facile. Réussir avec, ça demande autre chose\u00a0: comprendre le processus avant de l'automatiser, construire une stratégie qui ne soit pas un prompt, garder l'humain dans la boucle quand ça compte, et savoir ce que l'IA fait vraiment bien.",
       "cta": "C'est ce que je fais chez <link>fullstackhuman.sh</link> — du conseil IA, sans filtre."
     }
+  },
+  "booking": {
+    "title": "Réserver un appel",
+    "subtitle": "Parlez au vrai François — pas d'IA, juste des conseils honnêtes.",
+    "back": "Retour",
+    "selectDate": "Choisir une date",
+    "selectTime": "Choisir un créneau",
+    "loadingSlots": "Chargement des créneaux...",
+    "noSlots": "Aucun créneau disponible pour cette date.",
+    "timezone": "Heures affichées en {tz}",
+    "meetingType": "Rendez-vous",
+    "dateTime": "Date et heure",
+    "contextBanner": "Réservation depuis votre conversation IA — François aura le contexte.",
+    "meetingTypes": {
+      "intro": {
+        "title": "Introduction",
+        "description": "Appel rapide pour discuter de votre situation et voir si on matche.",
+        "duration": "30 min"
+      },
+      "deepDive": {
+        "title": "Session approfondie",
+        "description": "Session en profondeur pour diagnostiquer, évaluer ou élaborer une stratégie.",
+        "duration": "60 min"
+      }
+    },
+    "form": {
+      "name": "Votre nom",
+      "email": "Email",
+      "message": "De quoi aimeriez-vous discuter ?",
+      "optional": "facultatif",
+      "submit": "Confirmer la réservation",
+      "submitting": "Réservation..."
+    },
+    "errors": {
+      "slotTaken": "Ce créneau vient d'être pris. Choisissez un autre horaire.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "confirmation": {
+      "title": "C'est réservé !",
+      "description": "Votre appel avec François est confirmé.",
+      "emailSent": "Un email de confirmation a été envoyé.",
+      "backHome": "Retour à l'accueil"
+    }
   }
 }
