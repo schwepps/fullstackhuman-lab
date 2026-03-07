@@ -162,15 +162,17 @@ export async function deleteCalendarEvent(eventId: string) {
 }
 
 /**
- * Check Google Calendar availability using FreeBusy API.
- * Returns true if the time slot is free.
+ * Batch-check Google Calendar availability for an entire day.
+ * Returns busy time ranges as [start, end] tuples (ISO strings).
+ * Returns empty array when GCal is not configured (all slots free).
+ * Returns null when GCal is configured but auth/query fails (caller decides).
  */
-export async function checkCalendarAvailability(
-  start: string,
-  end: string
-): Promise<boolean> {
+export async function getDayBusyTimes(
+  dayStart: string,
+  dayEnd: string
+): Promise<Array<{ start: string; end: string }> | null> {
   const calendarId = process.env.GOOGLE_CALENDAR_ID
-  if (!calendarId) return true
+  if (!calendarId) return []
 
   try {
     const auth = await getAuthorizedClient()
@@ -178,18 +180,20 @@ export async function checkCalendarAvailability(
 
     const { data } = await calendar.freebusy.query({
       requestBody: {
-        timeMin: start,
-        timeMax: end,
+        timeMin: dayStart,
+        timeMax: dayEnd,
         items: [{ id: calendarId }],
       },
     })
 
-    const busy = data.calendars?.[calendarId]?.busy ?? []
-    return busy.length === 0
+    return (data.calendars?.[calendarId]?.busy ?? []).map((b) => ({
+      start: b.start ?? dayStart,
+      end: b.end ?? dayEnd,
+    }))
   } catch (error) {
     log('error', 'google_calendar_freebusy_failed', {
       error: error instanceof Error ? error.message : String(error),
     })
-    return true
+    return null
   }
 }

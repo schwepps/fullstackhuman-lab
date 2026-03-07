@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { checkCalendarAvailability } from '@/lib/booking/google-calendar'
+import { getDayBusyTimes } from '@/lib/booking/google-calendar'
 import { BOOKING_DEFAULTS } from '@/lib/constants/booking'
 import type { AvailabilityConfigRow, WeeklyScheduleEntry } from './types'
 
@@ -82,6 +82,11 @@ export async function getAvailableSlots(
 
   const buffer = avail.buffer_minutes
 
+  // Batch-fetch Google Calendar busy times for the entire day (single API call)
+  const gcalBusy = await getDayBusyTimes(`${date}T00:00:00`, `${date}T23:59:59`)
+  // null = GCal configured but failed → block all slots (fail-closed)
+  if (gcalBusy === null) return []
+
   // Filter out overlapping slots
   const available: string[] = []
   for (const slot of candidates) {
@@ -94,19 +99,20 @@ export async function getAvailableSlots(
     if (hoursUntilSlot < avail.min_notice_hours) continue
 
     // Check against existing bookings (with buffer)
-    const hasConflict = (bookings ?? []).some((b) => {
+    const hasBookingConflict = (bookings ?? []).some((b) => {
       const bStart = new Date(b.starts_at).getTime() - buffer * 60_000
       const bEnd = new Date(b.ends_at).getTime() + buffer * 60_000
       return slotStart.getTime() < bEnd && slotEnd.getTime() > bStart
     })
-    if (hasConflict) continue
+    if (hasBookingConflict) continue
 
-    // Check Google Calendar availability (defense in depth)
-    const gcalFree = await checkCalendarAvailability(
-      slotStart.toISOString(),
-      slotEnd.toISOString()
-    )
-    if (!gcalFree) continue
+    // Check against Google Calendar busy times (with buffer)
+    const hasGcalConflict = gcalBusy.some((b) => {
+      const bStart = new Date(b.start).getTime() - buffer * 60_000
+      const bEnd = new Date(b.end).getTime() + buffer * 60_000
+      return slotStart.getTime() < bEnd && slotEnd.getTime() > bStart
+    })
+    if (hasGcalConflict) continue
 
     available.push(slot)
   }
