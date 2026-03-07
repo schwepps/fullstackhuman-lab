@@ -1,5 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/service'
-import type { BookingWithMeetingType } from './types'
+import type { AvailabilityConfigRow, BookingWithMeetingType } from './types'
 
 export async function getUpcomingBookings(): Promise<BookingWithMeetingType[]> {
   const supabase = createServiceClient()
@@ -85,4 +85,14 @@ export async function updateBookingBriefing(
     .eq('id', bookingId)
 
   return !error
+}
+
+export async function getAvailabilityConfig(): Promise<AvailabilityConfigRow | null> {
+  const supabase = createServiceClient()
+  const { data } = await supabase
+    .from('availability_config')
+    .select('*')
+    .single()
+
+  return (data as AvailabilityConfigRow) ?? null
 }

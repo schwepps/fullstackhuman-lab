@@ -11,6 +11,7 @@
 #   - lib/conversations/migrate.ts    (report linking during signup migration)
 #   - lib/booking/google-calendar.ts  (Google Calendar API token management)
 #   - lib/booking/admin-queries.ts    (admin dashboard booking queries)
+#   - lib/booking/availability-actions.ts (admin availability config save)
 
 set -euo pipefail
 
@@ -23,6 +24,7 @@ ALLOWLIST=(
   "lib/conversations/migrate.ts"
   "lib/booking/google-calendar.ts"
   "lib/booking/admin-queries.ts"
+  "lib/booking/availability-actions.ts"
 )
 
 # Build grep exclusion pattern

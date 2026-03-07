@@ -475,5 +475,20 @@
       "completed": "Terminé",
       "no_show": "Absent"
     }
+  },
+  "adminAvailability": {
+    "title": "Paramètres de disponibilité",
+    "dashboardLink": "Retour au tableau de bord",
+    "timezone": "Fuseau horaire",
+    "weeklySchedule": "Planning hebdomadaire",
+    "buffer": "Tampon (min)",
+    "maxAdvance": "Avance max (jours)",
+    "minNotice": "Préavis min (heures)",
+    "blockedDates": "Dates bloquées",
+    "blockedDatesHint": "Dates séparées par des virgules au format AAAA-MM-JJ",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Paramètres enregistrés.",
+    "saveFailed": "Échec de l'enregistrement."
   }
 }

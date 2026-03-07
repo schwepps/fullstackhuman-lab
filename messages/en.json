@@ -475,5 +475,20 @@
       "completed": "Completed",
       "no_show": "No show"
     }
+  },
+  "adminAvailability": {
+    "title": "Availability Settings",
+    "dashboardLink": "Back to dashboard",
+    "timezone": "Timezone",
+    "weeklySchedule": "Weekly Schedule",
+    "buffer": "Buffer (min)",
+    "maxAdvance": "Max advance (days)",
+    "minNotice": "Min notice (hours)",
+    "blockedDates": "Blocked dates",
+    "blockedDatesHint": "Comma-separated dates in YYYY-MM-DD format",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Settings saved.",
+    "saveFailed": "Failed to save settings."
   }
 }
