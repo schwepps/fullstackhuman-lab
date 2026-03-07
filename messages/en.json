@@ -460,5 +460,20 @@
       "emailSent": "A confirmation email has been sent to your inbox.",
       "backHome": "Back to homepage"
     }
+  },
+  "adminDashboard": {
+    "title": "Meetings",
+    "availabilityLink": "Availability settings",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "noUpcoming": "No upcoming meetings.",
+    "noPast": "No past meetings.",
+    "hasContext": "AI context",
+    "status": {
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "no_show": "No show"
+    }
   }
 }

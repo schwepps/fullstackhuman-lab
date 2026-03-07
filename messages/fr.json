@@ -460,5 +460,20 @@
       "emailSent": "Un email de confirmation a été envoyé.",
       "backHome": "Retour à l'accueil"
     }
+  },
+  "adminDashboard": {
+    "title": "Rendez-vous",
+    "availabilityLink": "Paramètres de disponibilité",
+    "upcoming": "À venir",
+    "past": "Passés",
+    "noUpcoming": "Aucun rendez-vous à venir.",
+    "noPast": "Aucun rendez-vous passé.",
+    "hasContext": "Contexte IA",
+    "status": {
+      "confirmed": "Confirmé",
+      "cancelled": "Annulé",
+      "completed": "Terminé",
+      "no_show": "Absent"
+    }
   }
 }
