@@ -111,13 +111,18 @@ interface CreateEventParams {
   timezone: string
 }
 
+interface CalendarEventResult {
+  eventId: string
+  meetLink: string | null
+}
+
 /**
- * Create a Google Calendar event for a booking.
- * Returns the event ID or null if calendar is not configured.
+ * Create a Google Calendar event with Google Meet for a booking.
+ * Returns the event ID and Meet link, or null if calendar is not configured.
  */
 export async function createCalendarEvent(
   params: CreateEventParams
-): Promise<string | null> {
+): Promise<CalendarEventResult | null> {
   const calendarId = process.env.GOOGLE_CALENDAR_ID
   if (!calendarId) return null
 
@@ -127,16 +132,28 @@ export async function createCalendarEvent(
 
     const { data } = await calendar.events.insert({
       calendarId,
+      conferenceDataVersion: 1,
       requestBody: {
         summary: params.summary,
         description: params.description,
         start: { dateTime: params.startsAt, timeZone: params.timezone },
         end: { dateTime: params.endsAt, timeZone: params.timezone },
         attendees: [{ email: params.attendeeEmail }],
+        conferenceData: {
+          createRequest: {
+            requestId: crypto.randomUUID(),
+            conferenceSolutionKey: { type: 'hangoutsMeet' },
+          },
+        },
       },
     })
 
-    return data.id ?? null
+    const meetLink =
+      data.conferenceData?.entryPoints?.find(
+        (ep) => ep.entryPointType === 'video'
+      )?.uri ?? null
+
+    return { eventId: data.id ?? '', meetLink }
   } catch (error) {
     log('error', LOG_EVENT.GOOGLE_CALENDAR_CREATE_FAILED, {
       error: error instanceof Error ? error.message : String(error),

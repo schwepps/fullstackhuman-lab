@@ -11,6 +11,7 @@ interface BookingConfirmationData {
   durationMinutes: number
   bookingId: string
   bookerEmail: string
+  meetLink: string | null
   locale: string
 }
 
@@ -25,6 +26,8 @@ const LABELS = {
     time: 'Time',
     duration: 'Duration',
     minutes: 'minutes',
+    meetLink: 'Google Meet',
+    joinMeet: 'Join meeting',
     cancelText: 'Need to cancel or reschedule?',
     cancelLink: 'Cancel booking',
     footer: `${BRAND_NAME_DISPLAY} — Product thinking, tech depth, delivery instinct.`,
@@ -39,6 +42,8 @@ const LABELS = {
     time: 'Heure',
     duration: 'Durée',
     minutes: 'minutes',
+    meetLink: 'Google Meet',
+    joinMeet: 'Rejoindre la réunion',
     cancelText: "Besoin d'annuler ou de reprogrammer ?",
     cancelLink: 'Annuler la réservation',
     footer: `${BRAND_NAME_DISPLAY} — Vision produit, expertise technique, instinct de livraison.`,
@@ -52,6 +57,14 @@ export function bookingConfirmationSubject(locale: string) {
 export function bookingConfirmationHtml(data: BookingConfirmationData) {
   const l = data.locale === 'fr' ? LABELS.fr : LABELS.en
   const cancelUrl = `${APP_URL}${BOOK_PATH}/cancel?id=${data.bookingId}&email=${encodeURIComponent(data.bookerEmail)}`
+  const meetRow = data.meetLink
+    ? `<tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.meetLink}</td><td style="padding:6px 0;font-size:14px;"><a href="${data.meetLink}" style="color:#22d3ee;">${data.meetLink}</a></td></tr>`
+    : ''
+  const meetButton = data.meetLink
+    ? `<div style="text-align:center;margin-top:20px;">
+        <a href="${data.meetLink}" style="display:inline-block;background:#22d3ee;color:#0a0a0c;padding:12px 28px;border-radius:6px;font-size:15px;font-weight:600;text-decoration:none;">${l.joinMeet}</a>
+      </div>`
+    : ''
 
   return `<!DOCTYPE html>
 <html>
@@ -69,8 +82,10 @@ export function bookingConfirmationHtml(data: BookingConfirmationData) {
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.date}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.date}</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.time}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.time} (${data.timezone})</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.duration}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.durationMinutes} ${l.minutes}</td></tr>
+        ${meetRow}
       </table>
     </div>
+    ${meetButton}
     <div style="text-align:center;margin-top:20px;">
       <p style="color:#94a3b8;font-size:13px;margin:0 0 8px;">${l.cancelText}</p>
       <a href="${cancelUrl}" style="color:#22d3ee;font-size:13px;">${l.cancelLink}</a>

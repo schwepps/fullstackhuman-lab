@@ -128,8 +128,9 @@ export async function createBooking(
       durationMinutes
     )
 
-    // Create Google Calendar event (fire-and-forget)
-    const eventId = await createCalendarEvent({
+    // Create Google Calendar event with Google Meet
+    let meetLink: string | null = null
+    const calResult = await createCalendarEvent({
       summary: `${FOUNDER_NAME} <> ${name} (${meetingTypeDisplay})`,
       description: message
         ? `Message: ${message}\n\nBooked via FullStackHuman`
@@ -140,10 +141,14 @@ export async function createBooking(
       timezone,
     })
 
-    if (eventId) {
+    if (calResult) {
+      meetLink = calResult.meetLink
       await supabase
         .from('bookings')
-        .update({ google_event_id: eventId })
+        .update({
+          google_event_id: calResult.eventId,
+          meet_link: meetLink,
+        })
         .eq('id', bookingId)
     }
 
@@ -160,6 +165,7 @@ export async function createBooking(
         durationMinutes,
         bookingId,
         bookerEmail: email,
+        meetLink,
         locale,
       }),
     })
@@ -177,6 +183,7 @@ export async function createBooking(
         durationMinutes,
         hasConversationContext: !!conversationId,
         bookingId,
+        meetLink,
       }
       void sendEmail({
         to: ADMIN_EMAIL,

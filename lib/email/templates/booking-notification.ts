@@ -13,6 +13,7 @@ interface BookingNotificationData {
   durationMinutes: number
   hasConversationContext: boolean
   bookingId: string
+  meetLink: string | null
 }
 
 export function bookingNotificationSubject(data: BookingNotificationData) {
@@ -27,6 +28,9 @@ export function bookingNotificationHtml(data: BookingNotificationData) {
   const dashboardUrl = `${APP_URL}/admin/dashboard`
   const contextLine = data.hasConversationContext
     ? '<tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Context</td><td style="color:#22d3ee;padding:6px 0;font-size:14px;">AI conversation attached</td></tr>'
+    : ''
+  const meetLine = data.meetLink
+    ? `<tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Meet</td><td style="padding:6px 0;font-size:14px;"><a href="${data.meetLink}" style="color:#22d3ee;">${data.meetLink}</a></td></tr>`
     : ''
   const messageLine = data.bookerMessage
     ? `<div style="margin-top:16px;padding:12px;background:#0a0a0c;border-radius:6px;border:1px solid #1e293b;">
@@ -53,6 +57,7 @@ export function bookingNotificationHtml(data: BookingNotificationData) {
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Time</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.time} (${data.timezone})</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Duration</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.durationMinutes} min</td></tr>
         ${contextLine}
+        ${meetLine}
       </table>
       ${messageLine}
     </div>
