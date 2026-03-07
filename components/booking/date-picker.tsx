@@ -5,6 +5,14 @@ import { useTranslations } from 'next-intl'
 import { Calendar } from '@/components/ui/calendar'
 import type { MeetingTypeSlug } from '@/lib/constants/booking'
 
+/** Format a Date as YYYY-MM-DD using local time (not UTC). */
+function toLocalDateString(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 interface DatePickerProps {
   meetingType: MeetingTypeSlug
   timezone: string
@@ -60,15 +68,13 @@ export function DatePicker({
         selected={selected}
         onSelect={(date) => {
           if (date) {
-            const iso = date.toISOString().split('T')[0]
-            onSelect(iso)
+            onSelect(toLocalDateString(date))
           }
         }}
         onMonthChange={setMonth}
         disabled={(date) => {
           if (isLoading) return true
-          const iso = date.toISOString().split('T')[0]
-          return !availableDates.has(iso)
+          return !availableDates.has(toLocalDateString(date))
         }}
         className="terminal-border rounded-md border"
       />

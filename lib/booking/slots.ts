@@ -147,7 +147,7 @@ export async function getAvailableDates(
 
   for (let day = 1; day <= daysInMonth; day++) {
     const d = new Date(year, month - 1, day)
-    const dateStr = d.toISOString().split('T')[0]
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
     const daysDiff = Math.floor((d.getTime() - today.getTime()) / 86_400_000)
 
     if (daysDiff < 0) continue
