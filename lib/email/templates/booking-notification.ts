@@ -1,5 +1,6 @@
 import { APP_URL } from '@/lib/constants/app'
 import { BRAND_NAME_DISPLAY, FOUNDER_NAME } from '@/lib/constants/brand'
+import { escapeHtml } from '@/lib/email/escape-html'
 
 interface BookingNotificationData {
   bookerName: string
@@ -15,10 +16,14 @@ interface BookingNotificationData {
 }
 
 export function bookingNotificationSubject(data: BookingNotificationData) {
-  return `New booking: ${data.meetingType} with ${data.bookerName}`
+  const safeName = data.bookerName.replace(/[\r\n]/g, '').slice(0, 50)
+  return `New booking: ${data.meetingType} with ${safeName}`
 }
 
 export function bookingNotificationHtml(data: BookingNotificationData) {
+  const name = escapeHtml(data.bookerName)
+  const email = escapeHtml(data.bookerEmail)
+  const type = escapeHtml(data.meetingType)
   const dashboardUrl = `${APP_URL}/admin/dashboard`
   const contextLine = data.hasConversationContext
     ? '<tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Context</td><td style="color:#22d3ee;padding:6px 0;font-size:14px;">AI conversation attached</td></tr>'
@@ -26,7 +31,7 @@ export function bookingNotificationHtml(data: BookingNotificationData) {
   const messageLine = data.bookerMessage
     ? `<div style="margin-top:16px;padding:12px;background:#0a0a0c;border-radius:6px;border:1px solid #1e293b;">
         <p style="color:#94a3b8;font-size:12px;margin:0 0 4px;">Message:</p>
-        <p style="color:#e2e8f0;font-size:14px;margin:0;">${data.bookerMessage}</p>
+        <p style="color:#e2e8f0;font-size:14px;margin:0;">${escapeHtml(data.bookerMessage)}</p>
        </div>`
     : ''
 
@@ -41,9 +46,9 @@ export function bookingNotificationHtml(data: BookingNotificationData) {
     <div style="background:#111113;border:1px solid #22d3ee30;border-radius:8px;padding:24px;">
       <p style="color:#22d3ee;font-size:18px;font-weight:600;margin:0 0 16px;">New booking!</p>
       <table style="width:100%;border-collapse:collapse;">
-        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Name</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.bookerName}</td></tr>
-        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Email</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;"><a href="mailto:${data.bookerEmail}" style="color:#22d3ee;">${data.bookerEmail}</a></td></tr>
-        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Type</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.meetingType}</td></tr>
+        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Name</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${name}</td></tr>
+        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Email</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;"><a href="mailto:${email}" style="color:#22d3ee;">${email}</a></td></tr>
+        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Type</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${type}</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Date</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.date}</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Time</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.time} (${data.timezone})</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">Duration</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.durationMinutes} min</td></tr>

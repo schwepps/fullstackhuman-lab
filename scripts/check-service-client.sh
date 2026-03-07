@@ -12,6 +12,7 @@
 #   - lib/booking/google-calendar.ts  (Google Calendar API token management)
 #   - lib/booking/admin-queries.ts    (admin dashboard booking queries)
 #   - lib/booking/availability-actions.ts (admin availability config save)
+#   - lib/booking/actions.ts             (booking cancel — no UPDATE grants to anon/authenticated)
 
 set -euo pipefail
 
@@ -25,6 +26,7 @@ ALLOWLIST=(
   "lib/booking/google-calendar.ts"
   "lib/booking/admin-queries.ts"
   "lib/booking/availability-actions.ts"
+  "lib/booking/actions.ts"
 )
 
 # Build grep exclusion pattern

@@ -13,7 +13,7 @@ export const BOOKING_STATUSES = [
 ] as const
 export type BookingStatus = (typeof BOOKING_STATUSES)[number]
 
-export const BOOK_PATH = '/book'
+export const GOOGLE_TOKEN_ROW_ID = '00000000-0000-0000-0000-000000000001'
 
 export const BOOKING_DEFAULTS = {
   bufferMinutes: 15,

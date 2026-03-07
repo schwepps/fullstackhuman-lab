@@ -34,6 +34,13 @@ export const LOG_EVENT = {
   TELEGRAM_BOT_ERROR: 'telegram_bot_error',
   TELEGRAM_STATE_RECONSTRUCT_FAILED: 'telegram_state_reconstruct_failed',
 
+  // Booking & Google Calendar events
+  GOOGLE_TOKEN_STORE_FAILED: 'google_token_store_failed',
+  GOOGLE_CALENDAR_CREATE_FAILED: 'google_calendar_create_failed',
+  GOOGLE_CALENDAR_DELETE_FAILED: 'google_calendar_delete_failed',
+  GOOGLE_CALENDAR_FREEBUSY_FAILED: 'google_calendar_freebusy_failed',
+  BRIEFING_GENERATION_FAILED: 'briefing_generation_failed',
+
   // Email events
   EMAIL_SENT: 'email_sent',
   EMAIL_SEND_FAILED: 'email_send_failed',

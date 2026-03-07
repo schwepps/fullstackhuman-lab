@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
 import { bookingFormSchema, cancelBookingSchema } from './schemas'
 import { createCalendarEvent, deleteCalendarEvent } from './google-calendar'
 import { sendEmail } from '@/lib/email/send'
@@ -18,10 +19,20 @@ import {
   bookingCancellationHtml,
 } from '@/lib/email/templates/booking-cancellation'
 import { FOUNDER_NAME } from '@/lib/constants/brand'
+import { checkBookingRateLimit } from './rate-limit'
+import { BOOKING_ERROR } from './types'
 import type { ActionResult } from '@/types/action'
 import type { CreateBookingResult } from './types'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
+
+function getMeetingTypeDisplay(
+  slug: string | undefined,
+  durationMinutes: number
+): string {
+  const label = slug === 'intro' ? 'Intro' : 'Deep Dive'
+  return `${label} (${durationMinutes} min)`
+}
 
 interface CreateBookingInput {
   meetingType: string
@@ -32,14 +43,19 @@ interface CreateBookingInput {
   email: string
   message?: string
   conversationId?: string
+  locale?: string
 }
 
 export async function createBooking(
   input: CreateBookingInput
 ): Promise<ActionResult<{ bookingId: string }>> {
+  if (!(await checkBookingRateLimit())) {
+    return { success: false, error: BOOKING_ERROR.RATE_LIMITED }
+  }
+
   const parsed = bookingFormSchema.safeParse(input)
   if (!parsed.success) {
-    return { success: false, error: 'VALIDATION_ERROR' }
+    return { success: false, error: BOOKING_ERROR.VALIDATION }
   }
 
   const {
@@ -53,7 +69,28 @@ export async function createBooking(
     conversationId,
   } = parsed.data
 
+  const locale = input.locale === 'fr' ? 'fr' : 'en'
   const supabase = await createClient()
+
+  // Verify conversation ownership if conversationId is provided
+  if (conversationId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      // Anonymous users cannot link conversations
+      return { success: false, error: BOOKING_ERROR.VALIDATION }
+    }
+    const { data: conv } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('id', conversationId)
+      .eq('user_id', user.id)
+      .single()
+    if (!conv) {
+      return { success: false, error: BOOKING_ERROR.VALIDATION }
+    }
+  }
 
   // Call the atomic create_booking() RPC
   const { data, error } = await supabase.rpc('create_booking', {
@@ -67,12 +104,12 @@ export async function createBooking(
   })
 
   if (error) {
-    return { success: false, error: 'BOOKING_FAILED' }
+    return { success: false, error: BOOKING_ERROR.BOOKING_FAILED }
   }
 
   const result = data as CreateBookingResult
   if (!result.was_created || !result.booking_id) {
-    return { success: false, error: 'SLOT_UNAVAILABLE' }
+    return { success: false, error: BOOKING_ERROR.SLOT_UNAVAILABLE }
   }
 
   const bookingId = result.booking_id
@@ -85,11 +122,11 @@ export async function createBooking(
     .single()
 
   if (booking) {
-    const meetingTypeDisplay =
-      booking.meeting_type?.slug === 'intro'
-        ? 'Intro (30 min)'
-        : 'Deep Dive (60 min)'
     const durationMinutes = booking.meeting_type?.duration_minutes ?? 30
+    const meetingTypeDisplay = getMeetingTypeDisplay(
+      booking.meeting_type?.slug,
+      durationMinutes
+    )
 
     // Create Google Calendar event (fire-and-forget)
     const eventId = await createCalendarEvent({
@@ -113,7 +150,7 @@ export async function createBooking(
     // Send confirmation email to booker (fire-and-forget)
     void sendEmail({
       to: email,
-      subject: bookingConfirmationSubject('en'),
+      subject: bookingConfirmationSubject(locale),
       html: bookingConfirmationHtml({
         bookerName: name,
         meetingType: meetingTypeDisplay,
@@ -123,7 +160,7 @@ export async function createBooking(
         durationMinutes,
         bookingId,
         bookerEmail: email,
-        locale: 'en',
+        locale,
       }),
     })
 
@@ -155,21 +192,27 @@ export async function createBooking(
 interface CancelBookingInput {
   bookingId: string
   email: string
+  locale?: string
 }
 
 export async function cancelBooking(
   input: CancelBookingInput
 ): Promise<ActionResult> {
+  if (!(await checkBookingRateLimit())) {
+    return { success: false, error: BOOKING_ERROR.RATE_LIMITED }
+  }
+
   const parsed = cancelBookingSchema.safeParse(input)
   if (!parsed.success) {
-    return { success: false, error: 'VALIDATION_ERROR' }
+    return { success: false, error: BOOKING_ERROR.VALIDATION }
   }
 
   const { bookingId, email } = parsed.data
-  const supabase = await createClient()
+  const locale = input.locale === 'fr' ? 'fr' : 'en'
+  const serviceClient = createServiceClient()
 
   // Verify booking exists and email matches
-  const { data: booking } = await supabase
+  const { data: booking } = await serviceClient
     .from('bookings')
     .select('*, meeting_type:meeting_types(slug, duration_minutes)')
     .eq('id', bookingId)
@@ -178,11 +221,11 @@ export async function cancelBooking(
     .single()
 
   if (!booking) {
-    return { success: false, error: 'BOOKING_NOT_FOUND' }
+    return { success: false, error: BOOKING_ERROR.BOOKING_NOT_FOUND }
   }
 
-  // Update status to cancelled
-  const { error } = await supabase
+  // Update status to cancelled (service client needed — no UPDATE grants on bookings)
+  const { error } = await serviceClient
     .from('bookings')
     .update({
       status: 'cancelled',
@@ -192,7 +235,7 @@ export async function cancelBooking(
     .eq('id', bookingId)
 
   if (error) {
-    return { success: false, error: 'CANCEL_FAILED' }
+    return { success: false, error: BOOKING_ERROR.CANCEL_FAILED }
   }
 
   // Delete Google Calendar event
@@ -200,10 +243,11 @@ export async function cancelBooking(
     void deleteCalendarEvent(booking.google_event_id)
   }
 
-  const meetingTypeDisplay =
-    booking.meeting_type?.slug === 'intro'
-      ? 'Intro (30 min)'
-      : 'Deep Dive (60 min)'
+  const durationMinutes = booking.meeting_type?.duration_minutes ?? 30
+  const meetingTypeDisplay = getMeetingTypeDisplay(
+    booking.meeting_type?.slug,
+    durationMinutes
+  )
   const dateStr = new Date(booking.starts_at).toISOString().split('T')[0]
   const timeStr = new Date(booking.starts_at)
     .toISOString()
@@ -217,13 +261,13 @@ export async function cancelBooking(
     time: timeStr,
     timezone: booking.timezone,
     cancellationReason: 'Cancelled by booker',
-    locale: 'en',
+    locale,
   }
 
   // Send cancellation email to booker
   void sendEmail({
     to: email,
-    subject: bookingCancellationBookerSubject('en'),
+    subject: bookingCancellationBookerSubject(locale),
     html: bookingCancellationHtml(cancellationData),
   })
 
@@ -231,7 +275,7 @@ export async function cancelBooking(
   if (ADMIN_EMAIL) {
     void sendEmail({
       to: ADMIN_EMAIL,
-      subject: bookingCancellationAdminSubject(booking.booker_name, 'en'),
+      subject: bookingCancellationAdminSubject(booking.booker_name, locale),
       html: bookingCancellationHtml({
         ...cancellationData,
         recipientName: FOUNDER_NAME,

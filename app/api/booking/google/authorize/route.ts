@@ -1,31 +1,30 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
+import { randomBytes } from 'crypto'
+import { checkIsAdmin } from '@/lib/auth/check-admin'
 import { getAuthorizationUrl } from '@/lib/booking/google-calendar'
 
 /**
  * Admin-only: returns the Google OAuth consent URL.
- * User must be authenticated and have is_admin = true.
+ * Generates a CSRF state parameter stored in an httpOnly cookie.
  */
 export async function GET() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { isAdmin } = await checkIsAdmin()
 
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const { data: profile } = await supabase
-    .from('users')
-    .select('is_admin')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.is_admin) {
+  if (!isAdmin) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const url = getAuthorizationUrl()
+  const state = randomBytes(32).toString('hex')
+  const cookieStore = await cookies()
+  cookieStore.set('google_oauth_state', state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    maxAge: 600, // 10 minutes
+    path: '/',
+  })
+
+  const url = getAuthorizationUrl(state)
   return NextResponse.json({ url })
 }

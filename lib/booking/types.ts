@@ -57,3 +57,19 @@ export interface CreateBookingResult {
   booking_id: string | null
   was_created: boolean
 }
+
+/** SSOT error codes for booking server actions */
+export const BOOKING_ERROR = {
+  VALIDATION: 'booking_validation',
+  RATE_LIMITED: 'booking_rate_limited',
+  BOOKING_FAILED: 'booking_failed',
+  SLOT_UNAVAILABLE: 'slot_unavailable',
+  BOOKING_NOT_FOUND: 'booking_not_found',
+  CANCEL_FAILED: 'cancel_failed',
+  UNAUTHORIZED: 'booking_unauthorized',
+  FORBIDDEN: 'booking_forbidden',
+  SAVE_FAILED: 'booking_save_failed',
+} as const
+
+export type BookingErrorCode =
+  (typeof BOOKING_ERROR)[keyof typeof BOOKING_ERROR]

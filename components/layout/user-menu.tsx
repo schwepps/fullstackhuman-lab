@@ -1,9 +1,11 @@
 'use client'
 
+import { useState, useEffect, useMemo } from 'react'
 import { useTranslations } from 'next-intl'
 import { Link } from '@/i18n/routing'
 import { useAuth } from '@/lib/hooks/use-auth'
 import { logoutAction } from '@/lib/auth/actions'
+import { checkIsAdmin } from '@/lib/auth/check-admin'
 import { getDisplayName, asString } from '@/lib/auth/display-name'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,7 +16,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { LogOut, MessageSquare, Settings } from 'lucide-react'
+import { LogOut, MessageSquare, Settings, Shield } from 'lucide-react'
 
 function getInitials(name: string | null | undefined): string {
   if (!name) return '?'
@@ -29,6 +31,25 @@ function getInitials(name: string | null | undefined): string {
 export function UserMenu() {
   const t = useTranslations('userMenu')
   const { user, isAuthenticated, isLoading } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  const userId = user?.id
+
+  useEffect(() => {
+    if (!userId) return
+    let cancelled = false
+    checkIsAdmin().then(({ isAdmin }) => {
+      if (!cancelled) setIsAdmin(isAdmin)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [userId])
+
+  const effectiveIsAdmin = useMemo(
+    () => (userId ? isAdmin : false),
+    [userId, isAdmin]
+  )
 
   if (isLoading) {
     return <div className="size-8 animate-pulse rounded-full bg-muted" />
@@ -83,6 +104,17 @@ export function UserMenu() {
             {t('account')}
           </Link>
         </DropdownMenuItem>
+        {effectiveIsAdmin && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild className="cursor-pointer">
+              <Link href="/admin/dashboard">
+                <Shield className="mr-2 size-4" />
+                {t('admin')}
+              </Link>
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-destructive focus:text-destructive"

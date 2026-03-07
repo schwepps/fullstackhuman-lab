@@ -203,6 +203,7 @@
   "userMenu": {
     "conversations": "Mes conversations",
     "account": "Mon compte",
+    "admin": "Tableau de bord admin",
     "logout": "Se déconnecter",
     "login": "Se connecter"
   },
@@ -420,7 +421,7 @@
   },
   "booking": {
     "title": "Réserver un appel",
-    "subtitle": "Parlez au vrai François — pas d'IA, juste des conseils honnêtes.",
+    "subtitle": "Parlez au vrai François — pas d'IA, juste des conseils.",
     "back": "Retour",
     "selectDate": "Choisir une date",
     "selectTime": "Choisir un créneau",
@@ -474,6 +475,11 @@
       "cancelled": "Annulé",
       "completed": "Terminé",
       "no_show": "Absent"
+    },
+    "googleCalendar": {
+      "connected": "Google Calendar connecté",
+      "notConnected": "Google Calendar non connecté",
+      "connect": "Connecter"
     }
   },
   "adminAvailability": {

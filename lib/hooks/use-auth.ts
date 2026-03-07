@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { User } from '@supabase/supabase-js'
 
@@ -9,21 +9,37 @@ export function useAuth() {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    let cancelled = false
     const supabase = createClient()
 
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user)
-      setIsLoading(false)
-    })
+    supabase.auth
+      .getUser()
+      .then(({ data: { user } }) => {
+        if (!cancelled) {
+          setUser(user)
+          setIsLoading(false)
+        }
+      })
+      .catch(() => {
+        // Ignore fetch abort from strict mode double-mount
+      })
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      if (!cancelled) {
+        setUser(session?.user ?? null)
+      }
     })
 
-    return () => subscription.unsubscribe()
+    return () => {
+      cancelled = true
+      subscription.unsubscribe()
+    }
   }, [])
 
-  return { user, isAuthenticated: !!user, isLoading }
+  return useMemo(
+    () => ({ user, isAuthenticated: !!user, isLoading }),
+    [user, isLoading]
+  )
 }

@@ -50,6 +50,10 @@ export function BookingPage({ conversationId }: BookingPageProps) {
     }
   }, [step])
 
+  const handleSubmitting = useCallback(() => setStep('confirming'), [])
+
+  const handleError = useCallback(() => setStep('details'), [])
+
   return (
     <div className="w-full max-w-lg">
       {conversationId && <BookingContextBanner />}
@@ -124,7 +128,8 @@ export function BookingPage({ conversationId }: BookingPageProps) {
               timezone={timezone}
               conversationId={conversationId}
               isSubmitting={step === 'confirming'}
-              onSubmitting={() => setStep('confirming')}
+              onSubmitting={handleSubmitting}
+              onError={handleError}
             />
           </div>
         )}

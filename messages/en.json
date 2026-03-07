@@ -203,6 +203,7 @@
   "userMenu": {
     "conversations": "My conversations",
     "account": "Account settings",
+    "admin": "Admin dashboard",
     "logout": "Sign out",
     "login": "Sign in"
   },
@@ -474,6 +475,11 @@
       "cancelled": "Cancelled",
       "completed": "Completed",
       "no_show": "No show"
+    },
+    "googleCalendar": {
+      "connected": "Google Calendar connected",
+      "notConnected": "Google Calendar not connected",
+      "connect": "Connect"
     }
   },
   "adminAvailability": {

@@ -4,12 +4,22 @@ import { BOOKING_DEFAULTS } from '@/lib/constants/booking'
 import type { AvailabilityConfigRow, WeeklyScheduleEntry } from './types'
 
 /**
+ * Resolve "now" in a specific IANA timezone, returning a Date representing
+ * the wall-clock instant in that timezone.
+ */
+function nowInTimezone(tz: string): Date {
+  const str = new Date().toLocaleString('en-US', { timeZone: tz })
+  return new Date(str)
+}
+
+/**
  * Get available time slots for a given date and meeting type.
+ * Date arithmetic uses the availability config's timezone.
  */
 export async function getAvailableSlots(
   date: string,
   meetingTypeSlug: string,
-  _timezone: string
+  timezone: string
 ): Promise<string[]> {
   const supabase = await createClient()
 
@@ -21,16 +31,17 @@ export async function getAvailableSlots(
 
   if (!config) return []
   const avail = config as AvailabilityConfigRow
+  const configTz = avail.timezone || timezone
 
   // Check if date is blocked
   if (avail.blocked_dates.includes(date)) return []
 
-  // Check advance days limit
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  // Check advance days limit — use config timezone for "today"
+  const todayInTz = nowInTimezone(configTz)
+  todayInTz.setHours(0, 0, 0, 0)
   const targetDate = new Date(date + 'T00:00:00')
   const daysDiff = Math.floor(
-    (targetDate.getTime() - today.getTime()) / 86_400_000
+    (targetDate.getTime() - todayInTz.getTime()) / 86_400_000
   )
   if (daysDiff < 0 || daysDiff > avail.max_advance_days) return []
 
@@ -45,8 +56,7 @@ export async function getAvailableSlots(
   if (!meetingType) return []
   const duration = meetingType.duration_minutes
 
-  // Get day-of-week schedule (0 = Sunday) — use getDay() not getUTCDay()
-  // because targetDate is constructed in local time (no Z suffix)
+  // Get day-of-week schedule (0 = Sunday)
   const dayOfWeek = targetDate.getDay()
   const schedule = (avail.weekly_schedule as WeeklyScheduleEntry[]).filter(
     (entry) => entry.day === dayOfWeek
@@ -83,19 +93,20 @@ export async function getAvailableSlots(
   const buffer = avail.buffer_minutes
 
   // Batch-fetch Google Calendar busy times for the entire day (single API call)
-  const gcalBusy = await getDayBusyTimes(`${date}T00:00:00`, `${date}T23:59:59`)
-  // null = GCal configured but failed → block all slots (fail-closed)
+  const gcalBusy = await getDayBusyTimes(date, configTz)
+  // null = GCal configured but failed -> block all slots (fail-closed)
   if (gcalBusy === null) return []
 
   // Filter out overlapping slots
+  // Use config timezone for "now" to get correct min_notice_hours comparison
+  const nowTz = nowInTimezone(configTz)
   const available: string[] = []
   for (const slot of candidates) {
     const slotStart = new Date(`${date}T${slot}:00`)
     const slotEnd = new Date(slotStart.getTime() + duration * 60_000)
 
-    // Check min notice hours
-    const now = new Date()
-    const hoursUntilSlot = (slotStart.getTime() - now.getTime()) / 3_600_000
+    // Check min notice hours (compare in the same timezone frame)
+    const hoursUntilSlot = (slotStart.getTime() - nowTz.getTime()) / 3_600_000
     if (hoursUntilSlot < avail.min_notice_hours) continue
 
     // Check against existing bookings (with buffer)
@@ -134,7 +145,7 @@ export async function getAvailableDates(
   // Fetch availability config
   const { data: config } = await supabase
     .from('availability_config')
-    .select('weekly_schedule, blocked_dates, max_advance_days')
+    .select('weekly_schedule, blocked_dates, max_advance_days, timezone')
     .single()
 
   if (!config) return []
@@ -143,9 +154,10 @@ export async function getAvailableDates(
   const blockedDates = config.blocked_dates as string[]
   const maxAdvanceDays =
     config.max_advance_days ?? BOOKING_DEFAULTS.maxAdvanceDays
+  const configTz = (config.timezone as string) || _timezone
 
   const activeDays = new Set(schedule.map((e) => e.day))
-  const today = new Date()
+  const today = nowInTimezone(configTz)
   today.setHours(0, 0, 0, 0)
 
   const dates: string[] = []

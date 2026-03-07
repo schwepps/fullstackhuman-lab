@@ -1,7 +1,7 @@
 import { getAnthropicClient } from '@/lib/ai/client'
-import { getBookingWithContext } from './admin-queries'
-import { updateBookingBriefing } from './admin-queries'
+import { getBookingWithContext, updateBookingBriefing } from './admin-queries'
 import { log } from '@/lib/logger'
+import { LOG_EVENT } from '@/lib/constants/logging'
 
 const BRIEFING_PROMPT = `You are preparing a pre-meeting briefing for François Schuers, a product & tech consultant.
 
@@ -61,7 +61,7 @@ export async function generateBriefing(bookingId: string): Promise<boolean> {
     }
     return false
   } catch (error) {
-    log('error', 'briefing_generation_failed', {
+    log('error', LOG_EVENT.BRIEFING_GENERATION_FAILED, {
       bookingId,
       error: error instanceof Error ? error.message : String(error),
     })

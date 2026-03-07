@@ -12,10 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { WeeklyScheduleEditor } from './weekly-schedule-editor'
 import { saveAvailabilityConfig } from '@/lib/booking/availability-actions'
 import type { WeeklyScheduleEntry } from '@/lib/booking/types'
-
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
 
 interface AvailabilityFormProps {
   initialTimezone: string
@@ -47,23 +46,9 @@ export function AvailabilityForm({
   const [isSaving, setIsSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
-  const toggleDay = useCallback((day: number) => {
-    setSchedule((prev) => {
-      const exists = prev.some((e) => e.day === day)
-      if (exists) {
-        return prev.filter((e) => e.day !== day)
-      }
-      return [...prev, { day, start: '09:00', end: '17:00' }].sort(
-        (a, b) => a.day - b.day
-      )
-    })
-  }, [])
-
-  const updateScheduleTime = useCallback(
-    (day: number, field: 'start' | 'end', value: string) => {
-      setSchedule((prev) =>
-        prev.map((e) => (e.day === day ? { ...e, [field]: value } : e))
-      )
+  const handleScheduleChange = useCallback(
+    (newSchedule: WeeklyScheduleEntry[]) => {
+      setSchedule(newSchedule)
     },
     []
   )
@@ -116,48 +101,11 @@ export function AvailabilityForm({
       </div>
 
       {/* Weekly schedule */}
-      <div className="space-y-3">
-        <Label>{t('weeklySchedule')}</Label>
-        {DAYS.map((dayName, dayIndex) => {
-          const entry = schedule.find((e) => e.day === dayIndex)
-          return (
-            <div key={dayIndex} className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={() => toggleDay(dayIndex)}
-                className={`w-12 rounded border px-2 py-1 text-center text-xs font-mono transition-colors ${
-                  entry
-                    ? 'border-primary bg-primary/10 text-primary'
-                    : 'border-border text-muted-foreground'
-                }`}
-              >
-                {dayName}
-              </button>
-              {entry && (
-                <>
-                  <Input
-                    type="time"
-                    value={entry.start}
-                    onChange={(e) =>
-                      updateScheduleTime(dayIndex, 'start', e.target.value)
-                    }
-                    className="h-9 w-28"
-                  />
-                  <span className="text-muted-foreground">-</span>
-                  <Input
-                    type="time"
-                    value={entry.end}
-                    onChange={(e) =>
-                      updateScheduleTime(dayIndex, 'end', e.target.value)
-                    }
-                    className="h-9 w-28"
-                  />
-                </>
-              )}
-            </div>
-          )
-        })}
-      </div>
+      <WeeklyScheduleEditor
+        label={t('weeklySchedule')}
+        schedule={schedule}
+        onChange={handleScheduleChange}
+      />
 
       {/* Buffer, advance, notice */}
       <div className="grid gap-4 sm:grid-cols-3">

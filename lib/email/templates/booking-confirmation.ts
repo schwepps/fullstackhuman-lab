@@ -1,5 +1,6 @@
 import { APP_URL, BOOK_PATH } from '@/lib/constants/app'
 import { BRAND_NAME_DISPLAY } from '@/lib/constants/brand'
+import { escapeHtml } from '@/lib/email/escape-html'
 
 interface BookingConfirmationData {
   bookerName: string
@@ -61,10 +62,10 @@ export function bookingConfirmationHtml(data: BookingConfirmationData) {
       <span style="color:#22d3ee;font-family:monospace;font-size:20px;font-weight:bold;">{FSH}</span>
     </div>
     <div style="background:#111113;border:1px solid #22d3ee30;border-radius:8px;padding:24px;">
-      <p style="color:#e2e8f0;margin:0 0 8px;">${l.greeting(data.bookerName)}</p>
+      <p style="color:#e2e8f0;margin:0 0 8px;">${l.greeting(escapeHtml(data.bookerName))}</p>
       <p style="color:#22d3ee;font-size:18px;font-weight:600;margin:0 0 20px;">${l.confirmed}</p>
       <table style="width:100%;border-collapse:collapse;">
-        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.type}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.meetingType}</td></tr>
+        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.type}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${escapeHtml(data.meetingType)}</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.date}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.date}</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.time}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.time} (${data.timezone})</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.duration}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.durationMinutes} ${l.minutes}</td></tr>

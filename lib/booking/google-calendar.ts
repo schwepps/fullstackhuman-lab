@@ -1,6 +1,8 @@
 import { google } from 'googleapis'
 import { createServiceClient } from '@/lib/supabase/service'
 import { log } from '@/lib/logger'
+import { LOG_EVENT } from '@/lib/constants/logging'
+import { GOOGLE_TOKEN_ROW_ID } from '@/lib/constants/booking'
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar']
 
@@ -15,12 +17,13 @@ function getOAuth2Client() {
 /**
  * Generate the Google OAuth consent URL for admin setup.
  */
-export function getAuthorizationUrl() {
+export function getAuthorizationUrl(state: string) {
   const client = getOAuth2Client()
   return client.generateAuthUrl({
     access_type: 'offline',
     scope: SCOPES,
     prompt: 'consent',
+    state,
   })
 }
 
@@ -34,7 +37,7 @@ export async function exchangeCodeForTokens(code: string) {
   const supabase = createServiceClient()
   const { error } = await supabase.from('google_oauth_tokens').upsert(
     {
-      id: '00000000-0000-0000-0000-000000000001',
+      id: GOOGLE_TOKEN_ROW_ID,
       access_token: tokens.access_token!,
       refresh_token: tokens.refresh_token ?? undefined,
       token_type: tokens.token_type ?? 'Bearer',
@@ -47,7 +50,7 @@ export async function exchangeCodeForTokens(code: string) {
   )
 
   if (error) {
-    log('error', 'google_token_store_failed', { error: error.message })
+    log('error', LOG_EVENT.GOOGLE_TOKEN_STORE_FAILED, { error: error.message })
     throw new Error('Failed to store Google tokens')
   }
 }
@@ -93,7 +96,7 @@ async function getAuthorizedClient() {
           ? new Date(credentials.expiry_date).toISOString()
           : null,
       })
-      .eq('id', '00000000-0000-0000-0000-000000000001')
+      .eq('id', GOOGLE_TOKEN_ROW_ID)
   }
 
   return client
@@ -135,7 +138,7 @@ export async function createCalendarEvent(
 
     return data.id ?? null
   } catch (error) {
-    log('error', 'google_calendar_create_failed', {
+    log('error', LOG_EVENT.GOOGLE_CALENDAR_CREATE_FAILED, {
       error: error instanceof Error ? error.message : String(error),
     })
     return null
@@ -154,7 +157,7 @@ export async function deleteCalendarEvent(eventId: string) {
     const calendar = google.calendar({ version: 'v3', auth })
     await calendar.events.delete({ calendarId, eventId })
   } catch (error) {
-    log('error', 'google_calendar_delete_failed', {
+    log('error', LOG_EVENT.GOOGLE_CALENDAR_DELETE_FAILED, {
       eventId,
       error: error instanceof Error ? error.message : String(error),
     })
@@ -168,8 +171,8 @@ export async function deleteCalendarEvent(eventId: string) {
  * Returns null when GCal is configured but auth/query fails (caller decides).
  */
 export async function getDayBusyTimes(
-  dayStart: string,
-  dayEnd: string
+  date: string,
+  timezone: string
 ): Promise<Array<{ start: string; end: string }> | null> {
   const calendarId = process.env.GOOGLE_CALENDAR_ID
   if (!calendarId) return []
@@ -177,6 +180,10 @@ export async function getDayBusyTimes(
   try {
     const auth = await getAuthorizedClient()
     const calendar = google.calendar({ version: 'v3', auth })
+
+    // Build RFC3339 timestamps by resolving local midnight in the target timezone
+    const dayStart = localToUtcIso(date, '00:00:00', timezone)
+    const dayEnd = localToUtcIso(date, '23:59:59', timezone)
 
     const { data } = await calendar.freebusy.query({
       requestBody: {
@@ -191,9 +198,22 @@ export async function getDayBusyTimes(
       end: b.end ?? dayEnd,
     }))
   } catch (error) {
-    log('error', 'google_calendar_freebusy_failed', {
+    log('error', LOG_EVENT.GOOGLE_CALENDAR_FREEBUSY_FAILED, {
       error: error instanceof Error ? error.message : String(error),
     })
     return null
   }
+}
+
+/**
+ * Convert a local date + time + IANA timezone to a UTC ISO 8601 string.
+ * e.g. localToUtcIso('2026-03-09', '00:00:00', 'Europe/Paris') → '2026-03-08T23:00:00.000Z'
+ */
+function localToUtcIso(date: string, time: string, timezone: string): string {
+  // Intl.DateTimeFormat gives us the UTC offset for the target timezone
+  const fake = new Date(`${date}T${time}Z`)
+  const utcStr = fake.toLocaleString('en-US', { timeZone: 'UTC' })
+  const tzStr = fake.toLocaleString('en-US', { timeZone: timezone })
+  const diffMs = new Date(utcStr).getTime() - new Date(tzStr).getTime()
+  return new Date(fake.getTime() + diffMs).toISOString()
 }

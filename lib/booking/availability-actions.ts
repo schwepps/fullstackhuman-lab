@@ -1,36 +1,27 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { createServiceClient } from '@/lib/supabase/service'
+import { checkIsAdmin } from '@/lib/auth/check-admin'
+import { checkBookingRateLimit } from './rate-limit'
 import { availabilityConfigSchema } from './schemas'
+import { BOOKING_ERROR } from './types'
 import type { ActionResult } from '@/types/action'
 
 export async function saveAvailabilityConfig(
   input: unknown
 ): Promise<ActionResult> {
-  // Verify admin
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { success: false, error: 'UNAUTHORIZED' }
+  if (!(await checkBookingRateLimit())) {
+    return { success: false, error: BOOKING_ERROR.RATE_LIMITED }
   }
 
-  const { data: profile } = await supabase
-    .from('users')
-    .select('is_admin')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.is_admin) {
-    return { success: false, error: 'FORBIDDEN' }
+  const { isAdmin } = await checkIsAdmin()
+  if (!isAdmin) {
+    return { success: false, error: BOOKING_ERROR.FORBIDDEN }
   }
 
   const parsed = availabilityConfigSchema.safeParse(input)
   if (!parsed.success) {
-    return { success: false, error: 'VALIDATION_ERROR' }
+    return { success: false, error: BOOKING_ERROR.VALIDATION }
   }
 
   const {
@@ -54,14 +45,10 @@ export async function saveAvailabilityConfig(
       min_notice_hours: minNoticeHours,
       updated_at: new Date().toISOString(),
     })
-    .eq(
-      'id',
-      (await serviceClient.from('availability_config').select('id').single())
-        .data?.id
-    )
+    .not('id', 'is', null)
 
   if (error) {
-    return { success: false, error: 'SAVE_FAILED' }
+    return { success: false, error: BOOKING_ERROR.SAVE_FAILED }
   }
 
   return { success: true }

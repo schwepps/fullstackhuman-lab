@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getAvailableSlots, getAvailableDates } from '@/lib/booking/slots'
 import { MEETING_TYPES } from '@/lib/constants/booking'
+import { checkSlotsRateLimit } from '@/lib/booking/rate-limit'
 
 /**
  * GET /api/booking/slots
@@ -13,6 +14,10 @@ import { MEETING_TYPES } from '@/lib/constants/booking'
  * - tz: timezone string (e.g., Europe/Paris)
  */
 export async function GET(request: NextRequest) {
+  if (!(await checkSlotsRateLimit())) {
+    return NextResponse.json({ error: 'RATE_LIMITED' }, { status: 429 })
+  }
+
   const { searchParams } = request.nextUrl
   const date = searchParams.get('date')
   const month = searchParams.get('month')

@@ -17,6 +17,7 @@ interface BookingFormProps {
   conversationId?: string
   isSubmitting: boolean
   onSubmitting: () => void
+  onError: () => void
 }
 
 export function BookingForm({
@@ -27,6 +28,7 @@ export function BookingForm({
   conversationId,
   isSubmitting,
   onSubmitting,
+  onError,
 }: BookingFormProps) {
   const t = useTranslations('booking')
   const router = useRouter()
@@ -56,6 +58,7 @@ export function BookingForm({
         router.push(`/book/confirmation?id=${result.bookingId}`)
       } else {
         setError(result.error)
+        onError()
       }
     },
     [
@@ -68,6 +71,7 @@ export function BookingForm({
       message,
       conversationId,
       onSubmitting,
+      onError,
       router,
     ]
   )
@@ -141,7 +145,7 @@ export function BookingForm({
 
       {error && (
         <p className="text-sm text-destructive">
-          {error === 'SLOT_UNAVAILABLE'
+          {error === 'slot_unavailable'
             ? t('errors.slotTaken')
             : t('errors.generic')}
         </p>

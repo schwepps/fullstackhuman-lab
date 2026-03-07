@@ -1,14 +1,31 @@
 import { z } from 'zod/v4'
 import { MEETING_TYPES } from '@/lib/constants/booking'
 
+const ianaTimezone = z
+  .string()
+  .trim()
+  .min(1)
+  .max(100)
+  .refine(
+    (tz) => {
+      try {
+        Intl.DateTimeFormat(undefined, { timeZone: tz })
+        return true
+      } catch {
+        return false
+      }
+    },
+    { message: 'Invalid timezone' }
+  )
+
 export const bookingFormSchema = z.object({
   meetingType: z.enum(MEETING_TYPES),
   date: z.iso.date(),
   timeSlot: z.string().regex(/^\d{2}:\d{2}$/),
-  timezone: z.string().trim().min(1),
-  name: z.string().trim().min(1),
+  timezone: ianaTimezone,
+  name: z.string().trim().min(1).max(200),
   email: z.email().trim(),
-  message: z.string().trim().optional(),
+  message: z.string().trim().max(2000).optional(),
   conversationId: z.uuid().optional(),
 })
 
@@ -28,7 +45,7 @@ export const weeklyScheduleEntrySchema = z.object({
 })
 
 export const availabilityConfigSchema = z.object({
-  timezone: z.string().trim().min(1),
+  timezone: ianaTimezone,
   bufferMinutes: z.number().int().min(0),
   weeklySchedule: z.array(weeklyScheduleEntrySchema),
   blockedDates: z.array(z.iso.date()),

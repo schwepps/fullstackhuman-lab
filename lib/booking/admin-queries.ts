@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/service'
+import type { BookingStatus } from '@/lib/constants/booking'
 import type { AvailabilityConfigRow, BookingWithMeetingType } from './types'
 
 export async function getUpcomingBookings(): Promise<BookingWithMeetingType[]> {
@@ -9,16 +10,20 @@ export async function getUpcomingBookings(): Promise<BookingWithMeetingType[]> {
     .eq('status', 'confirmed')
     .gte('starts_at', new Date().toISOString())
     .order('starts_at', { ascending: true })
+    .limit(50)
 
   return (data ?? []) as BookingWithMeetingType[]
 }
 
 export async function getPastBookings(): Promise<BookingWithMeetingType[]> {
   const supabase = createServiceClient()
+  const now = new Date().toISOString()
   const { data } = await supabase
     .from('bookings')
     .select('*, meeting_type:meeting_types(slug, duration_minutes)')
-    .or('status.neq.confirmed,starts_at.lt.' + new Date().toISOString())
+    .or(
+      `status.in.(cancelled,completed,no_show),and(status.eq.confirmed,starts_at.lt.${now})`
+    )
     .order('starts_at', { ascending: false })
     .limit(50)
 
@@ -54,7 +59,10 @@ export async function getBookingWithContext(bookingId: string) {
   }
 }
 
-export async function updateBookingStatus(bookingId: string, status: string) {
+export async function updateBookingStatus(
+  bookingId: string,
+  status: BookingStatus
+) {
   const supabase = createServiceClient()
   const update: Record<string, unknown> = {
     status,
@@ -95,4 +103,15 @@ export async function getAvailabilityConfig(): Promise<AvailabilityConfigRow | n
     .single()
 
   return (data as AvailabilityConfigRow) ?? null
+}
+
+export async function isGoogleCalendarConnected(): Promise<boolean> {
+  const supabase = createServiceClient()
+  const { data } = await supabase
+    .from('google_oauth_tokens')
+    .select('id')
+    .limit(1)
+    .single()
+
+  return !!data
 }

@@ -3,6 +3,8 @@ import { getTranslations, setRequestLocale } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { routing } from '@/i18n/routing'
 import { MeetingsList } from '@/components/admin/meetings-list'
+import { GoogleCalendarStatus } from '@/components/admin/google-calendar-status'
+import { isGoogleCalendarConnected } from '@/lib/booking/admin-queries'
 import { Link } from '@/i18n/routing'
 
 export default async function AdminDashboardPage({
@@ -17,6 +19,7 @@ export default async function AdminDashboardPage({
   setRequestLocale(locale)
 
   const t = await getTranslations('adminDashboard')
+  const gcalConnected = await isGoogleCalendarConnected()
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">
@@ -31,6 +34,7 @@ export default async function AdminDashboardPage({
           {t('availabilityLink')}
         </Link>
       </div>
+      <GoogleCalendarStatus isConnected={gcalConnected} />
       <MeetingsList />
     </div>
   )
