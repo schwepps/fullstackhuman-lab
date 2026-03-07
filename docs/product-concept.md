@@ -147,7 +147,7 @@ Validated CTA examples across all personas:
 - "map your stakeholder landscape and build the priority framework" (Guide)
 - "coach you through the one conversation that gets your idea into the right room" (Guide)
 
-**CTA mechanics (resolved):** Calendly link. One click, book a slot. No phone number, no contact form. Same across all three personas.
+**CTA mechanics (resolved):** Native booking page at `/book`. One click, book a slot. No phone number, no contact form. Same across all three personas. AI conversation context carries over to the meeting briefing — François sees a pre-meeting summary generated from the conversation.
 
 ---
 
@@ -213,7 +213,7 @@ Telegram bot → AI chat (free, 15/mo)
 ## 6. Open questions
 
 - ~~How much personality variation between the three personas?~~ **Answered:** Same voice with different focus. Shared rules apply across all personas, only the lens and output format change.
-- ~~What's the specific CTA format? Calendar link? Contact form? Both?~~ **Answered:** Calendly link. One click, book a slot. No phone number, no contact form.
+- ~~What's the specific CTA format? Calendar link? Contact form? Both?~~ **Answered:** Native booking page at `/book`. One click, book a slot. No phone number, no contact form. AI conversation context carries over.
 - ~~Should the AI ever refuse to help and say "this needs the real François"?~~ **Answered:** Yes. Graceful exit protocol defined — validate, give micro-action, offer CTA. This is honest and good sales.
 - ~~How does each persona handle "good work" vs. "bad work"?~~ **Answered (via Critic):** Don't manufacture problems. When work is strong, shift to stress-testing and hidden risks. Calibrate section tone to work quality. This principle applies across all personas.
 - ~~What's the Guide's signature section?~~ **Answered:** "The reframe" — a one-liner that changes how the user sees their question. Validated across 4 golden paths.

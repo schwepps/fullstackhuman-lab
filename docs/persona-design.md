@@ -89,7 +89,7 @@ These emerged from testing all three personas and apply universally:
 - Every output's CTA must name what François would specifically do for this user
 - Concrete enough to visualize paying for
 - Not generic "book a call"
-- CTA mechanics: Calendly link — one click, book a slot. No phone number, no contact form. Same across all personas.
+- CTA mechanics: native booking page at `/book` — one click, book a slot. No phone number, no contact form. Same across all personas. AI conversation context carries over to the meeting briefing.
 
 **Pivot phrase / reframe:**
 
