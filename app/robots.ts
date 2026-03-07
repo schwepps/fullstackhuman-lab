@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { routing } from '@/i18n/routing'
-import { APP_URL, CHAT_PATH } from '@/lib/constants/app'
+import { APP_URL, BOOK_PATH, CHAT_PATH } from '@/lib/constants/app'
 import { LEGAL_PATHS } from '@/lib/constants/legal'
 
 /**
@@ -29,6 +29,11 @@ const AI_BOT_ALLOW = [
   ...routing.locales
     .filter((l) => l !== routing.defaultLocale)
     .map((l) => `/${l}/fAIling`),
+  // Booking page
+  BOOK_PATH,
+  ...routing.locales
+    .filter((l) => l !== routing.defaultLocale)
+    .map((l) => `/${l}${BOOK_PATH}`),
 ]
 const AI_BOT_DISALLOW = ['/api/', CHAT_PATH, '/auth/', '/account']
 

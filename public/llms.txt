@@ -33,6 +33,7 @@ Core skills: product management, technical architecture, team leadership, AI str
 - [Homepage](https://fullstackhuman.sh): Main landing page (French)
 - [English](https://fullstackhuman.sh/en): English version
 - [Start a Consultation](https://fullstackhuman.sh/chat): Choose a persona and begin
+- [Book a Consultation](https://fullstackhuman.sh/book): Schedule a call with François — 30-min intro or 60-min deep dive. AI conversation context carries over to the meeting briefing.
 - [The fAIling Manifesto](https://fullstackhuman.sh/fAIling): 13 satirical rules for failing with AI — a field guide for the ambitious. Covers real anti-patterns: pasting entire codebases into prompts, replacing roadmaps with prompts, shipping unreviewed AI code, measuring ROI after 48 hours, and more.
 
 ## Shared Reports
