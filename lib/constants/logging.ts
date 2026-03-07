@@ -33,4 +33,9 @@ export const LOG_EVENT = {
   TELEGRAM_DELETE_DATA_FAILED: 'telegram_delete_data_failed',
   TELEGRAM_BOT_ERROR: 'telegram_bot_error',
   TELEGRAM_STATE_RECONSTRUCT_FAILED: 'telegram_state_reconstruct_failed',
+
+  // Email events
+  EMAIL_SENT: 'email_sent',
+  EMAIL_SEND_FAILED: 'email_send_failed',
+  EMAIL_SEND_SKIPPED: 'email_send_skipped',
 } as const
