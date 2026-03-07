@@ -45,8 +45,9 @@ export async function getAvailableSlots(
   if (!meetingType) return []
   const duration = meetingType.duration_minutes
 
-  // Get day-of-week schedule (0 = Sunday)
-  const dayOfWeek = targetDate.getUTCDay()
+  // Get day-of-week schedule (0 = Sunday) — use getDay() not getUTCDay()
+  // because targetDate is constructed in local time (no Z suffix)
+  const dayOfWeek = targetDate.getDay()
   const schedule = (avail.weekly_schedule as WeeklyScheduleEntry[]).filter(
     (entry) => entry.day === dayOfWeek
   )
