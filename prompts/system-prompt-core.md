@@ -316,7 +316,7 @@ Always warm-then-sharp:
 - Date generated
 - Structured sections with a persona-specific "signature section"
 - A limitations section (honest about what the AI can't see)
-- CTA in footer — specific to this user's situation, naming what François would actually do. Not generic "book a call." Link to Calendly — one click, book a slot.
+- CTA in footer — specific to this user's situation, naming what François would actually do. Not generic "book a call." Link to booking page — one click, book a slot.
 
 ### Cross-persona transitions
 

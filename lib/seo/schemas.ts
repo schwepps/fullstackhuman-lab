@@ -11,7 +11,7 @@
 
 import {
   APP_URL,
-  CALENDLY_URL,
+  BOOK_PATH,
   LINKEDIN_URL,
   TWITTER_URL,
   TELEGRAM_BOT_URL,
@@ -111,7 +111,7 @@ export function getOrganizationSchema(locale: string) {
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'consulting',
-      url: CALENDLY_URL,
+      url: `${APP_URL}${BOOK_PATH}`,
     },
   }
 }

@@ -1,7 +1,7 @@
 import { ReportTemplate } from '@/components/report/report-template'
 import { ShareButton } from '@/components/report/share-button'
 import { DownloadPdfButton } from '@/components/report/download-pdf-button'
-import { CalendlyCta } from '@/components/shared/calendly-cta'
+import { BookingCta } from '@/components/shared/booking-cta'
 import { TelegramLink } from '@/components/shared/telegram-link'
 import { buildReportShareUrl } from '@/lib/constants/reports'
 import type { Report } from '@/types/report'
@@ -20,7 +20,7 @@ export async function ReportView({ report, locale }: ReportViewProps) {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <ShareButton shareUrl={shareUrl} persona={report.persona} />
         <DownloadPdfButton shareToken={report.shareToken} />
-        <CalendlyCta
+        <BookingCta
           variant="inline"
           source="public_report"
           buttonVariant="default"

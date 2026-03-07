@@ -44,7 +44,7 @@ import {
 } from '@/lib/telegram/services/quota-service'
 import { DAILY_LIMIT_REACHED, MESSAGE_RATE_LIMITED } from '@/lib/telegram/i18n'
 import { withTypingIndicator } from '@/lib/telegram/typing'
-import { CALENDLY_URL } from '@/lib/constants/app'
+import { APP_URL, BOOK_PATH } from '@/lib/constants/app'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 import type { ChatMessage } from '@/types/chat'
@@ -199,7 +199,7 @@ async function handleReportDetected(
     const shareUrl = buildShareUrl(result.shareToken, lang)
 
     await ctx.reply(
-      fmt`${bold(t(REPORT_READY, lang))}\n\n${link(t(VIEW_REPORT, lang), shareUrl)}\n\n${t(REPORT_CTA, lang)}\n\n${link(t(BOOK_A_CALL, lang), CALENDLY_URL)}`
+      fmt`${bold(t(REPORT_READY, lang))}\n\n${link(t(VIEW_REPORT, lang), shareUrl)}\n\n${t(REPORT_CTA, lang)}\n\n${link(t(BOOK_A_CALL, lang), `${APP_URL}${BOOK_PATH}`)}`
     )
   } else {
     log('error', LOG_EVENT.TELEGRAM_REPORT_CREATE_FAILED, {

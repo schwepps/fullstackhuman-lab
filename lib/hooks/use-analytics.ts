@@ -7,7 +7,7 @@ import {
   type PersonaSelectedProperties,
   type ReportGeneratedProperties,
   type ReportCopiedProperties,
-  type CalendlyClickProperties,
+  type BookingClickProperties,
   type TelegramClickProperties,
   type CtaClickProperties,
   type ReportLinkCopiedProperties,
@@ -17,7 +17,7 @@ interface UseAnalyticsResult {
   trackPersonaSelected: (props: PersonaSelectedProperties) => void
   trackReportGenerated: (props: ReportGeneratedProperties) => void
   trackReportCopied: (props: ReportCopiedProperties) => void
-  trackCalendlyClick: (props: CalendlyClickProperties) => void
+  trackBookingClick: (props: BookingClickProperties) => void
   trackTelegramClick: (props: TelegramClickProperties) => void
   trackCtaClick: (props: CtaClickProperties) => void
   trackReportLinkCopied: (props: ReportLinkCopiedProperties) => void
@@ -42,8 +42,8 @@ export function useAnalytics(): UseAnalyticsResult {
     captureEvent(ANALYTICS_EVENTS.REPORT_COPIED, props)
   }, [])
 
-  const trackCalendlyClick = useCallback((props: CalendlyClickProperties) => {
-    captureEvent(ANALYTICS_EVENTS.CALENDLY_CLICK, props)
+  const trackBookingClick = useCallback((props: BookingClickProperties) => {
+    captureEvent(ANALYTICS_EVENTS.BOOKING_CLICK, props)
   }, [])
 
   const trackTelegramClick = useCallback((props: TelegramClickProperties) => {
@@ -66,7 +66,7 @@ export function useAnalytics(): UseAnalyticsResult {
       trackPersonaSelected,
       trackReportGenerated,
       trackReportCopied,
-      trackCalendlyClick,
+      trackBookingClick,
       trackTelegramClick,
       trackCtaClick,
       trackReportLinkCopied,
@@ -75,7 +75,7 @@ export function useAnalytics(): UseAnalyticsResult {
       trackPersonaSelected,
       trackReportGenerated,
       trackReportCopied,
-      trackCalendlyClick,
+      trackBookingClick,
       trackTelegramClick,
       trackCtaClick,
       trackReportLinkCopied,

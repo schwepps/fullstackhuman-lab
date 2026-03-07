@@ -20,7 +20,7 @@ describe('useAnalytics', () => {
     expect(result.current.trackPersonaSelected).toBeTypeOf('function')
     expect(result.current.trackReportGenerated).toBeTypeOf('function')
     expect(result.current.trackReportCopied).toBeTypeOf('function')
-    expect(result.current.trackCalendlyClick).toBeTypeOf('function')
+    expect(result.current.trackBookingClick).toBeTypeOf('function')
     expect(result.current.trackCtaClick).toBeTypeOf('function')
   })
 
@@ -37,9 +37,7 @@ describe('useAnalytics', () => {
       firstRender.trackReportGenerated
     )
     expect(result.current.trackReportCopied).toBe(firstRender.trackReportCopied)
-    expect(result.current.trackCalendlyClick).toBe(
-      firstRender.trackCalendlyClick
-    )
+    expect(result.current.trackBookingClick).toBe(firstRender.trackBookingClick)
     expect(result.current.trackCtaClick).toBe(firstRender.trackCtaClick)
   })
 
@@ -79,13 +77,13 @@ describe('useAnalytics', () => {
     )
   })
 
-  it('trackCalendlyClick calls captureEvent with correct event name', () => {
+  it('trackBookingClick calls captureEvent with correct event name', () => {
     const { result } = renderHook(() => useAnalytics())
 
-    result.current.trackCalendlyClick({ source: 'report' })
+    result.current.trackBookingClick({ source: 'report' })
 
     expect(mockCaptureEvent).toHaveBeenCalledWith(
-      ANALYTICS_EVENTS.CALENDLY_CLICK,
+      ANALYTICS_EVENTS.BOOKING_CLICK,
       { source: 'report' }
     )
   })

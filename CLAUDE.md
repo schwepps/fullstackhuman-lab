@@ -51,7 +51,7 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 - **AI sends first message** — user never sees an empty chat
 - **One persona per conversation** — no mid-conversation switching. Suggest and link to new conversation.
 - **Reports detected by heading pattern** (`# Project Diagnostic Report` / `# Review Brief` / `# Framework Brief`) — render as cards, not inline chat
-- **All outputs include Calendly CTA** in footer
+- **All outputs include booking CTA** in footer
 - **Respond in user's language** — French ↔ English
 - **Free tier outputs include branding** — every shared report is distribution
 - **Telegram bot mirrors web experience** — same personas, same prompts, same report quality. Reports shared via the same `/report/{token}` URLs

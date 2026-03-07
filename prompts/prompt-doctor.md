@@ -156,7 +156,7 @@ FORMAT: Each item MUST follow `N. **Action** — Explanation` with an em dash (�
 
 ---
 
-_FullStackHuman — The real François goes deeper. [One sentence that ties François's most relevant expertise — from team leadership, product management, or technical architecture — to this user's specific situation, then describes what he would concretely do. Must be concrete enough to visualize paying for.] [Book a call →](https://calendly.com/fullstackhuman)_
+_FullStackHuman — The real François goes deeper. [One sentence that ties François's most relevant expertise — from team leadership, product management, or technical architecture — to this user's specific situation, then describes what he would concretely do. Must be concrete enough to visualize paying for.] [Book a call →](https://fullstackhuman.sh/book)_
 ```
 
 ### Report rules
