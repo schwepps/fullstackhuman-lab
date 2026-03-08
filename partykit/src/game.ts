@@ -283,6 +283,18 @@ export default class GameRoom implements Party.Server {
         }
         return room
       })
+      // Trigger agent responses if sender is human
+      const senderPlayer = room.players.get(playerId)
+      if (senderPlayer?.type === 'human') {
+        const { triggerAgentResponses } = await import('./agent-manager')
+        triggerAgentResponses(
+          room,
+          senderZone,
+          playersInZone,
+          this.room,
+          this.connToPlayer
+        )
+      }
     } catch {
       // Room may not exist yet in early phases
     }

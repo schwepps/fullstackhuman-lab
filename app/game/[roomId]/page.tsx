@@ -10,6 +10,12 @@ import type { ZoneType, ChatMessage } from '@/lib/game/types'
 
 const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? 'localhost:1999'
 
+type TypingState = {
+  playerId: string
+  displayName: string
+  zone: ZoneType
+}
+
 export default function GameRoomPage() {
   const { roomId } = useParams<{ roomId: string }>()
   const [status, setStatus] = useState<'connecting' | 'connected' | 'error'>(
@@ -21,6 +27,7 @@ export default function GameRoomPage() {
   const [currentZone, setCurrentZone] = useState<ZoneType>('main')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isChatFocused, setIsChatFocused] = useState(false)
+  const [typingPlayers, setTypingPlayers] = useState<TypingState[]>([])
 
   const ws = usePartySocket({
     host: PARTYKIT_HOST,
@@ -37,7 +44,39 @@ export default function GameRoomPage() {
           if (msg.yourColor) setMyColor(msg.yourColor)
         }
         if (msg.type === 'chat_message' && msg.message) {
-          setMessages((prev) => [...prev, msg.message as ChatMessage])
+          const chatMsg = msg.message as ChatMessage
+          setMessages((prev) => {
+            // If streaming, update existing message by ID
+            if (chatMsg.isStreaming) {
+              const idx = prev.findIndex((m) => m.id === chatMsg.id)
+              if (idx >= 0) {
+                const updated = [...prev]
+                updated[idx] = chatMsg
+                return updated
+              }
+            }
+            // Remove streaming version if this is the final message
+            const filtered = prev.filter(
+              (m) => m.id !== chatMsg.id || !m.isStreaming
+            )
+            return [...filtered, chatMsg]
+          })
+        }
+        if (msg.type === 'agent_typing') {
+          setTypingPlayers((prev) => {
+            if (msg.isTyping) {
+              if (prev.some((t) => t.playerId === msg.playerId)) return prev
+              return [
+                ...prev,
+                {
+                  playerId: msg.playerId,
+                  displayName: msg.playerId.slice(0, 6),
+                  zone: msg.zone,
+                },
+              ]
+            }
+            return prev.filter((t) => t.playerId !== msg.playerId)
+          })
         }
       } catch {
         // ignore malformed messages
@@ -94,8 +133,11 @@ export default function GameRoomPage() {
     )
   }
 
-  // Filter messages for current zone
+  // Filter messages and typing indicators for current zone
   const zoneMessages = messages.filter((m) => m.zone === currentZone)
+  const zoneTyping = typingPlayers
+    .filter((t) => t.zone === currentZone)
+    .map((t) => ({ playerId: t.playerId, displayName: t.displayName }))
 
   return (
     <main className="flex min-h-svh flex-col items-center justify-center bg-[#0a0a0c] p-2 sm:p-4">
@@ -114,7 +156,7 @@ export default function GameRoomPage() {
         </div>
       </div>
       <div className="mt-2 w-full max-w-300">
-        <ChatBubble messages={zoneMessages} />
+        <ChatBubble messages={zoneMessages} typingPlayers={zoneTyping} />
         <div className="mt-1 pb-safe">
           <ChatInput
             onSend={handleSendChat}
