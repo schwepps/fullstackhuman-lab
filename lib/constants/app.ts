@@ -3,7 +3,7 @@ export const APP_URL =
 
 export const CHAT_PATH = '/chat'
 
-export const CALENDLY_URL = 'https://calendly.com/fullstackhuman'
+export const BOOK_PATH = '/book'
 
 export const LINKEDIN_URL = 'https://www.linkedin.com/in/francoisschuers/'
 

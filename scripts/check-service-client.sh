@@ -9,6 +9,10 @@
 #   - lib/telegram/db.ts              (Telegram bot DB access, scoped queries)
 #   - lib/reports/anonymous-actions.ts (anonymous report creation, IP rate-limited)
 #   - lib/conversations/migrate.ts    (report linking during signup migration)
+#   - lib/booking/google-calendar.ts  (Google Calendar API token management)
+#   - lib/booking/admin-queries.ts    (admin dashboard booking queries)
+#   - lib/booking/availability-actions.ts (admin availability config save)
+#   - lib/booking/actions.ts             (booking cancel — no UPDATE grants to anon/authenticated)
 
 set -euo pipefail
 
@@ -19,6 +23,10 @@ ALLOWLIST=(
   "lib/telegram/db.ts"
   "lib/reports/anonymous-actions.ts"
   "lib/conversations/migrate.ts"
+  "lib/booking/google-calendar.ts"
+  "lib/booking/admin-queries.ts"
+  "lib/booking/availability-actions.ts"
+  "lib/booking/actions.ts"
 )
 
 # Build grep exclusion pattern

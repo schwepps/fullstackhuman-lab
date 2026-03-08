@@ -203,6 +203,7 @@
   "userMenu": {
     "conversations": "My conversations",
     "account": "Account settings",
+    "admin": "Admin dashboard",
     "logout": "Sign out",
     "login": "Sign in"
   },
@@ -312,7 +313,7 @@
     "privacyLink": "Privacy Policy",
     "ariaLabel": "Cookie consent banner"
   },
-  "calendlyCta": {
+  "bookingCta": {
     "title": "Ready to go further?",
     "description": "Book a call with the real François — 30 minutes to unblock your situation.",
     "action": "Book a call"
@@ -417,5 +418,97 @@
       "body": "Every rule in this manifesto is a real pattern I've seen — sometimes up close, sometimes too close. The f<ai>AI</ai>ling Manifesto exists because failing with AI is easy. Succeeding with it takes something else entirely: understanding the process before automating it, building strategy that isn't a prompt, keeping humans in the loop when it matters, and knowing what AI is actually good at.",
       "cta": "That's what I do at <link>fullstackhuman.sh</link> — AI consulting, no filter."
     }
+  },
+  "booking": {
+    "title": "Book a call",
+    "subtitle": "Talk to the real François — no AI, just honest advice.",
+    "back": "Back",
+    "selectDate": "Pick a date",
+    "selectTime": "Pick a time",
+    "loadingSlots": "Loading available times...",
+    "noSlots": "No times available for this date.",
+    "timezone": "Times shown in {tz}",
+    "meetingType": "Meeting",
+    "dateTime": "Date & time",
+    "contextBanner": "Booking from your AI conversation — François will have context.",
+    "meetingTypes": {
+      "intro": {
+        "title": "Introduction",
+        "description": "Quick call to discuss your situation and see if we're a fit.",
+        "duration": "30 min"
+      }
+    },
+    "form": {
+      "name": "Your name",
+      "email": "Email",
+      "message": "What would you like to discuss?",
+      "optional": "optional",
+      "submit": "Confirm booking",
+      "submitting": "Booking..."
+    },
+    "errors": {
+      "slotTaken": "This slot was just taken. Please pick another time.",
+      "rateLimited": "Too many attempts. Please try again later.",
+      "generic": "Something went wrong. Please try again."
+    },
+    "confirmation": {
+      "title": "You're booked!",
+      "description": "Your call with François is confirmed.",
+      "emailSent": "A confirmation email has been sent to your inbox.",
+      "backHome": "Back to homepage"
+    },
+    "cancel": {
+      "title": "Cancel your booking?",
+      "description": "This will cancel your upcoming call with François. This action cannot be undone.",
+      "confirmCancel": "Yes, cancel booking",
+      "cancelling": "Cancelling...",
+      "keepBooking": "No, keep my booking",
+      "successTitle": "Booking cancelled",
+      "successDescription": "Your booking has been cancelled. A confirmation email has been sent.",
+      "errorTitle": "Cancellation failed",
+      "errors": {
+        "notFound": "This booking was not found or has already been cancelled.",
+        "rateLimited": "Too many attempts. Please try again later.",
+        "generic": "Something went wrong. Please try again."
+      },
+      "backHome": "Back to homepage"
+    }
+  },
+  "adminDashboard": {
+    "title": "Meetings",
+    "availabilityLink": "Availability settings",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "cancelled": "Cancelled",
+    "noUpcoming": "No upcoming meetings.",
+    "noPast": "No past meetings.",
+    "noCancelled": "No cancelled meetings.",
+    "hasContext": "AI context",
+    "status": {
+      "confirmed": "Confirmed",
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "no_show": "No show"
+    },
+    "googleCalendar": {
+      "connected": "Google Calendar connected",
+      "notConnected": "Google Calendar not connected",
+      "connect": "Connect"
+    }
+  },
+  "adminAvailability": {
+    "title": "Availability Settings",
+    "dashboardLink": "Back to dashboard",
+    "timezone": "Timezone",
+    "weeklySchedule": "Weekly Schedule",
+    "buffer": "Buffer (min)",
+    "maxAdvance": "Max advance (days)",
+    "minNotice": "Min notice (hours)",
+    "blockedDates": "Blocked dates",
+    "blockedDatesHint": "Comma-separated dates in YYYY-MM-DD format",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Settings saved.",
+    "saveFailed": "Failed to save settings."
   }
 }

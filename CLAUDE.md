@@ -51,7 +51,7 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 - **AI sends first message** — user never sees an empty chat
 - **One persona per conversation** — no mid-conversation switching. Suggest and link to new conversation.
 - **Reports detected by heading pattern** (`# Project Diagnostic Report` / `# Review Brief` / `# Framework Brief`) — render as cards, not inline chat
-- **All outputs include Calendly CTA** in footer
+- **All outputs include booking CTA** in footer
 - **Respond in user's language** — French ↔ English
 - **Free tier outputs include branding** — every shared report is distribution
 - **Telegram bot mirrors web experience** — same personas, same prompts, same report quality. Reports shared via the same `/report/{token}` URLs
@@ -70,6 +70,8 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 | AI        | Claude API (+ built-in web search) |
 | i18n      | next-intl v4                       |
 | PDF       | @react-pdf/renderer                |
+| Email     | nodemailer (ImprovMX SMTP)         |
+| Calendar  | Google Calendar API (googleapis)   |
 | Telegram  | Telegraf v4 (webhook bot)          |
 | Testing   | Vitest + Testing Library           |
 | Git Hooks | Husky + lint-staged + commitlint   |
@@ -82,6 +84,8 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 app/[locale]/
   (marketing)/     # Public pages: homepage, privacy, terms, legal
   (chat)/          # Chat: persona selection → conversation → report
+  (booking)/       # Public booking flow: /book (no auth required)
+  (admin)/         # Admin dashboard + availability settings (is_admin guard)
   (account)/       # Account settings + conversations library (auth required)
   (sharing)/       # Public report pages (no auth): /report/[token]
   (auth)/          # Login, signup, forgot/reset password
@@ -90,13 +94,18 @@ app/[locale]/
     conversations/ # Conversation CRUD
     report/        # PDF generation
     telegram/      # Telegram bot webhook
+    booking/       # Booking creation + slot availability + Google OAuth
 components/
+  booking/         # Multi-step booking form components
+  admin/           # Admin dashboard, meeting cards, availability form
   report/          # Report template, sections, share button
   visuals/web/     # 7 SVG visual components (web)
   visuals/pdf/     # 7 react-pdf SVG visual components (PDF)
 lib/
   ai/              # AI client, prompt assembly, conversation limits, tools
+  booking/         # Booking logic: slots, actions, admin queries, Google Calendar, briefing
   conversations/   # Persistence (actions, queries)
+  email/           # SMTP client + email templates (confirmation, notification, cancellation)
   telegram/        # Bot handlers, services, formatting, i18n
 ```
 

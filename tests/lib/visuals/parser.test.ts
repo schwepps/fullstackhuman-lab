@@ -47,7 +47,7 @@ If nothing changes in the next 60 days, the runway will shrink to a point where 
 
 ---
 
-_FullStackHuman — The real Francois goes deeper. He'd run a focused scope workshop with your team to align on what actually ships. [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — The real Francois goes deeper. He'd run a focused scope workshop with your team to align on what actually ships. [Book a call →](https://fullstackhuman.sh/book)_`
 
 const CRITIC_REPORT = `# Review Brief
 
@@ -87,7 +87,7 @@ Your biggest risk is not the product. It is that you are building for an audienc
 
 ---
 
-_FullStackHuman — The real Francois goes deeper. [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — The real Francois goes deeper. [Book a call →](https://fullstackhuman.sh/book)_`
 
 const GUIDE_REPORT_WITH_FRAMEWORK_MATRIX = `# Framework Brief
 
@@ -126,7 +126,7 @@ What if you already have the right people but the wrong structure?
 
 ---
 
-_FullStackHuman — The real Francois goes deeper. [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — The real Francois goes deeper. [Book a call →](https://fullstackhuman.sh/book)_`
 
 // ─── Doctor Report Parsing ───
 
@@ -152,10 +152,10 @@ describe('parseReport — Doctor', () => {
     expect(result.sections[5].heading).toContain("What the AI can't see")
   })
 
-  it('extracts CTA footer with FullStackHuman and calendly link', () => {
+  it('extracts CTA footer with FullStackHuman and booking link', () => {
     const result = parseReport(DOCTOR_REPORT, 'doctor')
     expect(result.ctaFooter).toContain(BRAND_NAME_DISPLAY)
-    expect(result.ctaFooter.toLowerCase()).toContain('calendly')
+    expect(result.ctaFooter.toLowerCase()).toContain('/book')
   })
 
   it('sets persona to doctor', () => {
@@ -298,7 +298,7 @@ describe('parseReport — Critic', () => {
   it('extracts CTA footer', () => {
     const result = parseReport(CRITIC_REPORT, 'critic')
     expect(result.ctaFooter).toContain(BRAND_NAME_DISPLAY)
-    expect(result.ctaFooter.toLowerCase()).toContain('calendly')
+    expect(result.ctaFooter.toLowerCase()).toContain('/book')
   })
 })
 
@@ -433,7 +433,7 @@ Limits.
 
 ---
 
-_FullStackHuman — [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — [Book a call →](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(reportWithBadJson, 'critic')
     // Section 0 (What I reviewed) should have null visual because JSON is malformed
@@ -481,7 +481,7 @@ Content.
 
 ---
 
-_FullStackHuman — [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — [Book a call →](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(reportWithFewDimensions, 'critic')
     expect(result.sections[0].visual).toBeNull()
@@ -523,7 +523,7 @@ Content.
 
 ---
 
-_FullStackHuman — [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — [Book a call →](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(reportWithNoRisk, 'doctor')
     expect(result.sections[3].visual).toBeNull()
@@ -580,7 +580,7 @@ Content.
 
 ---
 
-_CTA footer text with calendly link_`
+_CTA footer text with [Book a call](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(reportWithCodeBlock, 'doctor')
     // Should have 6 sections, not 7 (the ## inside the code block should not split)
@@ -607,12 +607,12 @@ _CTA footer text with calendly link_`
 
 ---
 
-_CTA with calendly link_`
+_CTA with [Book a call](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(titleOnly, 'doctor')
     expect(result.title).toContain('Just a Title')
     expect(result.sections).toHaveLength(0)
-    expect(result.ctaFooter).toContain('calendly')
+    expect(result.ctaFooter).toContain('/book')
   })
 
   it('detects all four risk levels', () => {
@@ -657,7 +657,7 @@ Content.
 
 ---
 
-_CTA with calendly_`
+_CTA with [Book](https://fullstackhuman.sh/book)_`
 
       const result = parseReport(report, 'doctor')
       expect(result.sections[3].visual).not.toBeNull()
@@ -702,7 +702,7 @@ Content.
 
 ---
 
-_FullStackHuman — [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — [Book a call →](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(report, 'critic')
     const section4 = result.sections[4]
@@ -751,7 +751,7 @@ Content.
 
 ---
 
-_FullStackHuman — [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — [Book a call →](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(report, 'critic')
     const section4 = result.sections[4]
@@ -799,7 +799,7 @@ Content.
 
 ---
 
-_FullStackHuman — [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — [Book a call →](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(report, 'critic')
     const section4 = result.sections[4]
@@ -848,7 +848,7 @@ Content.
 
 ---
 
-_FullStackHuman — [Book a call →](https://calendly.com/fullstackhuman)_`
+_FullStackHuman — [Book a call →](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(report, 'critic')
     const section4 = result.sections[4]
@@ -894,7 +894,7 @@ Content.
 
 ---
 
-_CTA with calendly_`
+_CTA with [Book](https://fullstackhuman.sh/book)_`
 
     const result = parseReport(report, 'doctor')
     // Only 1 item -> priority-roadmap should be null

@@ -5,30 +5,37 @@ import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Calendar } from 'lucide-react'
+import { Link } from '@/i18n/routing'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
-import { CALENDLY_URL } from '@/lib/constants/app'
+import { BOOK_PATH } from '@/lib/constants/app'
 import { cn } from '@/lib/utils'
-import type { CalendlyClickProperties } from '@/lib/constants/analytics'
+import type { BookingClickProperties } from '@/lib/constants/analytics'
 
-interface CalendlyCtaProps {
+interface BookingCtaProps {
   variant: 'banner' | 'inline'
-  source: CalendlyClickProperties['source']
+  source: BookingClickProperties['source']
   className?: string
   buttonVariant?: 'default' | 'outline'
+  conversationId?: string
 }
 
-export function CalendlyCta({
+export function BookingCta({
   variant,
   source,
   className,
   buttonVariant,
-}: CalendlyCtaProps) {
-  const t = useTranslations('calendlyCta')
-  const { trackCalendlyClick } = useAnalytics()
+  conversationId,
+}: BookingCtaProps) {
+  const t = useTranslations('bookingCta')
+  const { trackBookingClick } = useAnalytics()
 
   const handleClick = useCallback(() => {
-    trackCalendlyClick({ source })
-  }, [trackCalendlyClick, source])
+    trackBookingClick({ source })
+  }, [trackBookingClick, source])
+
+  const href = conversationId
+    ? `${BOOK_PATH}?context=${conversationId}`
+    : BOOK_PATH
 
   if (variant === 'inline') {
     return (
@@ -38,15 +45,10 @@ export function CalendlyCta({
         size="sm"
         className={cn('touch-manipulation', className)}
       >
-        <a
-          href={CALENDLY_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={handleClick}
-        >
+        <Link href={href} onClick={handleClick}>
           <Calendar className="size-3.5" />
           {t('action')}
-        </a>
+        </Link>
       </Button>
     )
   }
@@ -67,15 +69,10 @@ export function CalendlyCta({
           variant="outline"
           className="h-12 w-full border-primary/30 touch-manipulation sm:h-10 sm:w-auto"
         >
-          <a
-            href={CALENDLY_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={handleClick}
-          >
+          <Link href={href} onClick={handleClick}>
             <Calendar className="size-4" />
             {t('action')}
-          </a>
+          </Link>
         </Button>
       </CardContent>
     </Card>

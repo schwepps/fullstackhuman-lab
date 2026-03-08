@@ -11,7 +11,7 @@
 
 import {
   APP_URL,
-  CALENDLY_URL,
+  BOOK_PATH,
   LINKEDIN_URL,
   TWITTER_URL,
   TELEGRAM_BOT_URL,
@@ -49,6 +49,7 @@ const FEATURE_LISTS: Record<SchemaLocale, string[]> = {
     'Strategic reframing with proven frameworks',
     'Structured reports with actionable recommendations',
     'Bilingual (French / English)',
+    'Book a call with full AI conversation context',
   ],
   fr: [
     'Diagnostic projet — trouver les causes, pas les symptômes',
@@ -56,6 +57,7 @@ const FEATURE_LISTS: Record<SchemaLocale, string[]> = {
     'Recadrage stratégique avec des frameworks éprouvés',
     'Rapports structurés avec recommandations actionnables',
     'Bilingue (français / anglais)',
+    'Réservez un appel avec le contexte complet de la conversation IA',
   ],
 }
 
@@ -111,7 +113,7 @@ export function getOrganizationSchema(locale: string) {
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'consulting',
-      url: CALENDLY_URL,
+      url: `${APP_URL}${BOOK_PATH}`,
     },
   }
 }

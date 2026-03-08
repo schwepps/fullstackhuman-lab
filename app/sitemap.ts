@@ -7,6 +7,7 @@ import { localeUrl, localeAlternates } from '@/lib/seo/urls'
 /** Static last-modified dates — update when content actually changes. */
 const LAST_MODIFIED_HOMEPAGE = '2026-02-24'
 const LAST_MODIFIED_LEGAL = '2026-02-24'
+const LAST_MODIFIED_BOOKING = '2026-03-07'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const homepageEntries: MetadataRoute.Sitemap = routing.locales.map(
@@ -33,5 +34,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   )
 
-  return [...homepageEntries, ...legalEntries, ...failingEntries]
+  const bookingEntries: MetadataRoute.Sitemap = routing.locales.map(
+    (locale) => ({
+      url: localeUrl(locale, '/book'),
+      lastModified: LAST_MODIFIED_BOOKING,
+      alternates: localeAlternates('/book'),
+    })
+  )
+
+  return [
+    ...homepageEntries,
+    ...legalEntries,
+    ...failingEntries,
+    ...bookingEntries,
+  ]
 }

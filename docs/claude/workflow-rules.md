@@ -149,6 +149,10 @@ The service role Supabase client (`createServiceClient()`) bypasses ALL RLS poli
 - `lib/supabase/service.ts` — definition
 - `lib/auth/account-actions.ts` — account deletion (re-auth required)
 - `lib/telegram/db.ts` — Telegram bot DB access (scoped queries only)
+- `lib/booking/google-calendar.ts` — Google Calendar API + token management
+- `lib/booking/admin-queries.ts` — admin booking queries (upcoming, past, context)
+- `lib/booking/availability-actions.ts` — availability config save (admin only)
+- `lib/booking/actions.ts` — booking cancel (no UPDATE grants to anon/authenticated)
 
 ---
 

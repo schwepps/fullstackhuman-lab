@@ -78,6 +78,17 @@ async function createUser(): Promise<string> {
     throw new Error(`Failed to create user: ${error?.message}`)
   }
   console.log(`👤 Created seed user: ${data.user.id}`)
+
+  // Make seed user an admin
+  const { error: adminError } = await supabase
+    .from('users')
+    .update({ is_admin: true })
+    .eq('id', data.user.id)
+  if (adminError) {
+    throw new Error(`Failed to set admin: ${adminError.message}`)
+  }
+  console.log('🛡  Set seed user as admin')
+
   return data.user.id
 }
 

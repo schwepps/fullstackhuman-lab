@@ -1,0 +1,351 @@
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { createServiceClient } from '@/lib/supabase/service'
+import { bookingFormSchema, cancelBookingSchema } from './schemas'
+import { createCalendarEvent, deleteCalendarEvent } from './google-calendar'
+import { sendEmail } from '@/lib/email/send'
+import {
+  bookingConfirmationSubject,
+  bookingConfirmationHtml,
+} from '@/lib/email/templates/booking-confirmation'
+import {
+  bookingNotificationSubject,
+  bookingNotificationHtml,
+} from '@/lib/email/templates/booking-notification'
+import {
+  bookingCancellationBookerSubject,
+  bookingCancellationAdminSubject,
+  bookingCancellationHtml,
+} from '@/lib/email/templates/booking-cancellation'
+import { FOUNDER_NAME } from '@/lib/constants/brand'
+import { log } from '@/lib/logger'
+import { LOG_EVENT } from '@/lib/constants/logging'
+import { CANCELLATION_REASON } from '@/lib/constants/booking'
+import { checkBookingRateLimit } from './rate-limit'
+import { getUtcOffset } from './slots'
+import { BOOKING_ERROR } from './types'
+import type { ActionResult } from '@/types/action'
+import type { CreateBookingResult } from './types'
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
+
+const MEETING_TYPE_LABELS = {
+  en: { intro: (mins: number) => `Intro (${mins} min)` },
+  fr: { intro: (mins: number) => `Intro (${mins} min)` },
+} as const
+
+function getMeetingTypeDisplay(
+  slug: string,
+  durationMinutes: number,
+  locale: string
+): string {
+  const labels =
+    locale === 'fr' ? MEETING_TYPE_LABELS.fr : MEETING_TYPE_LABELS.en
+  if (slug in labels) {
+    return labels[slug as keyof typeof labels](durationMinutes)
+  }
+  return `${slug} (${durationMinutes} min)`
+}
+
+/**
+ * Format a UTC timestamp into local date/time strings for a given timezone.
+ */
+function formatInTimezone(
+  isoTimestamp: string,
+  tz: string
+): { date: string; time: string } {
+  const d = new Date(isoTimestamp)
+  const dateFmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  const timeFmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  return { date: dateFmt.format(d), time: timeFmt.format(d) }
+}
+
+interface CreateBookingInput {
+  meetingType: string
+  date: string
+  timeSlot: string
+  timezone: string
+  name: string
+  email: string
+  message?: string
+  conversationId?: string
+  locale?: string
+}
+
+export async function createBooking(
+  input: CreateBookingInput
+): Promise<ActionResult<{ bookingId: string }>> {
+  if (!(await checkBookingRateLimit())) {
+    return { success: false, error: BOOKING_ERROR.RATE_LIMITED }
+  }
+
+  const parsed = bookingFormSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: BOOKING_ERROR.VALIDATION }
+  }
+
+  const {
+    meetingType,
+    date,
+    timeSlot,
+    timezone,
+    name,
+    email,
+    message,
+    conversationId,
+  } = parsed.data
+
+  const locale = input.locale === 'fr' ? 'fr' : 'en'
+  const supabase = await createClient()
+
+  // Verify conversation ownership if conversationId is provided
+  if (conversationId) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      // Anonymous users cannot link conversations
+      return { success: false, error: BOOKING_ERROR.VALIDATION }
+    }
+    const { data: conv } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('id', conversationId)
+      .eq('user_id', user.id)
+      .single()
+    if (!conv) {
+      return { success: false, error: BOOKING_ERROR.VALIDATION }
+    }
+  }
+
+  // Call the atomic create_booking() RPC
+  const utcOffset = getUtcOffset(date, timezone)
+  const { data, error } = await supabase
+    .rpc('create_booking', {
+      p_meeting_type_slug: meetingType,
+      p_starts_at: `${date}T${timeSlot}:00${utcOffset}`,
+      p_timezone: timezone,
+      p_booker_name: name,
+      p_booker_email: email,
+      p_booker_message: message ?? null,
+      p_conversation_id: conversationId ?? null,
+    })
+    .single()
+
+  if (error) {
+    log('error', LOG_EVENT.BOOKING_RPC_FAILED, { error: error.message })
+    return { success: false, error: BOOKING_ERROR.BOOKING_FAILED }
+  }
+
+  const result = data as CreateBookingResult
+  if (!result.was_created || !result.booking_id) {
+    return { success: false, error: BOOKING_ERROR.SLOT_UNAVAILABLE }
+  }
+
+  const bookingId = result.booking_id
+
+  // Use service client for post-RPC operations (no SELECT/UPDATE grants on bookings)
+  const serviceClient = createServiceClient()
+
+  const { data: booking } = await serviceClient
+    .from('bookings')
+    .select('*, meeting_type:meeting_types(slug, duration_minutes)')
+    .eq('id', bookingId)
+    .single()
+
+  if (booking) {
+    const durationMinutes = booking.meeting_type?.duration_minutes ?? 30
+    const slug = booking.meeting_type?.slug ?? 'intro'
+    const meetingTypeDisplay = getMeetingTypeDisplay(
+      slug,
+      durationMinutes,
+      locale
+    )
+
+    // Create Google Calendar event with Google Meet
+    let meetLink: string | null = null
+    const calResult = await createCalendarEvent({
+      summary: `${FOUNDER_NAME} <> ${name} (${getMeetingTypeDisplay(slug, durationMinutes, 'en')})`,
+      description: message
+        ? `Message: ${message}\n\nBooked via FullStackHuman`
+        : 'Booked via FullStackHuman',
+      startsAt: booking.starts_at,
+      endsAt: booking.ends_at,
+      attendeeEmail: email,
+      timezone,
+      withMeet: true,
+    })
+
+    if (calResult) {
+      meetLink = calResult.meetLink
+      await serviceClient
+        .from('bookings')
+        .update({
+          google_event_id: calResult.eventId,
+          meet_link: meetLink,
+        })
+        .eq('id', bookingId)
+    }
+
+    // Send confirmation email to booker and track delivery
+    sendEmail({
+      to: email,
+      subject: bookingConfirmationSubject(locale),
+      html: bookingConfirmationHtml({
+        bookerName: name,
+        meetingType: meetingTypeDisplay,
+        date,
+        time: timeSlot,
+        timezone,
+        durationMinutes,
+        bookingId,
+        bookerEmail: email,
+        meetLink,
+        locale,
+      }),
+    })
+      .then(() => {
+        void serviceClient
+          .from('bookings')
+          .update({ confirmation_sent_at: new Date().toISOString() })
+          .eq('id', bookingId)
+      })
+      .catch(() => {
+        // Email failure is logged by sendEmail — no-op here
+      })
+
+    // Send notification to admin (fire-and-forget)
+    if (ADMIN_EMAIL) {
+      const notifData = {
+        bookerName: name,
+        bookerEmail: email,
+        bookerMessage: message ?? null,
+        meetingType: meetingTypeDisplay,
+        date,
+        time: timeSlot,
+        timezone,
+        durationMinutes,
+        hasConversationContext: !!conversationId,
+        bookingId,
+        meetLink,
+        locale,
+      }
+      void sendEmail({
+        to: ADMIN_EMAIL,
+        subject: bookingNotificationSubject(notifData),
+        html: bookingNotificationHtml(notifData),
+      })
+    }
+  }
+
+  return { success: true, bookingId }
+}
+
+interface CancelBookingInput {
+  bookingId: string
+  email: string
+  locale?: string
+}
+
+export async function cancelBooking(
+  input: CancelBookingInput
+): Promise<ActionResult> {
+  if (!(await checkBookingRateLimit())) {
+    return { success: false, error: BOOKING_ERROR.RATE_LIMITED }
+  }
+
+  const parsed = cancelBookingSchema.safeParse(input)
+  if (!parsed.success) {
+    return { success: false, error: BOOKING_ERROR.VALIDATION }
+  }
+
+  const { bookingId, email } = parsed.data
+  const locale = input.locale === 'fr' ? 'fr' : 'en'
+  const serviceClient = createServiceClient()
+
+  // Verify booking exists and email matches
+  const { data: booking } = await serviceClient
+    .from('bookings')
+    .select('*, meeting_type:meeting_types(slug, duration_minutes)')
+    .eq('id', bookingId)
+    .eq('booker_email', email)
+    .eq('status', 'confirmed')
+    .single()
+
+  if (!booking) {
+    return { success: false, error: BOOKING_ERROR.BOOKING_NOT_FOUND }
+  }
+
+  // Update status to cancelled (service client needed — no UPDATE grants on bookings)
+  const { error } = await serviceClient
+    .from('bookings')
+    .update({
+      status: 'cancelled',
+      cancelled_at: new Date().toISOString(),
+      cancellation_reason: CANCELLATION_REASON.BOOKER,
+    })
+    .eq('id', bookingId)
+
+  if (error) {
+    return { success: false, error: BOOKING_ERROR.CANCEL_FAILED }
+  }
+
+  // Delete Google Calendar event
+  if (booking.google_event_id) {
+    void deleteCalendarEvent(booking.google_event_id)
+  }
+
+  const durationMinutes = booking.meeting_type?.duration_minutes ?? 30
+  const slug = booking.meeting_type?.slug ?? 'intro'
+  const meetingTypeDisplay = getMeetingTypeDisplay(
+    slug,
+    durationMinutes,
+    locale
+  )
+  const { date: dateStr, time: timeStr } = formatInTimezone(
+    booking.starts_at,
+    booking.timezone
+  )
+
+  const cancellationData = {
+    recipientName: booking.booker_name,
+    meetingType: meetingTypeDisplay,
+    date: dateStr,
+    time: timeStr,
+    timezone: booking.timezone,
+    cancellationReason: CANCELLATION_REASON.BOOKER,
+    locale,
+  }
+
+  // Send cancellation email to booker
+  void sendEmail({
+    to: email,
+    subject: bookingCancellationBookerSubject(locale),
+    html: bookingCancellationHtml(cancellationData),
+  })
+
+  // Send cancellation notification to admin
+  if (ADMIN_EMAIL) {
+    void sendEmail({
+      to: ADMIN_EMAIL,
+      subject: bookingCancellationAdminSubject(booking.booker_name, locale),
+      html: bookingCancellationHtml({
+        ...cancellationData,
+        recipientName: FOUNDER_NAME,
+      }),
+    })
+  }
+
+  return { success: true }
+}

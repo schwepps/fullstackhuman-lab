@@ -1,5 +1,5 @@
 import type { PersonaId } from '@/types/chat'
-import { CALENDLY_URL } from '@/lib/constants/app'
+import { BOOK_PATH } from '@/lib/constants/app'
 
 // --- PostHog configuration ---
 export const POSTHOG_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY ?? ''
@@ -14,7 +14,7 @@ export const ANALYTICS_EVENTS = {
   PERSONA_SELECTED: 'persona_selected',
   REPORT_GENERATED: 'report_generated',
   REPORT_COPIED: 'report_copied',
-  CALENDLY_CLICK: 'calendly_click',
+  BOOKING_CLICK: 'booking_click',
   CTA_CLICK: 'cta_click',
   REPORT_LINK_COPIED: 'report_link_copied',
   TELEGRAM_CLICK: 'telegram_click',
@@ -41,7 +41,7 @@ export interface ReportLinkCopiedProperties {
   persona: PersonaId
 }
 
-export interface CalendlyClickProperties {
+export interface BookingClickProperties {
   source:
     | 'report'
     | 'report_card'
@@ -59,5 +59,5 @@ export interface CtaClickProperties {
   source: 'hero' | 'hero_manifesto' | 'signup_post_report'
 }
 
-// --- Calendly URL detection (derived from SSOT) ---
-export const CALENDLY_URL_PATTERN = CALENDLY_URL.replace(/^https?:\/\//, '')
+// --- Booking URL detection (derived from SSOT) ---
+export const BOOKING_URL_PATTERN = BOOK_PATH

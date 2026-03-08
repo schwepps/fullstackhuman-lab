@@ -203,6 +203,7 @@
   "userMenu": {
     "conversations": "Mes conversations",
     "account": "Mon compte",
+    "admin": "Tableau de bord admin",
     "logout": "Se déconnecter",
     "login": "Se connecter"
   },
@@ -312,7 +313,7 @@
     "privacyLink": "Politique de confidentialité",
     "ariaLabel": "Bannière de consentement aux cookies"
   },
-  "calendlyCta": {
+  "bookingCta": {
     "title": "Envie d'aller plus loin ?",
     "description": "Réservez un appel avec le vrai François — 30 minutes pour débloquer votre situation.",
     "action": "Réserver un appel"
@@ -417,5 +418,97 @@
       "body": "Chaque règle de ce manifeste est un vrai pattern que j'ai observé — parfois de près, parfois de trop près. Le manifeste f<ai>AI</ai>ling existe parce que rater avec l'IA, c'est facile. Réussir avec, ça demande autre chose\u00a0: comprendre le processus avant de l'automatiser, construire une stratégie qui ne soit pas un prompt, garder l'humain dans la boucle quand ça compte, et savoir ce que l'IA fait vraiment bien.",
       "cta": "C'est ce que je fais chez <link>fullstackhuman.sh</link> — du conseil IA, sans filtre."
     }
+  },
+  "booking": {
+    "title": "Réserver un appel",
+    "subtitle": "Parlez au vrai François — pas d'IA, juste des conseils.",
+    "back": "Retour",
+    "selectDate": "Choisir une date",
+    "selectTime": "Choisir un créneau",
+    "loadingSlots": "Chargement des créneaux...",
+    "noSlots": "Aucun créneau disponible pour cette date.",
+    "timezone": "Heures affichées en {tz}",
+    "meetingType": "Rendez-vous",
+    "dateTime": "Date et heure",
+    "contextBanner": "Réservation depuis votre conversation IA — François aura le contexte.",
+    "meetingTypes": {
+      "intro": {
+        "title": "Introduction",
+        "description": "Appel rapide pour discuter de votre situation et voir si on matche.",
+        "duration": "30 min"
+      }
+    },
+    "form": {
+      "name": "Votre nom",
+      "email": "Email",
+      "message": "De quoi aimeriez-vous discuter ?",
+      "optional": "facultatif",
+      "submit": "Confirmer la réservation",
+      "submitting": "Réservation..."
+    },
+    "errors": {
+      "slotTaken": "Ce créneau vient d'être pris. Choisissez un autre horaire.",
+      "rateLimited": "Trop de tentatives. Veuillez patienter.",
+      "generic": "Une erreur est survenue. Veuillez réessayer."
+    },
+    "confirmation": {
+      "title": "C'est réservé !",
+      "description": "Votre appel avec François est confirmé.",
+      "emailSent": "Un email de confirmation a été envoyé.",
+      "backHome": "Retour à l'accueil"
+    },
+    "cancel": {
+      "title": "Annuler votre réservation ?",
+      "description": "Cela annulera votre prochain appel avec François. Cette action est irréversible.",
+      "confirmCancel": "Oui, annuler la réservation",
+      "cancelling": "Annulation...",
+      "keepBooking": "Non, garder ma réservation",
+      "successTitle": "Réservation annulée",
+      "successDescription": "Votre réservation a été annulée. Un email de confirmation a été envoyé.",
+      "errorTitle": "Échec de l'annulation",
+      "errors": {
+        "notFound": "Cette réservation est introuvable ou a déjà été annulée.",
+        "rateLimited": "Trop de tentatives. Veuillez patienter.",
+        "generic": "Une erreur est survenue. Veuillez réessayer."
+      },
+      "backHome": "Retour à l'accueil"
+    }
+  },
+  "adminDashboard": {
+    "title": "Rendez-vous",
+    "availabilityLink": "Paramètres de disponibilité",
+    "upcoming": "À venir",
+    "past": "Passés",
+    "cancelled": "Annulés",
+    "noUpcoming": "Aucun rendez-vous à venir.",
+    "noPast": "Aucun rendez-vous passé.",
+    "noCancelled": "Aucun rendez-vous annulé.",
+    "hasContext": "Contexte IA",
+    "status": {
+      "confirmed": "Confirmé",
+      "cancelled": "Annulé",
+      "completed": "Terminé",
+      "no_show": "Absent"
+    },
+    "googleCalendar": {
+      "connected": "Google Calendar connecté",
+      "notConnected": "Google Calendar non connecté",
+      "connect": "Connecter"
+    }
+  },
+  "adminAvailability": {
+    "title": "Paramètres de disponibilité",
+    "dashboardLink": "Retour au tableau de bord",
+    "timezone": "Fuseau horaire",
+    "weeklySchedule": "Planning hebdomadaire",
+    "buffer": "Tampon (min)",
+    "maxAdvance": "Avance max (jours)",
+    "minNotice": "Préavis min (heures)",
+    "blockedDates": "Dates bloquées",
+    "blockedDatesHint": "Dates séparées par des virgules au format AAAA-MM-JJ",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "saved": "Paramètres enregistrés.",
+    "saveFailed": "Échec de l'enregistrement."
   }
 }

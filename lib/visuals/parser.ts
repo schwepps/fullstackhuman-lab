@@ -154,7 +154,7 @@ function extractCtaFooter(content: string): {
   }
 
   const afterHr = content.slice(lastHrIndex + 4).trim()
-  if (afterHr.startsWith('_') || afterHr.includes('calendly')) {
+  if (afterHr.startsWith('_') || afterHr.includes('/book')) {
     return {
       body: content.slice(0, lastHrIndex).trim(),
       ctaFooter: afterHr,

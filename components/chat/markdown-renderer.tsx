@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { Components } from 'react-markdown'
 import { useAnalytics } from '@/lib/hooks/use-analytics'
-import { CALENDLY_URL_PATTERN } from '@/lib/constants/analytics'
+import { BOOKING_URL_PATTERN } from '@/lib/constants/analytics'
 import { stripVisualBlocks } from '@/lib/visuals/parser'
 
 const remarkPlugins = [remarkGfm]
@@ -95,7 +95,7 @@ interface MarkdownRendererProps {
 }
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
-  const { trackCalendlyClick } = useAnalytics()
+  const { trackBookingClick } = useAnalytics()
   const cleanContent = useMemo(() => stripVisualBlocks(content), [content])
 
   const components = useMemo<Components>(
@@ -105,7 +105,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         if (href && !/^https?:\/\//i.test(href)) {
           return <span>{children}</span>
         }
-        const isCalendly = href?.includes(CALENDLY_URL_PATTERN) ?? false
+        const isBooking = href?.includes(BOOKING_URL_PATTERN) ?? false
         return (
           <a
             href={href}
@@ -113,8 +113,8 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
             rel="noopener noreferrer"
             className="text-primary underline transition-colors hover:text-accent"
             onClick={
-              isCalendly
-                ? () => trackCalendlyClick({ source: 'report' })
+              isBooking
+                ? () => trackBookingClick({ source: 'report' })
                 : undefined
             }
           >
@@ -123,7 +123,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         )
       },
     }),
-    [trackCalendlyClick]
+    [trackBookingClick]
   )
 
   return (

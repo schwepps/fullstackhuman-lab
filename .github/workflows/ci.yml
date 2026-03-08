@@ -39,3 +39,4 @@ jobs:
         run: pnpm build
         env:
           NEXT_PUBLIC_APP_URL: 'https://fullstackhuman.sh'
+          NODE_OPTIONS: '--max-old-space-size=4096'
