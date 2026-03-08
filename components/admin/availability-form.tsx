@@ -134,7 +134,10 @@ export function AvailabilityForm({
             type="number"
             min={1}
             value={maxAdvanceDays}
-            onChange={(e) => setMaxAdvanceDays(Number(e.target.value))}
+            onChange={(e) => {
+              if (e.target.value !== '')
+                setMaxAdvanceDays(Number(e.target.value))
+            }}
             className="h-12 sm:h-10"
           />
         </div>
@@ -145,7 +148,10 @@ export function AvailabilityForm({
             type="number"
             min={0}
             value={minNoticeHours}
-            onChange={(e) => setMinNoticeHours(Number(e.target.value))}
+            onChange={(e) => {
+              if (e.target.value !== '')
+                setMinNoticeHours(Number(e.target.value))
+            }}
             className="h-12 sm:h-10"
           />
         </div>

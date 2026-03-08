@@ -2,6 +2,7 @@
 
 import { createServiceClient } from '@/lib/supabase/service'
 import { checkIsAdmin } from '@/lib/auth/check-admin'
+import { checkBookingRateLimit } from './rate-limit'
 import { availabilityConfigSchema } from './schemas'
 import { BOOKING_ERROR } from './types'
 import type { ActionResult } from '@/types/action'
@@ -9,6 +10,10 @@ import type { ActionResult } from '@/types/action'
 export async function saveAvailabilityConfig(
   input: unknown
 ): Promise<ActionResult> {
+  if (!(await checkBookingRateLimit())) {
+    return { success: false, error: BOOKING_ERROR.RATE_LIMITED }
+  }
+
   const { isAdmin } = await checkIsAdmin()
   if (!isAdmin) {
     return { success: false, error: BOOKING_ERROR.FORBIDDEN }

@@ -3,14 +3,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import {
   getUpcomingBookings,
   getPastBookings,
+  getCancelledBookings,
 } from '@/lib/booking/admin-queries'
 import { MeetingCard } from './meeting-card'
 
 export async function MeetingsList() {
   const t = await getTranslations('adminDashboard')
-  const [upcoming, past] = await Promise.all([
+  const [upcoming, past, cancelled] = await Promise.all([
     getUpcomingBookings(),
     getPastBookings(),
+    getCancelledBookings(),
   ])
 
   return (
@@ -21,6 +23,9 @@ export async function MeetingsList() {
         </TabsTrigger>
         <TabsTrigger value="past">
           {t('past')} ({past.length})
+        </TabsTrigger>
+        <TabsTrigger value="cancelled">
+          {t('cancelled')} ({cancelled.length})
         </TabsTrigger>
       </TabsList>
 
@@ -43,6 +48,18 @@ export async function MeetingsList() {
           </p>
         ) : (
           past.map((booking) => (
+            <MeetingCard key={booking.id} booking={booking} />
+          ))
+        )}
+      </TabsContent>
+
+      <TabsContent value="cancelled" className="mt-4 space-y-4">
+        {cancelled.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">
+            {t('noCancelled')}
+          </p>
+        ) : (
+          cancelled.map((booking) => (
             <MeetingCard key={booking.id} booking={booking} />
           ))
         )}

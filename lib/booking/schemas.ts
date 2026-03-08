@@ -21,7 +21,7 @@ const ianaTimezone = z
 export const bookingFormSchema = z.object({
   meetingType: z.enum(MEETING_TYPES),
   date: z.iso.date(),
-  timeSlot: z.string().regex(/^\d{2}:\d{2}$/),
+  timeSlot: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
   timezone: ianaTimezone,
   name: z.string().trim().min(1).max(200),
   email: z.email().trim(),
@@ -40,8 +40,8 @@ export type CancelBookingData = z.infer<typeof cancelBookingSchema>
 
 export const weeklyScheduleEntrySchema = z.object({
   day: z.number().int().min(0).max(6),
-  start: z.string().regex(/^\d{2}:\d{2}$/),
-  end: z.string().regex(/^\d{2}:\d{2}$/),
+  start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
 })
 
 export const availabilityConfigSchema = z.object({

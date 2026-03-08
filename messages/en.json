@@ -479,8 +479,10 @@
     "availabilityLink": "Availability settings",
     "upcoming": "Upcoming",
     "past": "Past",
+    "cancelled": "Cancelled",
     "noUpcoming": "No upcoming meetings.",
     "noPast": "No past meetings.",
+    "noCancelled": "No cancelled meetings.",
     "hasContext": "AI context",
     "status": {
       "confirmed": "Confirmed",

@@ -89,6 +89,31 @@ describe('bookingFormSchema', () => {
     expect(result.success).toBe(false)
   })
 
+  it('rejects out-of-range hours in time slot', () => {
+    const result = bookingFormSchema.safeParse({
+      ...validInput,
+      timeSlot: '25:00',
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('rejects out-of-range minutes in time slot', () => {
+    const result = bookingFormSchema.safeParse({
+      ...validInput,
+      timeSlot: '10:61',
+    })
+    expect(result.success).toBe(false)
+  })
+
+  it('accepts edge time slots', () => {
+    expect(
+      bookingFormSchema.safeParse({ ...validInput, timeSlot: '00:00' }).success
+    ).toBe(true)
+    expect(
+      bookingFormSchema.safeParse({ ...validInput, timeSlot: '23:59' }).success
+    ).toBe(true)
+  })
+
   it('rejects invalid conversationId', () => {
     const result = bookingFormSchema.safeParse({
       ...validInput,

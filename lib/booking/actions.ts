@@ -21,6 +21,7 @@ import {
 import { FOUNDER_NAME } from '@/lib/constants/brand'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
+import { CANCELLATION_REASON } from '@/lib/constants/booking'
 import { checkBookingRateLimit } from './rate-limit'
 import { getUtcOffset } from './slots'
 import { BOOKING_ERROR } from './types'
@@ -29,8 +30,45 @@ import type { CreateBookingResult } from './types'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
 
-function getMeetingTypeDisplay(durationMinutes: number): string {
-  return `Intro (${durationMinutes} min)`
+const MEETING_TYPE_LABELS = {
+  en: { intro: (mins: number) => `Intro (${mins} min)` },
+  fr: { intro: (mins: number) => `Intro (${mins} min)` },
+} as const
+
+function getMeetingTypeDisplay(
+  slug: string,
+  durationMinutes: number,
+  locale: string
+): string {
+  const labels =
+    locale === 'fr' ? MEETING_TYPE_LABELS.fr : MEETING_TYPE_LABELS.en
+  if (slug in labels) {
+    return labels[slug as keyof typeof labels](durationMinutes)
+  }
+  return `${slug} (${durationMinutes} min)`
+}
+
+/**
+ * Format a UTC timestamp into local date/time strings for a given timezone.
+ */
+function formatInTimezone(
+  isoTimestamp: string,
+  tz: string
+): { date: string; time: string } {
+  const d = new Date(isoTimestamp)
+  const dateFmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  })
+  const timeFmt = new Intl.DateTimeFormat('en-GB', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  })
+  return { date: dateFmt.format(d), time: timeFmt.format(d) }
 }
 
 interface CreateBookingInput {
@@ -128,12 +166,17 @@ export async function createBooking(
 
   if (booking) {
     const durationMinutes = booking.meeting_type?.duration_minutes ?? 30
-    const meetingTypeDisplay = getMeetingTypeDisplay(durationMinutes)
+    const slug = booking.meeting_type?.slug ?? 'intro'
+    const meetingTypeDisplay = getMeetingTypeDisplay(
+      slug,
+      durationMinutes,
+      locale
+    )
 
     // Create Google Calendar event with Google Meet
     let meetLink: string | null = null
     const calResult = await createCalendarEvent({
-      summary: `${FOUNDER_NAME} <> ${name} (${meetingTypeDisplay})`,
+      summary: `${FOUNDER_NAME} <> ${name} (${getMeetingTypeDisplay(slug, durationMinutes, 'en')})`,
       description: message
         ? `Message: ${message}\n\nBooked via FullStackHuman`
         : 'Booked via FullStackHuman',
@@ -155,8 +198,8 @@ export async function createBooking(
         .eq('id', bookingId)
     }
 
-    // Send confirmation email to booker (fire-and-forget)
-    void sendEmail({
+    // Send confirmation email to booker and track delivery
+    sendEmail({
       to: email,
       subject: bookingConfirmationSubject(locale),
       html: bookingConfirmationHtml({
@@ -172,6 +215,15 @@ export async function createBooking(
         locale,
       }),
     })
+      .then(() => {
+        void serviceClient
+          .from('bookings')
+          .update({ confirmation_sent_at: new Date().toISOString() })
+          .eq('id', bookingId)
+      })
+      .catch(() => {
+        // Email failure is logged by sendEmail — no-op here
+      })
 
     // Send notification to admin (fire-and-forget)
     if (ADMIN_EMAIL) {
@@ -187,6 +239,7 @@ export async function createBooking(
         hasConversationContext: !!conversationId,
         bookingId,
         meetLink,
+        locale,
       }
       void sendEmail({
         to: ADMIN_EMAIL,
@@ -240,7 +293,7 @@ export async function cancelBooking(
     .update({
       status: 'cancelled',
       cancelled_at: new Date().toISOString(),
-      cancellation_reason: 'Cancelled by booker',
+      cancellation_reason: CANCELLATION_REASON.BOOKER,
     })
     .eq('id', bookingId)
 
@@ -254,12 +307,16 @@ export async function cancelBooking(
   }
 
   const durationMinutes = booking.meeting_type?.duration_minutes ?? 30
-  const meetingTypeDisplay = getMeetingTypeDisplay(durationMinutes)
-  const dateStr = new Date(booking.starts_at).toISOString().split('T')[0]
-  const timeStr = new Date(booking.starts_at)
-    .toISOString()
-    .split('T')[1]
-    .slice(0, 5)
+  const slug = booking.meeting_type?.slug ?? 'intro'
+  const meetingTypeDisplay = getMeetingTypeDisplay(
+    slug,
+    durationMinutes,
+    locale
+  )
+  const { date: dateStr, time: timeStr } = formatInTimezone(
+    booking.starts_at,
+    booking.timezone
+  )
 
   const cancellationData = {
     recipientName: booking.booker_name,
@@ -267,7 +324,7 @@ export async function cancelBooking(
     date: dateStr,
     time: timeStr,
     timezone: booking.timezone,
-    cancellationReason: 'Cancelled by booker',
+    cancellationReason: CANCELLATION_REASON.BOOKER,
     locale,
   }
 

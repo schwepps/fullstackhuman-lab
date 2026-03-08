@@ -24,6 +24,13 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get('type')
   const tz = searchParams.get('tz') ?? 'Europe/Paris'
 
+  // Validate IANA timezone
+  try {
+    Intl.DateTimeFormat(undefined, { timeZone: tz })
+  } catch {
+    return NextResponse.json({ error: 'Invalid timezone' }, { status: 400 })
+  }
+
   if (
     !type ||
     !MEETING_TYPES.includes(type as (typeof MEETING_TYPES)[number])

@@ -54,7 +54,7 @@ export async function MeetingCard({ booking }: MeetingCardProps) {
               {time} ({booking.timezone})
             </span>
             <span className="font-mono text-xs">
-              {booking.meeting_type.slug === 'intro' ? '30min' : '60min'}
+              {booking.meeting_type.duration_minutes}min
             </span>
             {booking.conversation_id && (
               <span className="flex items-center gap-1 text-primary">

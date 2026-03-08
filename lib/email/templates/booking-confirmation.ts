@@ -57,12 +57,16 @@ export function bookingConfirmationSubject(locale: string) {
 export function bookingConfirmationHtml(data: BookingConfirmationData) {
   const l = data.locale === 'fr' ? LABELS.fr : LABELS.en
   const cancelUrl = `${APP_URL}${BOOK_PATH}/cancel?id=${data.bookingId}&email=${encodeURIComponent(data.bookerEmail)}`
-  const meetRow = data.meetLink
-    ? `<tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.meetLink}</td><td style="padding:6px 0;font-size:14px;"><a href="${data.meetLink}" style="color:#22d3ee;">${data.meetLink}</a></td></tr>`
+  const safeMeetLink =
+    data.meetLink && /^https:\/\//.test(data.meetLink)
+      ? escapeHtml(data.meetLink)
+      : null
+  const meetRow = safeMeetLink
+    ? `<tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.meetLink}</td><td style="padding:6px 0;font-size:14px;"><a href="${safeMeetLink}" style="color:#22d3ee;">${safeMeetLink}</a></td></tr>`
     : ''
-  const meetButton = data.meetLink
+  const meetButton = safeMeetLink
     ? `<div style="text-align:center;margin-top:20px;">
-        <a href="${data.meetLink}" style="display:inline-block;background:#22d3ee;color:#0a0a0c;padding:12px 28px;border-radius:6px;font-size:15px;font-weight:600;text-decoration:none;">${l.joinMeet}</a>
+        <a href="${safeMeetLink}" style="display:inline-block;background:#22d3ee;color:#0a0a0c;padding:12px 28px;border-radius:6px;font-size:15px;font-weight:600;text-decoration:none;">${l.joinMeet}</a>
       </div>`
     : ''
 

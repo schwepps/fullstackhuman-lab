@@ -19,12 +19,32 @@ export function getUtcOffset(date: string, tz: string): string {
 }
 
 /**
- * Resolve "now" in a specific IANA timezone, returning a Date representing
- * the wall-clock instant in that timezone.
+ * Resolve "now" in a specific IANA timezone using formatToParts
+ * for reliable, locale-independent parsing.
  */
 function nowInTimezone(tz: string): Date {
-  const str = new Date().toLocaleString('en-US', { timeZone: tz })
-  return new Date(str)
+  const now = new Date()
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  })
+  const parts = Object.fromEntries(
+    fmt.formatToParts(now).map((p) => [p.type, p.value])
+  )
+  return new Date(
+    Number(parts.year),
+    Number(parts.month) - 1,
+    Number(parts.day),
+    Number(parts.hour) === 24 ? 0 : Number(parts.hour),
+    Number(parts.minute),
+    Number(parts.second)
+  )
 }
 
 /**
@@ -46,7 +66,7 @@ export async function getAvailableSlots(
 
   if (!config) return []
   const avail = config as AvailabilityConfigRow
-  const configTz = avail.timezone || timezone
+  const configTz = avail.timezone ?? timezone
 
   // Check if date is blocked
   if (avail.blocked_dates.includes(date)) return []
@@ -149,11 +169,12 @@ export async function getAvailableSlots(
 
 /**
  * Get dates with available slots for a given month.
+ * Filters out fully-booked days by checking existing bookings.
  */
 export async function getAvailableDates(
   year: number,
   month: number,
-  _meetingTypeSlug: string,
+  meetingTypeSlug: string,
   _timezone: string
 ): Promise<string[]> {
   const supabase = await createClient()
@@ -161,7 +182,9 @@ export async function getAvailableDates(
   // Fetch availability config
   const { data: config } = await supabase
     .from('availability_config')
-    .select('weekly_schedule, blocked_dates, max_advance_days, timezone')
+    .select(
+      'weekly_schedule, blocked_dates, max_advance_days, timezone, buffer_minutes'
+    )
     .single()
 
   if (!config) return []
@@ -170,13 +193,28 @@ export async function getAvailableDates(
   const blockedDates = config.blocked_dates as string[]
   const maxAdvanceDays =
     config.max_advance_days ?? BOOKING_DEFAULTS.maxAdvanceDays
-  const configTz = (config.timezone as string) || _timezone
+  const configTz = (config.timezone as string) ?? _timezone
+  const bufferMinutes = config.buffer_minutes ?? BOOKING_DEFAULTS.bufferMinutes
+
+  // Fetch meeting type duration
+  const { data: meetingType } = await supabase
+    .from('meeting_types')
+    .select('duration_minutes')
+    .eq('slug', meetingTypeSlug)
+    .eq('is_active', true)
+    .single()
+
+  if (!meetingType) return []
+  const duration = meetingType.duration_minutes
+
+  void bufferMinutes // Used for future per-slot filtering
 
   const activeDays = new Set(schedule.map((e) => e.day))
   const today = nowInTimezone(configTz)
   today.setHours(0, 0, 0, 0)
 
-  const dates: string[] = []
+  // Build candidate dates first
+  const candidateDates: string[] = []
   const daysInMonth = new Date(year, month, 0).getDate()
 
   for (let day = 1; day <= daysInMonth; day++) {
@@ -189,7 +227,57 @@ export async function getAvailableDates(
     if (!activeDays.has(d.getDay())) continue
     if (blockedDates.includes(dateStr)) continue
 
-    dates.push(dateStr)
+    candidateDates.push(dateStr)
+  }
+
+  if (candidateDates.length === 0) return []
+
+  // Batch-fetch confirmed bookings for the entire month
+  const utcOffset = getUtcOffset(
+    `${year}-${String(month).padStart(2, '0')}-01`,
+    configTz
+  )
+  const monthStart = `${year}-${String(month).padStart(2, '0')}-01T00:00:00${utcOffset}`
+  const monthEnd = `${year}-${String(month).padStart(2, '0')}-${String(daysInMonth).padStart(2, '0')}T23:59:59${utcOffset}`
+  const { data: bookings } = await supabase
+    .from('bookings')
+    .select('starts_at, ends_at')
+    .eq('status', 'confirmed')
+    .gte('starts_at', monthStart)
+    .lte('starts_at', monthEnd)
+
+  // For each candidate date, check if at least one slot remains
+  const dates: string[] = []
+  for (const dateStr of candidateDates) {
+    const d = new Date(dateStr + 'T00:00:00')
+    const dayOfWeek = d.getDay()
+    const daySchedule = schedule.filter((e) => e.day === dayOfWeek)
+
+    // Count total slots for this day
+    let totalSlots = 0
+    for (const window of daySchedule) {
+      const [startH, startM] = window.start.split(':').map(Number)
+      const [endH, endM] = window.end.split(':').map(Number)
+      const windowStart = startH * 60 + startM
+      const windowEnd = endH * 60 + endM
+      for (let mins = windowStart; mins + duration <= windowEnd; mins += 30) {
+        totalSlots++
+      }
+    }
+
+    // Count bookings that fall on this day
+    const dayUtcOffset = getUtcOffset(dateStr, configTz)
+    const dayStartMs = new Date(`${dateStr}T00:00:00${dayUtcOffset}`).getTime()
+    const dayEndMs = new Date(`${dateStr}T23:59:59${dayUtcOffset}`).getTime()
+    const dayBookings = (bookings ?? []).filter((b) => {
+      const bStart = new Date(b.starts_at).getTime()
+      return bStart >= dayStartMs && bStart <= dayEndMs
+    })
+
+    // If fewer bookings than total slots, the day likely has availability
+    if (dayBookings.length < totalSlots) {
+      dates.push(dateStr)
+    }
   }
 
   return dates

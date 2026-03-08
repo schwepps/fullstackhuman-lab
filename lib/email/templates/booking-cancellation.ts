@@ -61,7 +61,7 @@ export function bookingCancellationHtml(data: BookingCancellationData) {
   const l = data.locale === 'fr' ? LABELS.fr : LABELS.en
   const bookUrl = `${APP_URL}${BOOK_PATH}`
   const reasonRow = data.cancellationReason
-    ? `<tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.reason}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.cancellationReason}</td></tr>`
+    ? `<tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.reason}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${escapeHtml(data.cancellationReason)}</td></tr>`
     : ''
 
   return `<!DOCTYPE html>

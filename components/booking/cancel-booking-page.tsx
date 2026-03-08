@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { cancelBooking } from '@/lib/booking/actions'
 import { Link } from '@/i18n/routing'
+import { Button } from '@/components/ui/button'
 import { XCircle, CheckCircle, AlertTriangle } from 'lucide-react'
 import { BOOKING_ERROR } from '@/lib/booking/types'
 
@@ -89,13 +90,13 @@ export function CancelBookingPage({
       <h1 className="mb-3 text-2xl font-bold text-foreground">{t('title')}</h1>
       <p className="mb-8 text-muted-foreground">{t('description')}</p>
       <div className="flex flex-col items-center gap-3">
-        <button
+        <Button
+          variant="destructive"
           onClick={handleCancel}
           disabled={state === 'cancelling'}
-          className="rounded-md bg-destructive px-6 py-2.5 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:opacity-50"
         >
           {state === 'cancelling' ? t('cancelling') : t('confirmCancel')}
-        </button>
+        </Button>
         <Link
           href="/"
           className="text-sm text-muted-foreground underline hover:text-foreground"

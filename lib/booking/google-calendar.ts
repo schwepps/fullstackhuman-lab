@@ -1,10 +1,15 @@
-import { google } from 'googleapis'
+import { google, type Auth } from 'googleapis'
 import { createServiceClient } from '@/lib/supabase/service'
 import { log } from '@/lib/logger'
 import { LOG_EVENT } from '@/lib/constants/logging'
 import { GOOGLE_TOKEN_ROW_ID } from '@/lib/constants/booking'
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar']
+
+/** Module-scoped client cache to prevent concurrent refresh races. */
+let cachedClient: Auth.OAuth2Client | null = null
+let cachedClientExpiresAt = 0
+const CLIENT_CACHE_TTL_MS = 50_000 // 50 seconds
 
 function getOAuth2Client() {
   return new google.auth.OAuth2(
@@ -34,11 +39,15 @@ export async function exchangeCodeForTokens(code: string) {
   const client = getOAuth2Client()
   const { tokens } = await client.getToken(code)
 
+  if (!tokens.access_token) {
+    throw new Error('Google OAuth returned no access token')
+  }
+
   const supabase = createServiceClient()
   const { error } = await supabase.from('google_oauth_tokens').upsert(
     {
       id: GOOGLE_TOKEN_ROW_ID,
-      access_token: tokens.access_token!,
+      access_token: tokens.access_token,
       refresh_token: tokens.refresh_token ?? undefined,
       token_type: tokens.token_type ?? 'Bearer',
       expires_at: tokens.expiry_date
@@ -53,13 +62,22 @@ export async function exchangeCodeForTokens(code: string) {
     log('error', LOG_EVENT.GOOGLE_TOKEN_STORE_FAILED, { error: error.message })
     throw new Error('Failed to store Google tokens')
   }
+
+  // Invalidate cache after new tokens
+  cachedClient = null
+  cachedClientExpiresAt = 0
 }
 
 /**
  * Get a valid OAuth2 client with fresh tokens.
- * Refreshes automatically if expired.
+ * Refreshes automatically if expired. Caches to prevent concurrent refresh races.
  */
 async function getAuthorizedClient() {
+  // Return cached client if still valid
+  if (cachedClient && Date.now() < cachedClientExpiresAt) {
+    return cachedClient
+  }
+
   const supabase = createServiceClient()
   const { data, error } = await supabase
     .from('google_oauth_tokens')
@@ -98,6 +116,10 @@ async function getAuthorizedClient() {
       })
       .eq('id', GOOGLE_TOKEN_ROW_ID)
   }
+
+  // Cache the authorized client
+  cachedClient = client
+  cachedClientExpiresAt = Date.now() + CLIENT_CACHE_TTL_MS
 
   return client
 }

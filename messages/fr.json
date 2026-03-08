@@ -479,8 +479,10 @@
     "availabilityLink": "Paramètres de disponibilité",
     "upcoming": "À venir",
     "past": "Passés",
+    "cancelled": "Annulés",
     "noUpcoming": "Aucun rendez-vous à venir.",
     "noPast": "Aucun rendez-vous passé.",
+    "noCancelled": "Aucun rendez-vous annulé.",
     "hasContext": "Contexte IA",
     "status": {
       "confirmed": "Confirmé",

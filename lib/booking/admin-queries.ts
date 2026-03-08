@@ -1,4 +1,5 @@
 import { createServiceClient } from '@/lib/supabase/service'
+import { checkIsAdmin } from '@/lib/auth/check-admin'
 import type { BookingStatus } from '@/lib/constants/booking'
 import type { AvailabilityConfigRow, BookingWithMeetingType } from './types'
 
@@ -22,9 +23,23 @@ export async function getPastBookings(): Promise<BookingWithMeetingType[]> {
     .from('bookings')
     .select('*, meeting_type:meeting_types(slug, duration_minutes)')
     .or(
-      `status.in.(cancelled,completed,no_show),and(status.eq.confirmed,starts_at.lt.${now})`
+      `status.in.(completed,no_show),and(status.eq.confirmed,starts_at.lt.${now})`
     )
     .order('starts_at', { ascending: false })
+    .limit(50)
+
+  return (data ?? []) as BookingWithMeetingType[]
+}
+
+export async function getCancelledBookings(): Promise<
+  BookingWithMeetingType[]
+> {
+  const supabase = createServiceClient()
+  const { data } = await supabase
+    .from('bookings')
+    .select('*, meeting_type:meeting_types(slug, duration_minutes)')
+    .eq('status', 'cancelled')
+    .order('cancelled_at', { ascending: false })
     .limit(50)
 
   return (data ?? []) as BookingWithMeetingType[]
@@ -63,6 +78,9 @@ export async function updateBookingStatus(
   bookingId: string,
   status: BookingStatus
 ) {
+  const { isAdmin } = await checkIsAdmin()
+  if (!isAdmin) return false
+
   const supabase = createServiceClient()
   const update: Record<string, unknown> = {
     status,
@@ -83,6 +101,9 @@ export async function updateBookingBriefing(
   bookingId: string,
   briefing: string
 ) {
+  const { isAdmin } = await checkIsAdmin()
+  if (!isAdmin) return false
+
   const supabase = createServiceClient()
   const { error } = await supabase
     .from('bookings')
