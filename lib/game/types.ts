@@ -170,15 +170,14 @@ export type RevealPlayer = PublicPlayer & {
 
 export interface AgentPersona {
   id: string
-  displayName: string
-  backstory: string
-  personalityTraits: string[]
-  speakingStyle: string
-  typingProfile: TypingProfile
+  name: string
+  age: number
+  styleNotes: string
+  quirks: string[]
+  opinions: string[]
 }
 
 export interface TypingProfile {
-  wordsPerMinute: number
-  pauseBetweenMessages: number
-  typoRate: number
+  wpm: number
+  thinkingMs: [number, number]
 }
