@@ -101,9 +101,8 @@ export async function updateBookingBriefing(
   bookingId: string,
   briefing: string
 ) {
-  const { isAdmin } = await checkIsAdmin()
-  if (!isAdmin) return false
-
+  // No admin check here — called from generateBriefing in background context
+  // where no HTTP request/cookies exist. Access is controlled by the caller.
   const supabase = createServiceClient()
   const { error } = await supabase
     .from('bookings')

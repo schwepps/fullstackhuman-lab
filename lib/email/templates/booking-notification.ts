@@ -93,8 +93,8 @@ export function bookingNotificationHtml(data: BookingNotificationData) {
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.name}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${name}</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.email}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;"><a href="mailto:${email}" style="color:#22d3ee;">${email}</a></td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.type}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${type}</td></tr>
-        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.date}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.date}</td></tr>
-        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.time}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.time} (${data.timezone})</td></tr>
+        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.date}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${escapeHtml(data.date)}</td></tr>
+        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.time}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${escapeHtml(data.time)} (${escapeHtml(data.timezone)})</td></tr>
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.duration}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.durationMinutes} ${l.min}</td></tr>
         ${contextLine}
         ${meetLine}

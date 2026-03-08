@@ -48,11 +48,11 @@ export async function exchangeCodeForTokens(code: string) {
     {
       id: GOOGLE_TOKEN_ROW_ID,
       access_token: tokens.access_token,
-      refresh_token: tokens.refresh_token ?? undefined,
+      refresh_token: tokens.refresh_token ?? '',
       token_type: tokens.token_type ?? 'Bearer',
-      expires_at: tokens.expiry_date
-        ? new Date(tokens.expiry_date).toISOString()
-        : null,
+      expires_at: new Date(
+        tokens.expiry_date ?? Date.now() + 3600 * 1000
+      ).toISOString(),
       scope: tokens.scope ?? SCOPES.join(' '),
     },
     { onConflict: 'id' }

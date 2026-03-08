@@ -134,15 +134,13 @@ export async function getAvailableSlots(
   if (gcalBusy === null) return []
 
   // Filter out overlapping slots
-  // Use config timezone for "now" to get correct min_notice_hours comparison
-  const nowTz = nowInTimezone(configTz)
   const available: string[] = []
   for (const slot of candidates) {
     const slotStart = new Date(`${date}T${slot}:00${utcOffset}`)
     const slotEnd = new Date(slotStart.getTime() + duration * 60_000)
 
-    // Check min notice hours (compare in the same timezone frame)
-    const hoursUntilSlot = (slotStart.getTime() - nowTz.getTime()) / 3_600_000
+    // Check min notice hours (UTC comparison — both getTime() values are UTC ms)
+    const hoursUntilSlot = (slotStart.getTime() - Date.now()) / 3_600_000
     if (hoursUntilSlot < avail.min_notice_hours) continue
 
     // Check against existing bookings (with buffer)
@@ -194,8 +192,6 @@ export async function getAvailableDates(
   const maxAdvanceDays =
     config.max_advance_days ?? BOOKING_DEFAULTS.maxAdvanceDays
   const configTz = (config.timezone as string) ?? _timezone
-  const bufferMinutes = config.buffer_minutes ?? BOOKING_DEFAULTS.bufferMinutes
-
   // Fetch meeting type duration
   const { data: meetingType } = await supabase
     .from('meeting_types')
@@ -206,8 +202,6 @@ export async function getAvailableDates(
 
   if (!meetingType) return []
   const duration = meetingType.duration_minutes
-
-  void bufferMinutes // Used for future per-slot filtering
 
   const activeDays = new Set(schedule.map((e) => e.day))
   const today = nowInTimezone(configTz)

@@ -31,7 +31,12 @@ interface SendEmailOptions {
  */
 export async function sendEmail({ to, subject, html }: SendEmailOptions) {
   const from = process.env.SMTP_FROM
-  if (!from || !process.env.SMTP_HOST) {
+  if (
+    !from ||
+    !process.env.SMTP_HOST ||
+    !process.env.SMTP_USER ||
+    !process.env.SMTP_PASS
+  ) {
     log('warn', LOG_EVENT.EMAIL_SEND_SKIPPED, {
       reason: 'SMTP not configured',
     })

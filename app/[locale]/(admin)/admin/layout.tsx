@@ -40,7 +40,7 @@ export default async function AdminLayout({
 
   return (
     <div className="flex min-h-svh flex-col bg-background">
-      <header className="flex h-14 items-center justify-between border-b border-border bg-card/50 px-4 sm:px-6">
+      <header className="flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 backdrop-blur-sm sm:px-6">
         <BrandLink />
         <span className="font-mono text-xs text-muted-foreground">admin</span>
       </header>

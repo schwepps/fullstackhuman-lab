@@ -77,8 +77,8 @@ export function bookingCancellationHtml(data: BookingCancellationData) {
       <p style="color:#ef4444;font-size:18px;font-weight:600;margin:0 0 20px;">${l.cancelled}</p>
       <table style="width:100%;border-collapse:collapse;">
         <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.type}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${escapeHtml(data.meetingType)}</td></tr>
-        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.date}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.date}</td></tr>
-        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.time}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${data.time} (${data.timezone})</td></tr>
+        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.date}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${escapeHtml(data.date)}</td></tr>
+        <tr><td style="color:#94a3b8;padding:6px 0;font-size:14px;">${l.time}</td><td style="color:#e2e8f0;padding:6px 0;font-size:14px;">${escapeHtml(data.time)} (${escapeHtml(data.timezone)})</td></tr>
         ${reasonRow}
       </table>
     </div>

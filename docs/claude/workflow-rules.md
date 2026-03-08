@@ -152,6 +152,7 @@ The service role Supabase client (`createServiceClient()`) bypasses ALL RLS poli
 - `lib/booking/google-calendar.ts` — Google Calendar API + token management
 - `lib/booking/admin-queries.ts` — admin booking queries (upcoming, past, context)
 - `lib/booking/availability-actions.ts` — availability config save (admin only)
+- `lib/booking/actions.ts` — booking cancel (no UPDATE grants to anon/authenticated)
 
 ---
 
