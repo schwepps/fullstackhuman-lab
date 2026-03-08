@@ -187,12 +187,24 @@ async function triggerReveal(
   partyRoom: Party.Room
 ) {
   const { roomStore } = await import('../../lib/game/room-store')
+  const { calculateScores } = await import('../../lib/game/score-calculator')
+
+  // Re-read latest state for correct roundsSurvived/correctVotes
+  const latestRoom = (await roomStore.get(roomId)) ?? room
+
+  // Update roundsSurvived for non-eliminated players
+  for (const [, player] of latestRoom.players) {
+    if (!player.isEliminated) {
+      player.roundsSurvived = latestRoom.round
+    }
+  }
 
   const agentsSurvived: string[] = []
   const agentsCaught: string[] = []
   const humansEliminated: string[] = []
+  const promptReveal: GameResult['promptReveal'] = []
 
-  for (const [, player] of room.players) {
+  for (const [, player] of latestRoom.players) {
     const isAgent =
       player.type === 'auto-agent' || player.type === 'custom-agent'
     if (isAgent && !player.isEliminated) agentsSurvived.push(player.id)
@@ -200,32 +212,58 @@ async function triggerReveal(
     if (player.type === 'human' && player.isEliminated) {
       humansEliminated.push(player.id)
     }
+
+    if (
+      player.type === 'custom-agent' &&
+      player.customPrompt &&
+      (player.revealPreference === 'public' ||
+        player.revealPreference === 'leaderboard')
+    ) {
+      promptReveal.push({
+        playerId: player.id,
+        displayName: player.displayName,
+        prompt: player.customPrompt,
+        humanityScore: Math.round(
+          (player.roundsSurvived / Math.max(1, latestRoom.round)) * 100
+        ),
+        roundsSurvived: player.roundsSurvived,
+        totalRounds: latestRoom.round,
+        votesReceivedPerRound: [],
+      })
+    }
   }
+
+  const scores = calculateScores(latestRoom)
 
   const result: GameResult = {
     wasAllHumans: agentsSurvived.length === 0 && agentsCaught.length === 0,
-    wasAllAgents: humansEliminated.length === room.players.size,
+    wasAllAgents: humansEliminated.length === latestRoom.players.size,
     agentsSurvived,
     agentsCaught,
     humansEliminated,
-    scores: new Map(), // Phase 12 will implement scoring
-    promptReveal: [],
+    scores,
+    promptReveal,
   }
 
   await roomStore.update(roomId, (r) => {
     r.phase = 'reveal'
     r.results = result
+    for (const [, player] of r.players) {
+      if (!player.isEliminated) {
+        player.roundsSurvived = r.round
+      }
+    }
     return r
   })
 
-  // Build reveal players with type exposed
-  const allPlayers = Array.from(room.players.values()).map((p) => ({
+  // Build reveal players — strip chatHistory, don't leak session tokens
+  const allPlayers = Array.from(latestRoom.players.values()).map((p) => ({
     id: p.id,
     displayName: p.displayName,
     type: p.type,
     avatarColor: p.avatarColor,
     isEliminated: p.isEliminated,
-    score: p.score,
+    score: scores.get(p.id) ?? 0,
     roundsSurvived: p.roundsSurvived,
     correctVotes: p.correctVotes,
     position: p.position,
@@ -233,7 +271,13 @@ async function triggerReveal(
     isConnected: p.isConnected,
     model: p.model,
     revealPreference: p.revealPreference,
-    customPrompt: p.customPrompt,
+    customPrompt:
+      p.type === 'custom-agent' &&
+      (p.revealPreference === 'public' || p.revealPreference === 'leaderboard')
+        ? p.customPrompt
+        : undefined,
+    sessionToken: '',
+    votedFor: undefined,
   }))
 
   partyRoom.broadcast(
@@ -244,6 +288,7 @@ async function triggerReveal(
         scores: Object.fromEntries(result.scores),
       },
       allPlayers,
+      roundResults: latestRoom.roundResults,
     })
   )
 }

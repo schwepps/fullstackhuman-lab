@@ -10,10 +10,14 @@ import { TopicBanner } from '@/components/game/topic-banner'
 import { LobbyPanel } from '@/components/game/lobby-panel'
 import { VotePanel } from '@/components/game/vote-panel'
 import { EliminationScreen } from '@/components/game/elimination-screen'
+import { RevealScreen } from '@/components/game/reveal-screen'
 import type {
   ZoneType,
   ChatMessage,
   GamePhase,
+  GameResult,
+  RevealPlayer,
+  RoundResult,
   PlayerType,
 } from '@/lib/game/types'
 
@@ -92,6 +96,11 @@ export default function GameRoomPage() {
   const [voteStartedAt, setVoteStartedAt] = useState(0)
   const [eliminatedName, setEliminatedName] = useState<string | null>(null)
   const [isEliminated] = useState(false)
+  const [revealResult, setRevealResult] = useState<GameResult | null>(null)
+  const [revealPlayers, setRevealPlayers] = useState<RevealPlayer[]>([])
+  const [revealRoundResults, setRevealRoundResults] = useState<RoundResult[]>(
+    []
+  )
 
   // Build query string with session params for reconnection
   const sessionQuery = useMemo(() => {
@@ -198,6 +207,19 @@ export default function GameRoomPage() {
           setEliminatedName(msg.displayName)
         }
 
+        if (msg.type === 'reveal') {
+          setPhase('reveal')
+          clearSession(roomId)
+          const resultData = msg.result
+          // Reconstruct scores Map from object
+          const scoresMap = new Map<string, number>(
+            Object.entries(resultData.scores as Record<string, number>)
+          )
+          setRevealResult({ ...resultData, scores: scoresMap })
+          setRevealPlayers(msg.allPlayers ?? [])
+          setRevealRoundResults(msg.roundResults ?? [])
+        }
+
         if (msg.type === 'agent_typing') {
           setTypingPlayers((prev) => {
             if (msg.isTyping) {
@@ -292,6 +314,17 @@ export default function GameRoomPage() {
           </h1>
         </div>
       </main>
+    )
+  }
+
+  // Reveal phase
+  if (phase === 'reveal' && revealResult) {
+    return (
+      <RevealScreen
+        result={revealResult}
+        allPlayers={revealPlayers}
+        roundResults={revealRoundResults}
+      />
     )
   }
 
