@@ -1,4 +1,5 @@
 import { Graphics } from 'pixi.js'
+import type { Container } from 'pixi.js'
 import type { MutableRefObject } from 'react'
 import {
   CANVAS_WIDTH,
@@ -45,11 +46,14 @@ export function setupKeyboardHandlers(
 
 export function setupDoubleTapHandler(
   canvas: HTMLCanvasElement,
-  stage: import('pixi.js').Container,
+  stage: Container,
   scaleRef: MutableRefObject<number>,
   lastTapRef: MutableRefObject<{ time: number; x: number; y: number } | null>,
   moveToRef: MutableRefObject<MoveToTarget | null>
-) {
+): {
+  handleTouchStart: (e: TouchEvent) => void
+  handleDblClick: (e: MouseEvent) => void
+} {
   const handleTapStart = (clientX: number, clientY: number) => {
     const rect = canvas.getBoundingClientRect()
     const scale = scaleRef.current
@@ -94,11 +98,16 @@ export function setupDoubleTapHandler(
     }
   }
 
-  canvas.addEventListener('touchstart', (e) => {
+  const handleTouchStart = (e: TouchEvent) => {
     const touch = e.touches[0]
     if (touch) handleTapStart(touch.clientX, touch.clientY)
-  })
-  canvas.addEventListener('dblclick', (e) => {
+  }
+  const handleDblClick = (e: MouseEvent) => {
     handleTapStart(e.clientX, e.clientY)
-  })
+  }
+
+  canvas.addEventListener('touchstart', handleTouchStart)
+  canvas.addEventListener('dblclick', handleDblClick)
+
+  return { handleTouchStart, handleDblClick }
 }

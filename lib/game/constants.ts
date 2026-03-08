@@ -25,6 +25,9 @@ export const AVATAR_COLORS = [
 export const POSITION_BROADCAST_INTERVAL_MS = 66 // ~15fps
 export const ZONE_DEBOUNCE_MS = 500
 
+// ─── Game rules ──────────────────────────────────────────────────────────────
+export const MIN_PLAYERS = 3
+
 // ─── Vote + elimination ─────────────────────────────────────────────────────
 export const VOTE_TIMEOUT_MS = 60_000
 export const ELIMINATION_PAUSE_MS = 2000

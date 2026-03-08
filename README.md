@@ -18,20 +18,22 @@ Reports are shareable via public URLs and exportable as PDF.
 
 ## Tech stack
 
-| Layer         | Technology                             |
-| ------------- | -------------------------------------- |
-| Framework     | Next.js 16                             |
-| Language      | TypeScript                             |
-| Styling       | Tailwind CSS v4 + shadcn/ui            |
-| AI            | Claude API (Anthropic SDK)             |
-| Auth          | Supabase Auth (email + Google OAuth)   |
-| Database      | Supabase (PostgreSQL + RLS)            |
-| Rate limiting | Upstash Redis (sliding window)         |
-| i18n          | next-intl v4 (French default, English) |
-| PDF           | @react-pdf/renderer                    |
-| Analytics     | PostHog (consent-gated)                |
-| Testing       | Vitest + Testing Library               |
-| Git hooks     | Husky + lint-staged + commitlint       |
+| Layer         | Technology                                  |
+| ------------- | ------------------------------------------- |
+| Framework     | Next.js 16                                  |
+| Language      | TypeScript                                  |
+| Styling       | Tailwind CSS v4 + shadcn/ui                 |
+| AI            | Claude API (Anthropic SDK)                  |
+| Auth          | Supabase Auth (email + Google OAuth)        |
+| Database      | Supabase (PostgreSQL + RLS)                 |
+| Rate limiting | Upstash Redis (sliding window)              |
+| i18n          | next-intl v4 (French default, English)      |
+| PDF           | @react-pdf/renderer                         |
+| Analytics     | PostHog (consent-gated)                     |
+| Testing       | Vitest + Testing Library                    |
+| Git hooks     | Husky + lint-staged + commitlint            |
+| Realtime      | Partykit (WebSockets on Cloudflare Workers) |
+| 2D Canvas     | Pixi.js 8                                   |
 
 ## Getting started
 
@@ -41,6 +43,7 @@ Reports are shareable via public URLs and exportable as PDF.
 - [pnpm](https://pnpm.io/) 9+
 - [Supabase CLI](https://supabase.com/docs/guides/cli/getting-started) (for local DB)
 - [Anthropic API key](https://console.anthropic.com/settings/keys)
+- [Partykit](https://docs.partykit.io/) (for Turing Game — `npx partykit dev` runs automatically)
 
 ### Setup
 
@@ -62,6 +65,9 @@ pnpm seed
 
 # Start dev server
 pnpm dev
+
+# (Optional) Start Partykit for the Turing Game
+pnpm partykit:dev
 ```
 
 After seeding, log in with `seed@dev.local` / `SeedDev123!` to see 9 sample conversations covering all personas and visual components.
@@ -131,21 +137,28 @@ lib/
 docs/                   # Design documentation (reference only)
 scripts/                # Quality checks + seed script
 tests/                  # Test suite
+app/game/               # Turing Game (outside [locale] — no i18n)
+  api/game/moderate/    # Internal moderation endpoint
+components/game/        # Game UI: canvas, chat, lobby, voting, reveal
+lib/game/               # Game logic: types, constants, agents, scoring
+partykit/               # Partykit WebSocket server (Cloudflare Workers)
 ```
 
 ## Scripts
 
-| Command           | Description                                                                   |
-| ----------------- | ----------------------------------------------------------------------------- |
-| `pnpm dev`        | Start development server                                                      |
-| `pnpm build`      | Production build                                                              |
-| `pnpm lint`       | ESLint checks                                                                 |
-| `pnpm typecheck`  | TypeScript type checking                                                      |
-| `pnpm test`       | Run tests (watch mode)                                                        |
-| `pnpm test:run`   | Run tests once                                                                |
-| `pnpm seed`       | Seed dev database with test data                                              |
-| `pnpm pre-review` | All quality checks (i18n, auth strings, SEO, duplication, lint, types, tests) |
-| `pnpm db:reset`   | Reset local Supabase database                                                 |
+| Command                | Description                                                                   |
+| ---------------------- | ----------------------------------------------------------------------------- |
+| `pnpm dev`             | Start development server                                                      |
+| `pnpm build`           | Production build                                                              |
+| `pnpm lint`            | ESLint checks                                                                 |
+| `pnpm typecheck`       | TypeScript type checking                                                      |
+| `pnpm test`            | Run tests (watch mode)                                                        |
+| `pnpm test:run`        | Run tests once                                                                |
+| `pnpm seed`            | Seed dev database with test data                                              |
+| `pnpm pre-review`      | All quality checks (i18n, auth strings, SEO, duplication, lint, types, tests) |
+| `pnpm partykit:dev`    | Start Partykit dev server (WebSocket, port 1999)                              |
+| `pnpm partykit:deploy` | Deploy Partykit to Cloudflare Workers                                         |
+| `pnpm db:reset`        | Reset local Supabase database                                                 |
 
 ### Quality checks (included in `pre-review`)
 
@@ -166,7 +179,65 @@ tests/                  # Test suite
 
 **Auth model** — Three tiers: anonymous (3/day, localStorage), free account (15/month, DB), paid (unlimited). Reports persist in a separate table with public read access via share token.
 
+**Turing Game** — Real-time multiplayer game where players identify AI agents among humans. Built on Partykit (WebSocket server on Cloudflare Workers) with Pixi.js 2D canvas. Separate service from Next.js, communicating via WebSocket (client↔Partykit) and HTTP (Partykit→Next.js moderation). See [`.claude/TURING_GAME_BRIEF.md`](.claude/TURING_GAME_BRIEF.md) for the full technical spec.
+
 **i18n** — French default (clean URLs), English prefixed (`/en/`). AI responses are not translated via i18n — the AI handles language detection and responds in the user's language.
+
+## Deployment
+
+The main app deploys to **Vercel** (auto-deploy on push). The Turing Game adds a second service — **Partykit** on Cloudflare Workers — deployed separately.
+
+### Two-service architecture
+
+| Service                   | Platform           | Deploy method                   |
+| ------------------------- | ------------------ | ------------------------------- |
+| Next.js app               | Vercel             | `git push` (auto)               |
+| Partykit WebSocket server | Cloudflare Workers | `pnpm partykit:deploy` (manual) |
+
+### Production setup
+
+#### 1. Generate shared secret
+
+```bash
+openssl rand -hex 32
+```
+
+#### 2. Deploy Partykit (first)
+
+```bash
+pnpm partykit:deploy
+```
+
+Outputs your host URL (e.g. `turing-game.your-username.partykit.dev`). First deploy prompts Cloudflare login.
+
+Set Partykit env vars:
+
+```bash
+npx partykit env add ANTHROPIC_API_KEY     # same key as Vercel
+npx partykit env add GAME_INTERNAL_TOKEN   # shared secret from step 1
+npx partykit env add NEXTJS_URL            # https://fullstackhuman.sh
+```
+
+#### 3. Set Vercel env vars
+
+| Variable                    | Value                                    |
+| --------------------------- | ---------------------------------------- |
+| `NEXT_PUBLIC_PARTYKIT_HOST` | `turing-game.your-username.partykit.dev` |
+| `GAME_INTERNAL_TOKEN`       | Same shared secret as Partykit           |
+
+`ANTHROPIC_API_KEY` and other vars should already be set on Vercel.
+
+#### 4. Deploy Next.js
+
+Push to main — Vercel auto-deploys.
+
+#### 5. Verify
+
+- Visit `/game` — create a room, check WebSocket connects
+- Send a chat message — moderation works (Partykit→Next.js via `NEXTJS_URL/api/game/moderate`)
+- AI agents respond (Partykit uses `ANTHROPIC_API_KEY` via `lib/game/model-registry.ts`)
+
+> **Note:** Deploy Partykit first to get the host URL for `NEXT_PUBLIC_PARTYKIT_HOST`. After initial setup, the two services can be updated independently as long as the WebSocket protocol doesn't change.
 
 ## Conventions
 

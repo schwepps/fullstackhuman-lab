@@ -2,6 +2,7 @@ import type * as Party from 'partykit/server'
 import type { Player } from '../../lib/game/types'
 import {
   AVATAR_COLORS,
+  MIN_PLAYERS,
   VOTE_TIMEOUT_MS,
   ALARM_ROUND_END,
   ALARM_VOTE_END,
@@ -9,8 +10,6 @@ import {
 import { getNextTopic } from './topic-engine'
 import { PERSONAS } from '../../lib/game/agent-personas'
 import type { GameState } from './game-state'
-
-const MIN_PLAYERS = 3
 
 export async function handleReady(
   partyRoom: Party.Room,

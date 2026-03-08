@@ -3,17 +3,9 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { Application, Graphics } from 'pixi.js'
 import type { Ticker } from 'pixi.js'
-import type { Position, PositionUpdate, ZoneType } from '@/lib/game/types'
+import type { Position, ZoneType } from '@/lib/game/types'
 import { CANVAS_WIDTH, CANVAS_HEIGHT } from '@/lib/game/constants'
-import {
-  ELECTRIC_CYAN,
-  MATRIX_GREEN,
-  drawRoom,
-  createParticles,
-  drawZoneBackgrounds,
-  spawnZoneEntryParticles,
-  createAvatar,
-} from './canvas-renderer'
+import { createParticles, createAvatar } from './canvas-renderer'
 import type {
   AvatarData,
   Particle,
@@ -21,8 +13,10 @@ import type {
   MoveToTarget,
   ZoneEntryParticle,
 } from './canvas-renderer'
+import { drawRoom, drawZoneBackgrounds } from './canvas-drawing'
 import { createGameTicker } from './canvas-ticker'
 import { setupKeyboardHandlers, setupDoubleTapHandler } from './canvas-input'
+import { handleServerMessage } from './canvas-messages'
 
 type GameCanvasProps = {
   socket: WebSocket | null
@@ -137,7 +131,13 @@ export function GameCanvas({
         keysRef,
         moveToRef
       )
-      setupDoubleTapHandler(canvas, app.stage, scaleRef, lastTapRef, moveToRef)
+      const { handleTouchStart, handleDblClick } = setupDoubleTapHandler(
+        canvas,
+        app.stage,
+        scaleRef,
+        lastTapRef,
+        moveToRef
+      )
 
       updateScale()
       window.addEventListener('resize', updateScale)
@@ -173,6 +173,8 @@ export function GameCanvas({
         window.removeEventListener('keyup', handleKeyUp)
         window.removeEventListener('resize', updateScale)
         window.removeEventListener('orientationchange', updateScale)
+        canvas.removeEventListener('touchstart', handleTouchStart)
+        canvas.removeEventListener('dblclick', handleDblClick)
       }
     }
 
@@ -191,81 +193,25 @@ export function GameCanvas({
   }, [myPlayerId, myColor])
 
   // ─── Handle server messages ──────────────────────────────────────────────
-  const handleServerMessage = useCallback(
+  const onMessage = useCallback(
     (data: string) => {
       const app = appRef.current
       if (!app) return
-      let msg
-      try {
-        msg = JSON.parse(data)
-      } catch {
-        return
-      }
-
-      switch (msg.type) {
-        case 'player_joined': {
-          const p = msg.player
-          if (p.id === myPlayerId || avatarsRef.current.has(p.id)) return
-          app.stage.addChild(
-            createAvatar(
-              p.id,
-              p.avatarColor ?? ELECTRIC_CYAN,
-              p.displayName ?? p.id.slice(0, 6),
-              p.position ?? { x: 600, y: 400 },
-              false,
-              avatarsRef.current
-            )
-          )
-          break
-        }
-        case 'position_update':
-          for (const upd of msg.updates as PositionUpdate[]) {
-            if (upd.playerId === myPlayerId) continue
-            const avatar = avatarsRef.current.get(upd.playerId)
-            if (avatar) {
-              avatar.container.x += (upd.position.x - avatar.container.x) * 0.3
-              avatar.container.y += (upd.position.y - avatar.container.y) * 0.3
-            }
-          }
-          break
-        case 'zone_update':
-          if (msg.playerId === myPlayerId && msg.zone !== myZoneRef.current) {
-            const prevZone = myZoneRef.current
-            myZoneRef.current = msg.zone
-            onZoneChange?.(msg.zone)
-            if (msg.zone !== 'main' && prevZone !== msg.zone) {
-              const pos = myPositionRef.current
-              const zoneColors: Record<string, number> = {
-                'private-a': 0xa78bfa,
-                'private-b': 0x38bdf8,
-                'private-c': MATRIX_GREEN,
-              }
-              zoneEntryParticlesRef.current.push(
-                ...spawnZoneEntryParticles(
-                  app.stage,
-                  pos.x,
-                  pos.y,
-                  zoneColors[msg.zone] ?? ELECTRIC_CYAN
-                )
-              )
-            }
-          }
-          break
-        case 'player_left': {
-          const avatar = avatarsRef.current.get(msg.playerId)
-          if (avatar) {
-            avatar.container.destroy()
-            avatarsRef.current.delete(msg.playerId)
-          }
-          break
-        }
-      }
+      handleServerMessage(data, {
+        app,
+        myPlayerId,
+        avatars: avatarsRef.current,
+        myPosition: myPositionRef,
+        myZone: myZoneRef,
+        zoneEntryParticles: zoneEntryParticlesRef,
+        onZoneChange,
+      })
     },
     [myPlayerId, onZoneChange]
   )
 
-  const messageHandlerRef = useRef(handleServerMessage)
-  messageHandlerRef.current = handleServerMessage
+  const messageHandlerRef = useRef(onMessage)
+  messageHandlerRef.current = onMessage
 
   useEffect(() => {
     if (!socket) return

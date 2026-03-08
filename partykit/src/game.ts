@@ -47,16 +47,13 @@ export default class GameRoom implements Party.Server {
     if (typeof msg.type !== 'string') return
 
     switch (msg.type) {
-      case 'move': {
-        const pos = msg.position as { x?: unknown; y?: unknown } | undefined
+      case 'move':
+      case 'move-to': {
+        const pos = (msg.type === 'move' ? msg.position : msg.target) as
+          | { x?: unknown; y?: unknown }
+          | undefined
         if (typeof pos?.x !== 'number' || typeof pos?.y !== 'number') return
         this.handleMove(playerId, pos as Position)
-        break
-      }
-      case 'move-to': {
-        const tgt = msg.target as { x?: unknown; y?: unknown } | undefined
-        if (typeof tgt?.x !== 'number' || typeof tgt?.y !== 'number') return
-        this.handleMove(playerId, tgt as Position)
         break
       }
       case 'chat':
@@ -77,26 +74,19 @@ export default class GameRoom implements Party.Server {
         await handleVote(this.room, playerId, msg.targetId, this.room.id)
         break
       }
-      case 'ready': {
-        const readyName =
-          typeof msg.displayName === 'string'
-            ? msg.displayName.trim().slice(0, 16)
-            : undefined
-        const readyType =
-          typeof msg.playerType === 'string' ? msg.playerType : undefined
-        const readyPrompt =
-          typeof msg.customPrompt === 'string' ? msg.customPrompt : undefined
+      case 'ready':
         await handleReady(
           this.room,
           this.room.id,
           playerId,
-          readyName,
-          readyType,
-          readyPrompt,
+          typeof msg.displayName === 'string'
+            ? msg.displayName.trim().slice(0, 16)
+            : undefined,
+          typeof msg.playerType === 'string' ? msg.playerType : undefined,
+          typeof msg.customPrompt === 'string' ? msg.customPrompt : undefined,
           this.state
         )
         break
-      }
     }
   }
 
@@ -120,9 +110,7 @@ export default class GameRoom implements Party.Server {
           if (player) player.isConnected = false
           return r
         })
-      } catch {
-        // Non-critical
-      }
+      } catch {}
     }
   }
 
@@ -140,8 +128,6 @@ export default class GameRoom implements Party.Server {
       await startRound(this.room, this.room.id, nextRound, this.state)
     }
   }
-
-  // ─── Movement (hot path — stays in main class) ─────────────────────────────
 
   private handleMove(playerId: string, position: Position) {
     if (

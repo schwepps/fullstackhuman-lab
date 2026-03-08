@@ -62,19 +62,21 @@ Full specs with design rationale, stress test scenarios, and golden-path validat
 
 ## Tech Stack
 
-| Layer     | Technology                         |
-| --------- | ---------------------------------- |
-| Framework | Next.js 16                         |
-| Language  | TypeScript                         |
-| Styling   | Tailwind CSS v4 + shadcn/ui        |
-| AI        | Claude API (+ built-in web search) |
-| i18n      | next-intl v4                       |
-| PDF       | @react-pdf/renderer                |
-| Email     | nodemailer (ImprovMX SMTP)         |
-| Calendar  | Google Calendar API (googleapis)   |
-| Telegram  | Telegraf v4 (webhook bot)          |
-| Testing   | Vitest + Testing Library           |
-| Git Hooks | Husky + lint-staged + commitlint   |
+| Layer     | Technology                                  |
+| --------- | ------------------------------------------- |
+| Framework | Next.js 16                                  |
+| Language  | TypeScript                                  |
+| Styling   | Tailwind CSS v4 + shadcn/ui                 |
+| AI        | Claude API (+ built-in web search)          |
+| i18n      | next-intl v4                                |
+| PDF       | @react-pdf/renderer                         |
+| Email     | nodemailer (ImprovMX SMTP)                  |
+| Calendar  | Google Calendar API (googleapis)            |
+| Telegram  | Telegraf v4 (webhook bot)                   |
+| Testing   | Vitest + Testing Library                    |
+| Git Hooks | Husky + lint-staged + commitlint            |
+| Realtime  | Partykit (WebSockets on Cloudflare Workers) |
+| 2D Canvas | Pixi.js 8                                   |
 
 ---
 
@@ -95,6 +97,7 @@ app/[locale]/
     report/        # PDF generation
     telegram/      # Telegram bot webhook
     booking/       # Booking creation + slot availability + Google OAuth
+    game/moderate/ # Internal moderation API (Partykit→Next.js, token-secured)
 components/
   booking/         # Multi-step booking form components
   admin/           # Admin dashboard, meeting cards, availability form
@@ -107,6 +110,11 @@ lib/
   conversations/   # Persistence (actions, queries)
   email/           # SMTP client + email templates (confirmation, notification, cancellation)
   telegram/        # Bot handlers, services, formatting, i18n
+  game/            # Turing Game: types, constants, agents, scoring, moderation
+app/game/          # Turing Game pages (outside [locale] — no i18n, no auth)
+components/
+  game/            # Game UI: canvas, chat, lobby, voting, reveal
+partykit/          # Partykit WebSocket server (deployed separately to Cloudflare Workers)
 ```
 
 ---
@@ -128,6 +136,8 @@ lib/
 | `check:service-client` | CI guard: verify no unauthorized service client imports                            |
 | `telegram:setup`       | Register Telegram webhook with BotFather                                           |
 | `pre-review`           | All quality checks (i18n parity, auth strings, SEO, jscpd, lint, typecheck, tests) |
+| `partykit:dev`         | Start Partykit dev server (port 1999)                                              |
+| `partykit:deploy`      | Deploy Partykit to Cloudflare Workers                                              |
 
 ---
 
@@ -151,6 +161,20 @@ lib/
 - **Adding a new string**: add to BOTH `messages/fr.json` and `messages/en.json`
 - **Links**: use `Link` from `@/i18n/routing`, not `next/link`
 - **Chat messages from AI are NOT translated via i18n** — the AI handles language switching itself based on user's language
+
+---
+
+## Turing Game
+
+Real-time multiplayer game where players identify AI agents among humans. Separate service architecture: Partykit (WebSocket server on Cloudflare Workers) + Next.js (game pages + moderation API). Deployed independently from the main Vercel deployment.
+
+**Full technical spec:** `.claude/TURING_GAME_BRIEF.md`
+
+**Key constraints:**
+
+- Game routes (`app/game/`) live outside `[locale]` — no i18n, no Supabase auth
+- Partykit server shares types from `lib/game/types.ts` with Next.js
+- AI agents use the same `ANTHROPIC_API_KEY` as the consulting tool
 
 ---
 
