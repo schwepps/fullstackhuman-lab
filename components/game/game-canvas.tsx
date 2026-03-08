@@ -3,7 +3,8 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { Application, Graphics, Text, Container, TextStyle } from 'pixi.js'
 import type { Ticker } from 'pixi.js'
-import type { Position, PositionUpdate } from '@/lib/game/types'
+import type { Position, PositionUpdate, ZoneType } from '@/lib/game/types'
+import { ZONES } from '@/lib/game/zones'
 import {
   CANVAS_WIDTH,
   CANVAS_HEIGHT,
@@ -48,12 +49,21 @@ type MoveToTarget = {
   indicator: Graphics
 }
 
+type ZoneEntryParticle = {
+  gfx: Graphics
+  vx: number
+  vy: number
+  life: number
+  startTime: number
+}
+
 type GameCanvasProps = {
   socket: WebSocket | null
   myPlayerId: string | null
   myColor: number
   isChatFocused: boolean
   onPositionUpdate?: (position: Position) => void
+  onZoneChange?: (zone: ZoneType) => void
 }
 
 export function GameCanvas({
@@ -62,6 +72,7 @@ export function GameCanvas({
   myColor,
   isChatFocused,
   onPositionUpdate,
+  onZoneChange,
 }: GameCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const appRef = useRef<Application | null>(null)
@@ -86,6 +97,11 @@ export function GameCanvas({
     x: number
     y: number
   } | null>(null)
+  const myZoneRef = useRef<ZoneType>('main')
+  const zoneEntryParticlesRef = useRef<ZoneEntryParticle[]>([])
+  const zoneDashOffsetRef = useRef(0)
+  const zoneGfxRef = useRef<Graphics | null>(null)
+  const ledPhaseRef = useRef(0)
 
   // ─── Canvas scaling ──────────────────────────────────────────────────────
   const updateScale = useCallback(() => {
@@ -193,6 +209,112 @@ export function GameCanvas({
     particlesRef.current = particles
   }, [])
 
+  // ─── Draw zone overlays ─────────────────────────────────────────────────
+  const drawZoneBackgrounds = useCallback((stage: Container) => {
+    const privateZones = ZONES.filter((z) => z.isPrivate)
+
+    for (const zone of privateZones) {
+      const { x, y, width, height } = zone.bounds
+      const bg = new Graphics()
+
+      // Zone-specific floor fill colors
+      const fills: Record<string, number> = {
+        'private-a': 0x1a1822, // warm purple (Corner Booth)
+        'private-b': 0x161a22, // cool blue (Back Room)
+        'private-c': 0x161a18, // green (Side Hall)
+      }
+      bg.rect(x, y, width, height).fill({
+        color: fills[zone.id] ?? 0x161616,
+        alpha: 0.6,
+      })
+
+      // Zone-specific interior decoration
+      if (zone.id === 'private-a') {
+        // Booth seats — two small rects facing each other
+        bg.rect(x + 10, y + 30, 30, 12).fill({
+          color: MUTED_BORDER,
+          alpha: 0.2,
+        })
+        bg.rect(x + 10, y + 78, 30, 12).fill({
+          color: MUTED_BORDER,
+          alpha: 0.2,
+        })
+      } else if (zone.id === 'private-b') {
+        // Server racks — thin vertical rects
+        const rackW = 6
+        const rackH = 40
+        const rackY = y + 40
+        for (let i = 0; i < 4; i++) {
+          const rackX = x + 20 + i * 35
+          bg.rect(rackX, rackY, rackW, rackH).fill({
+            color: MUTED_BORDER,
+            alpha: 0.25,
+          })
+        }
+      } else if (zone.id === 'private-c') {
+        // Cable traces — horizontal lines
+        bg.setStrokeStyle({ width: 1, color: MUTED_BORDER, alpha: 0.1 })
+        for (let i = 0; i < 4; i++) {
+          const lineY = y + 25 + i * 25
+          bg.moveTo(x + 10, lineY)
+            .lineTo(x + width - 10, lineY)
+            .stroke()
+        }
+      }
+
+      // Zone label
+      const labelText =
+        zone.id === 'private-a'
+          ? '> Corner_Booth'
+          : zone.id === 'private-b'
+            ? '> Back_Room'
+            : '> Side_Hall'
+      const label = new Text({
+        text: labelText,
+        style: new TextStyle({
+          fontFamily: 'monospace',
+          fontSize: 10,
+          fill: MATRIX_GREEN,
+        }),
+      })
+      label.alpha = 0.5
+      label.x = x + 6
+      label.y = y + 6
+
+      stage.addChild(bg)
+      stage.addChild(label)
+    }
+
+    // Animated zone boundaries — drawn each frame in the ticker
+    const zoneGfx = new Graphics()
+    stage.addChild(zoneGfx)
+    zoneGfxRef.current = zoneGfx
+  }, [])
+
+  // ─── Spawn zone entry particles ────────────────────────────────────────
+  const spawnZoneEntryParticles = useCallback(
+    (stage: Container, x: number, y: number, color: number) => {
+      for (let i = 0; i < 6; i++) {
+        const gfx = new Graphics()
+        gfx.circle(0, 0, 1.5).fill({ color, alpha: 0.6 })
+        gfx.x = x
+        gfx.y = y
+        stage.addChild(gfx)
+
+        const angle = (Math.PI * 2 * i) / 6 + Math.random() * 0.5
+        const speed = 1 + Math.random() * 2
+        zoneEntryParticlesRef.current.push({
+          gfx,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 500,
+          startTime: Date.now(),
+        })
+      }
+    },
+    []
+  )
+
   // ─── Create avatar ──────────────────────────────────────────────────────
   const createAvatar = useCallback(
     (
@@ -296,6 +418,7 @@ export function GameCanvas({
 
       // Draw environment
       drawRoom(app.stage)
+      drawZoneBackgrounds(app.stage)
       createParticles(app.stage)
 
       // Trail graphics layer
@@ -561,6 +684,120 @@ export function GameCanvas({
           if (p.gfx.y < 0) p.gfx.y = CANVAS_HEIGHT
           if (p.gfx.y > CANVAS_HEIGHT) p.gfx.y = 0
         }
+
+        // Animate zone boundaries (dashed border with flowing effect)
+        zoneDashOffsetRef.current += 0.5
+        ledPhaseRef.current += ticker.deltaTime * 0.05
+        const zoneGfx = zoneGfxRef.current
+        if (zoneGfx) {
+          zoneGfx.clear()
+          const offset = zoneDashOffsetRef.current
+          const privateZones = ZONES.filter((z) => z.isPrivate)
+
+          for (const zone of privateZones) {
+            const { x, y, width, height } = zone.bounds
+            const dashLen = 8
+            const gapLen = 6
+            const doorwayGap = 30
+            const totalLen = dashLen + gapLen
+
+            // Draw dashed border with doorway gap on bottom side
+            const drawDashedLine = (
+              x1: number,
+              y1: number,
+              x2: number,
+              y2: number,
+              skipStart: number,
+              skipEnd: number
+            ) => {
+              const dx = x2 - x1
+              const dy = y2 - y1
+              const len = Math.hypot(dx, dy)
+              const nx = dx / len
+              const ny = dy / len
+              let d = ((offset % totalLen) + totalLen) % totalLen
+
+              while (d < len) {
+                if (d >= skipStart && d <= skipEnd) {
+                  d += dashLen
+                  continue
+                }
+                const segEnd = Math.min(d + dashLen, len)
+                if (segEnd > skipStart && d < skipEnd) {
+                  d += dashLen
+                  continue
+                }
+                zoneGfx
+                  .moveTo(x1 + nx * d, y1 + ny * d)
+                  .lineTo(x1 + nx * segEnd, y1 + ny * segEnd)
+                  .stroke()
+                d += totalLen
+              }
+            }
+
+            zoneGfx.setStrokeStyle({
+              width: 1,
+              color: ELECTRIC_CYAN,
+              alpha: 0.4,
+            })
+
+            // Top
+            drawDashedLine(x, y, x + width, y, Infinity, -Infinity)
+            // Right
+            drawDashedLine(
+              x + width,
+              y,
+              x + width,
+              y + height,
+              Infinity,
+              -Infinity
+            )
+            // Bottom (with doorway gap in center)
+            const bottomCenter = width / 2
+            drawDashedLine(
+              x,
+              y + height,
+              x + width,
+              y + height,
+              bottomCenter - doorwayGap / 2,
+              bottomCenter + doorwayGap / 2
+            )
+            // Left
+            drawDashedLine(x, y + height, x, y, Infinity, -Infinity)
+
+            // Back Room blinking LEDs
+            if (zone.id === 'private-b') {
+              const phase = ledPhaseRef.current
+              for (let i = 0; i < 4; i++) {
+                const rackX = x + 20 + i * 35 + 3
+                for (let j = 0; j < 3; j++) {
+                  const ledY = y + 45 + j * 12
+                  const ledPhase = phase + i * 1.3 + j * 0.7
+                  const ledAlpha = 0.1 + 0.5 * (0.5 + 0.5 * Math.sin(ledPhase))
+                  zoneGfx
+                    .circle(rackX, ledY, 1.5)
+                    .fill({ color: MATRIX_GREEN, alpha: ledAlpha })
+                }
+              }
+            }
+          }
+        }
+
+        // Update zone entry particles
+        const now2 = Date.now()
+        zoneEntryParticlesRef.current = zoneEntryParticlesRef.current.filter(
+          (ep) => {
+            const elapsed = now2 - ep.startTime
+            if (elapsed >= ep.life) {
+              ep.gfx.destroy()
+              return false
+            }
+            ep.gfx.x += ep.vx
+            ep.gfx.y += ep.vy
+            ep.gfx.alpha = 0.6 * (1 - elapsed / ep.life)
+            return true
+          }
+        )
       }
 
       tickerRef.current = tickerFn
@@ -632,6 +869,33 @@ export function GameCanvas({
           }
           break
         }
+        case 'zone_update': {
+          if (msg.playerId === myPlayerId && msg.zone !== myZoneRef.current) {
+            const prevZone = myZoneRef.current
+            myZoneRef.current = msg.zone
+            onZoneChange?.(msg.zone)
+
+            // Spawn entry particles when entering a private zone
+            if (msg.zone !== 'main' && prevZone !== msg.zone) {
+              const pos = myPositionRef.current
+              const zoneColors: Record<string, number> = {
+                'private-a': 0xa78bfa, // violet for Corner Booth
+                'private-b': 0x38bdf8, // sky blue for Back Room
+                'private-c': MATRIX_GREEN, // green for Side Hall
+              }
+              const app = appRef.current
+              if (app) {
+                spawnZoneEntryParticles(
+                  app.stage,
+                  pos.x,
+                  pos.y,
+                  zoneColors[msg.zone] ?? ELECTRIC_CYAN
+                )
+              }
+            }
+          }
+          break
+        }
         case 'player_left': {
           const avatar = avatarsRef.current.get(msg.playerId)
           if (avatar) {
@@ -642,7 +906,7 @@ export function GameCanvas({
         }
       }
     },
-    [myPlayerId, createAvatar]
+    [myPlayerId, createAvatar, onZoneChange, spawnZoneEntryParticles]
   )
 
   // Expose message handler via ref for parent

@@ -4,6 +4,7 @@ import { useState, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import usePartySocket from 'partysocket/react'
 import { GameCanvas } from '@/components/game/game-canvas'
+import type { ZoneType } from '@/lib/game/types'
 
 const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? 'localhost:1999'
 
@@ -47,6 +48,10 @@ export default function GameRoomPage() {
     // Position updates handled internally by GameCanvas
   }, [])
 
+  const handleZoneChange = useCallback((_zone: ZoneType) => {
+    // Will be used by chat in Phase 6
+  }, [])
+
   if (status !== 'connected' || !myPlayerId) {
     return (
       <main className="flex min-h-svh items-center justify-center p-4">
@@ -75,6 +80,7 @@ export default function GameRoomPage() {
           myColor={myColor}
           isChatFocused={false}
           onPositionUpdate={handlePositionUpdate}
+          onZoneChange={handleZoneChange}
         />
         <div className="absolute right-2 top-2 flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-[#4ade80]" />

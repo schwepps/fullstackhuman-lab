@@ -5,7 +5,8 @@ import type {
   ZoneType,
   PublicPlayer,
 } from '../../lib/game/types'
-import { AVATAR_COLORS } from '../../lib/game/constants'
+import { AVATAR_COLORS, ZONE_DEBOUNCE_MS } from '../../lib/game/constants'
+import { computeZone } from './proximity-router'
 
 // Alarm key constants — stored in Partykit storage
 const ALARM_ROUND_END = 'alarm:roundEnd'
@@ -160,6 +161,39 @@ export default class GameRoom implements Party.Server {
   private handleMove(playerId: string, position: Position) {
     this.positions.set(playerId, position)
 
+    // Compute zone and detect changes
+    const newZone = computeZone(position)
+    const prevZone = this.zones.get(playerId) ?? 'main'
+    this.zones.set(playerId, newZone)
+
+    if (newZone !== prevZone) {
+      // Broadcast zone change to all connections
+      this.room.broadcast(
+        JSON.stringify({ type: 'zone_update', playerId, zone: newZone })
+      )
+
+      // Debounce Redis write for zone persistence
+      const existingTimer = this.zoneWriteDebounce.get(playerId)
+      if (existingTimer) clearTimeout(existingTimer)
+
+      this.zoneWriteDebounce.set(
+        playerId,
+        setTimeout(async () => {
+          this.zoneWriteDebounce.delete(playerId)
+          try {
+            const { roomStore } = await import('../../lib/game/room-store')
+            await roomStore.update(this.room.id, (room) => {
+              const player = room.players.get(playerId)
+              if (player) player.currentZone = newZone
+              return room
+            })
+          } catch {
+            // Room may not exist yet in early phases
+          }
+        }, ZONE_DEBOUNCE_MS)
+      )
+    }
+
     // Broadcast position to all other players
     this.room.broadcast(
       JSON.stringify({
@@ -168,7 +202,7 @@ export default class GameRoom implements Party.Server {
           {
             playerId,
             position,
-            zone: this.zones.get(playerId) ?? 'main',
+            zone: newZone,
           },
         ],
       }),
