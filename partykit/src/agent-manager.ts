@@ -123,7 +123,7 @@ async function respondAsAgent(
         partyRoom,
         connToPlayer,
         zone,
-        room,
+        liveZones,
         JSON.stringify({ type: 'chat_message', message: streamMsg })
       )
     },
@@ -142,7 +142,7 @@ async function respondAsAgent(
         partyRoom,
         connToPlayer,
         zone,
-        room,
+        liveZones,
         JSON.stringify({ type: 'chat_message', message: finalMsg })
       )
 
@@ -151,7 +151,7 @@ async function respondAsAgent(
         partyRoom,
         connToPlayer,
         zone,
-        room,
+        liveZones,
         JSON.stringify({
           type: 'agent_typing',
           playerId: agent.id,

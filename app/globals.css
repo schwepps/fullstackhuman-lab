@@ -121,6 +121,24 @@
     }
   }
 
+  @keyframes chatFade {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.3;
+    }
+  }
+  @keyframes dotPulse {
+    0%,
+    100% {
+      opacity: 0.2;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
   --animate-scanline: scanline 8s linear infinite;
   --animate-flicker: flicker 0.15s infinite;
   --animate-glitch: glitch 0.2s ease-in-out infinite;
@@ -135,6 +153,27 @@
   --primary: #22d3ee;
   --accent: #4ade80;
   --radius: 0px; /* Sharp corners for terminal look */
+}
+
+/* Game chat typing indicator */
+.typing-dots {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+}
+.typing-dots .dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--color-accent);
+  animation: dotPulse 600ms infinite;
+}
+.typing-dots .dot:nth-child(2) {
+  animation-delay: 200ms;
+}
+.typing-dots .dot:nth-child(3) {
+  animation-delay: 400ms;
 }
 
 @layer base {

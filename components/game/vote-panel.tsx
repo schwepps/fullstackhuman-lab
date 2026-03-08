@@ -2,15 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { VOTE_TIMEOUT_MS } from '@/lib/game/constants'
-
-type VoteCandidate = {
-  id: string
-  displayName: string
-  avatarColor: number
-}
+import type { LobbyPlayer } from '@/lib/game/types'
 
 type VotePanelProps = {
-  candidates: VoteCandidate[]
+  candidates: LobbyPlayer[]
   myPlayerId: string
   onVote: (targetId: string) => void
   voteCount: number
@@ -58,10 +53,10 @@ export function VotePanel({
   const votableList = candidates.filter((c) => c.id !== myPlayerId)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0a0c]/95 p-4">
-      <div className="w-full max-w-md space-y-4 border border-[#1e293b] bg-[#0a0a0c] p-4 font-mono sm:p-6">
-        <div className="border-t border-[#22d3ee] pt-3">
-          <h2 className="text-lg font-bold text-[#22d3ee]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4">
+      <div className="w-full max-w-md space-y-4 border border-border bg-background p-4 font-mono sm:p-6">
+        <div className="border-t border-primary pt-3">
+          <h2 className="text-lg font-bold text-primary">
             {'> SELECT_TARGET'}
           </h2>
         </div>
@@ -69,14 +64,14 @@ export function VotePanel({
         {/* Timer */}
         <div
           className={`text-center text-2xl font-bold ${
-            isUrgent ? 'animate-pulse text-[#ef4444]' : 'text-[#f59e0b]'
+            isUrgent ? 'animate-pulse text-destructive' : 'text-warning'
           }`}
         >
           T-{secondsLeft}s
         </div>
 
         {/* Vote progress */}
-        <p className="text-center text-sm text-[#f59e0b]">
+        <p className="text-center text-sm text-warning">
           VOTES: {voteCount} / {totalVoters}
         </p>
 
@@ -92,10 +87,10 @@ export function VotePanel({
                 disabled={votedFor != null}
                 className={`flex h-11 w-full touch-manipulation items-center gap-3 border px-4 text-base transition-all active:scale-[0.98] ${
                   isSelected
-                    ? 'border-[#4ade80] bg-[#111118] text-[#4ade80]'
+                    ? 'border-accent bg-popover text-accent'
                     : votedFor
-                      ? 'border-[#1e293b] bg-[#0a0a0c] text-[#94a3b8] opacity-50'
-                      : 'border-[#22d3ee] bg-[#111118] text-[#e2e8f0] hover:shadow-[0_0_8px_rgba(34,211,238,0.15)]'
+                      ? 'border-border bg-background text-muted-foreground opacity-50'
+                      : 'border-primary bg-popover text-foreground hover:shadow-[0_0_8px_rgba(34,211,238,0.15)]'
                 }`}
               >
                 <span
@@ -111,7 +106,7 @@ export function VotePanel({
         </div>
 
         {votedFor && (
-          <p className="text-center text-sm font-bold text-[#4ade80]">
+          <p className="text-center text-sm font-bold text-accent">
             {'VOTE_CAST ✓'}
           </p>
         )}

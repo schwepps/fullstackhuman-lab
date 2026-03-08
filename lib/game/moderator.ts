@@ -42,7 +42,7 @@ export async function moderateMessage(
 
     return isSafe ? { safe: true } : { safe: false, reason: 'moderated' }
   } catch {
-    // Fail open — if moderation service is down, allow the message
-    return { safe: true }
+    // Fail closed — if moderation service is down, block the message
+    return { safe: false, reason: 'moderation_unavailable' }
   }
 }

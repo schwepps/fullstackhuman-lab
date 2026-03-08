@@ -34,20 +34,20 @@ export function EliminationScreen({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0a0a0c]/95 transition-opacity duration-500"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 transition-opacity duration-500"
       style={{ opacity }}
     >
       {/* Red flash overlay */}
       <div
-        className="pointer-events-none absolute inset-0 bg-[#ef4444] transition-opacity duration-300"
+        className="pointer-events-none absolute inset-0 bg-destructive transition-opacity duration-300"
         style={{ opacity: flashOpacity }}
       />
 
-      <div className="relative border border-[#1e293b] p-6 text-center font-mono sm:p-10">
-        <p className="animate-pulse text-xl font-bold text-[#ef4444] lg:text-3xl">
+      <div className="relative border border-border p-6 text-center font-mono sm:p-10">
+        <p className="animate-pulse text-xl font-bold text-destructive lg:text-3xl">
           [{displayName.toUpperCase()}]
         </p>
-        <p className="mt-2 text-xl font-bold text-[#ef4444] lg:text-3xl">
+        <p className="mt-2 text-xl font-bold text-destructive lg:text-3xl">
           HAS BEEN ELIMINATED
         </p>
       </div>

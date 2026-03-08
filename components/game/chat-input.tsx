@@ -40,7 +40,7 @@ export function ChatInput({
 
   return (
     <div className="flex w-full items-center gap-1 font-mono lg:max-w-xs">
-      <span className="text-base text-[#94a3b8] sm:text-sm">{'>'}</span>
+      <span className="text-base text-muted-foreground sm:text-sm">{'>'}</span>
       <input
         ref={inputRef}
         type="text"
@@ -52,7 +52,7 @@ export function ChatInput({
         disabled={disabled}
         maxLength={MAX_MESSAGE_LENGTH}
         placeholder={disabled ? 'CHAT_DISABLED' : placeholder}
-        className="h-11 flex-1 touch-manipulation border border-[#1e293b] bg-[#111118] px-3 text-base text-[#e2e8f0] placeholder-[#94a3b8] transition-colors focus:border-[#22d3ee] focus:shadow-[0_0_8px_rgba(34,211,238,0.15)] focus:outline-none disabled:opacity-40 sm:text-sm"
+        className="h-11 flex-1 touch-manipulation border border-border bg-popover px-3 text-base text-foreground placeholder-muted-foreground transition-colors focus:border-primary focus:shadow-[0_0_8px_rgba(34,211,238,0.15)] focus:outline-none disabled:opacity-40 sm:text-sm"
         style={{ fontFamily: 'monospace' }}
       />
     </div>

@@ -1,13 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import type { PlayerType } from '@/lib/game/types'
-
-type LobbyPlayer = {
-  id: string
-  displayName: string
-  avatarColor: number
-}
+import type { PlayerType, LobbyPlayer } from '@/lib/game/types'
 
 type LobbyPanelProps = {
   isHost: boolean
@@ -45,20 +39,20 @@ export function LobbyPanel({ isHost, players, onReady }: LobbyPanelProps) {
 
   return (
     <div className="mx-auto w-full max-w-md space-y-4 p-4 font-mono">
-      <h2 className="text-center text-xl font-bold text-[#22d3ee]">
+      <h2 className="text-center text-xl font-bold text-primary">
         {'> LOBBY'}
       </h2>
 
       {/* Name input */}
       <div className="flex items-center gap-1">
-        <span className="text-[#94a3b8]">{'>'}</span>
+        <span className="text-muted-foreground">{'>'}</span>
         <input
           type="text"
           value={displayName}
           onChange={(e) => setDisplayName(e.target.value)}
           maxLength={16}
           placeholder="ENTER_CALLSIGN"
-          className="h-11 flex-1 touch-manipulation border border-[#1e293b] bg-[#111118] px-3 text-base text-[#e2e8f0] placeholder-[#94a3b8] focus:border-[#22d3ee] focus:shadow-[0_0_8px_rgba(34,211,238,0.15)] focus:outline-none"
+          className="h-11 flex-1 touch-manipulation border border-border bg-popover px-3 text-base text-foreground placeholder-muted-foreground focus:border-primary focus:shadow-[0_0_8px_rgba(34,211,238,0.15)] focus:outline-none"
         />
       </div>
 
@@ -71,8 +65,8 @@ export function LobbyPanel({ isHost, players, onReady }: LobbyPanelProps) {
             onClick={() => setSelectedType(role.type)}
             className={`flex h-14 w-full touch-manipulation items-center gap-3 border px-4 text-base transition-colors active:scale-[0.98] ${
               selectedType === role.type
-                ? 'border-[#22d3ee] bg-[#111118] text-[#22d3ee] shadow-[0_0_8px_rgba(34,211,238,0.15)]'
-                : 'border-[#1e293b] bg-[#0a0a0c] text-[#94a3b8]'
+                ? 'border-primary bg-popover text-primary shadow-[0_0_8px_rgba(34,211,238,0.15)]'
+                : 'border-border bg-background text-muted-foreground'
             }`}
           >
             <span className="text-xl">{role.icon}</span>
@@ -87,14 +81,16 @@ export function LobbyPanel({ isHost, players, onReady }: LobbyPanelProps) {
           value={customPrompt}
           onChange={(e) => setCustomPrompt(e.target.value)}
           placeholder="Paste your agent system prompt..."
-          className="min-h-32 w-full touch-manipulation border border-[#1e293b] bg-[#111118] p-3 text-base text-[#e2e8f0] placeholder-[#94a3b8] focus:border-[#22d3ee] focus:outline-none"
+          className="min-h-32 w-full touch-manipulation border border-border bg-popover p-3 text-base text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none"
           style={{ fontFamily: 'monospace' }}
         />
       )}
 
       {/* Player list */}
-      <div className="space-y-1 border border-[#1e293b] bg-[#0a0a0c] p-3">
-        <p className="text-xs text-[#94a3b8]">{players.length}/10 CONNECTED</p>
+      <div className="space-y-1 border border-border bg-background p-3">
+        <p className="text-xs text-muted-foreground">
+          {players.length}/10 CONNECTED
+        </p>
         {players.map((p) => (
           <div key={p.id} className="flex items-center gap-2 text-sm">
             <span
@@ -103,7 +99,7 @@ export function LobbyPanel({ isHost, players, onReady }: LobbyPanelProps) {
                 backgroundColor: `#${p.avatarColor.toString(16).padStart(6, '0')}`,
               }}
             />
-            <span className="text-[#e2e8f0]">{p.displayName}</span>
+            <span className="text-foreground">{p.displayName}</span>
           </div>
         ))}
       </div>
@@ -116,8 +112,8 @@ export function LobbyPanel({ isHost, players, onReady }: LobbyPanelProps) {
           disabled={!canStart}
           className={`h-11 w-full touch-manipulation font-bold transition-all active:scale-[0.98] ${
             canStart
-              ? 'bg-[#22d3ee] text-[#0a0a0c] shadow-[0_0_12px_rgba(34,211,238,0.3)]'
-              : 'bg-[#1e293b] text-[#94a3b8] opacity-50'
+              ? 'bg-primary text-background shadow-[0_0_12px_rgba(34,211,238,0.3)]'
+              : 'bg-muted text-muted-foreground opacity-50'
           }`}
         >
           {players.length < 3

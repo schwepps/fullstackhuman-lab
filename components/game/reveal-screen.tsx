@@ -20,7 +20,7 @@ function getHeadline(result: GameResult, players: RevealPlayer[]) {
   if (result.wasAllHumans) {
     return {
       text: 'YOU WERE HUNTING GHOSTS. THIS ROOM WAS 100% HUMAN.',
-      color: 'text-[#f59e0b]',
+      color: 'text-warning',
     }
   }
   if (result.agentsSurvived.length > 0) {
@@ -29,12 +29,12 @@ function getHeadline(result: GameResult, players: RevealPlayer[]) {
     const rounds = survivor?.roundsSurvived ?? 0
     return {
       text: `THE AI WON. ${name} SURVIVED ${rounds} ROUNDS UNDETECTED.`,
-      color: 'text-red-500',
+      color: 'text-destructive',
     }
   }
   return {
     text: 'HUMANS WIN. ALL AIs ELIMINATED.',
-    color: 'text-[#4ade80]',
+    color: 'text-accent',
   }
 }
 
@@ -42,11 +42,11 @@ function getRoleDisplay(type: PlayerType) {
   switch (type) {
     case 'auto-agent':
     case 'custom-agent':
-      return { label: 'AGENT', color: 'text-red-500' }
+      return { label: 'AGENT', color: 'text-destructive' }
     case 'spectator':
-      return { label: 'SPECTATOR', color: 'text-[#f59e0b]' }
+      return { label: 'SPECTATOR', color: 'text-warning' }
     default:
-      return { label: 'HUMAN', color: 'text-[#4ade80]' }
+      return { label: 'HUMAN', color: 'text-accent' }
   }
 }
 
@@ -71,11 +71,11 @@ export function RevealScreen({
   const scores = result.scores
 
   return (
-    <main className="min-h-svh bg-[#0a0a0c] px-4 py-8">
+    <main className="min-h-svh bg-background px-4 py-8">
       <div className="mx-auto max-w-2xl">
         {/* Header */}
         <div className="mb-8 text-center">
-          <h1 className="animate-glitch font-mono text-2xl text-[#22d3ee] sm:text-3xl">
+          <h1 className="animate-glitch font-mono text-2xl text-primary sm:text-3xl">
             {'> GAME_OVER'}
           </h1>
           <p
@@ -99,7 +99,7 @@ export function RevealScreen({
             return (
               <div
                 key={player.id}
-                className="border border-[#22d3ee]/20 bg-[#111118] p-4"
+                className="border border-primary/20 bg-popover p-4"
                 style={{ animationDelay: `${i * 100}ms` }}
               >
                 <div className="flex items-center gap-3">
@@ -109,7 +109,7 @@ export function RevealScreen({
                       backgroundColor: `#${player.avatarColor.toString(16).padStart(6, '0')}`,
                     }}
                   />
-                  <span className="font-mono font-bold text-[#e2e8f0]">
+                  <span className="font-mono font-bold text-foreground">
                     {player.displayName}
                   </span>
                 </div>
@@ -121,14 +121,14 @@ export function RevealScreen({
                 </div>
                 <div className="mt-1 font-mono text-xs">
                   {player.isEliminated ? (
-                    <span className="text-red-500">ELIMINATED</span>
+                    <span className="text-destructive">ELIMINATED</span>
                   ) : (
-                    <span className="text-[#4ade80]">SURVIVED</span>
+                    <span className="text-accent">SURVIVED</span>
                   )}
                 </div>
                 <div className="mt-1 font-mono text-xs">
                   {isAgent ? (
-                    <span className="text-[#f59e0b]">
+                    <span className="text-warning">
                       HUMANITY:{' '}
                       {player.roundsSurvived > 0
                         ? Math.round(
@@ -140,7 +140,7 @@ export function RevealScreen({
                       %
                     </span>
                   ) : (
-                    <span className="text-[#22d3ee]">
+                    <span className="text-primary">
                       SCORE: {playerScore ?? 0}
                     </span>
                   )}
@@ -153,7 +153,7 @@ export function RevealScreen({
         {/* Vote Breakdown */}
         {roundResults.length > 0 && (
           <div className="mt-8">
-            <h2 className="mb-4 font-mono text-lg text-[#22d3ee]">
+            <h2 className="mb-4 font-mono text-lg text-primary">
               {'> VOTE_LOG'}
             </h2>
 
@@ -162,18 +162,18 @@ export function RevealScreen({
               {roundResults.map((rr) => (
                 <div
                   key={rr.round}
-                  className="border border-[#22d3ee]/20 bg-[#111118] p-3"
+                  className="border border-primary/20 bg-popover p-3"
                 >
-                  <div className="font-mono text-sm text-[#22d3ee]">
+                  <div className="font-mono text-sm text-primary">
                     ROUND {rr.round}
                   </div>
-                  <div className="mt-1 font-mono text-xs text-[#94a3b8]">
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">
                     {rr.topic}
                   </div>
-                  <div className="mt-2 font-mono text-xs text-red-500">
+                  <div className="mt-2 font-mono text-xs text-destructive">
                     ELIMINATED: {rr.eliminatedDisplayName}
                   </div>
-                  <div className="mt-1 font-mono text-xs text-[#94a3b8]">
+                  <div className="mt-1 font-mono text-xs text-muted-foreground">
                     {Object.entries(rr.voteBreakdown)
                       .map(([name, count]) => `${name}: ${count}`)
                       .join(' | ')}
@@ -186,28 +186,26 @@ export function RevealScreen({
             <div className="hidden lg:block">
               <table className="w-full border-collapse font-mono text-sm">
                 <thead>
-                  <tr className="border-b border-[#22d3ee]/30">
-                    <th className="px-2 py-1 text-left text-[#22d3ee]">RND</th>
-                    <th className="px-2 py-1 text-left text-[#22d3ee]">
-                      TOPIC
-                    </th>
-                    <th className="px-2 py-1 text-left text-[#22d3ee]">
+                  <tr className="border-b border-primary/30">
+                    <th className="px-2 py-1 text-left text-primary">RND</th>
+                    <th className="px-2 py-1 text-left text-primary">TOPIC</th>
+                    <th className="px-2 py-1 text-left text-primary">
                       ELIMINATED
                     </th>
-                    <th className="px-2 py-1 text-left text-[#22d3ee]">
-                      VOTES
-                    </th>
+                    <th className="px-2 py-1 text-left text-primary">VOTES</th>
                   </tr>
                 </thead>
                 <tbody>
                   {roundResults.map((rr) => (
-                    <tr key={rr.round} className="border-b border-[#22d3ee]/10">
-                      <td className="px-2 py-1 text-[#e2e8f0]">{rr.round}</td>
-                      <td className="px-2 py-1 text-[#94a3b8]">{rr.topic}</td>
-                      <td className="px-2 py-1 text-red-500">
+                    <tr key={rr.round} className="border-b border-primary/10">
+                      <td className="px-2 py-1 text-foreground">{rr.round}</td>
+                      <td className="px-2 py-1 text-muted-foreground">
+                        {rr.topic}
+                      </td>
+                      <td className="px-2 py-1 text-destructive">
                         {rr.eliminatedDisplayName}
                       </td>
-                      <td className="px-2 py-1 text-[#94a3b8]">
+                      <td className="px-2 py-1 text-muted-foreground">
                         {Object.entries(rr.voteBreakdown)
                           .map(([name, count]) => `${name}: ${count}`)
                           .join(' | ')}
@@ -229,7 +227,7 @@ export function RevealScreen({
               p.revealPreference === 'leaderboard')
         ) && (
           <div className="mt-8">
-            <h2 className="mb-4 font-mono text-lg text-[#22d3ee]">
+            <h2 className="mb-4 font-mono text-lg text-primary">
               {'> PROMPT_REVEAL'}
             </h2>
             {allPlayers
@@ -254,7 +252,7 @@ export function RevealScreen({
         <div className="mt-8 pb-safe">
           <Link
             href="/game"
-            className="block h-11 w-full bg-[#22d3ee] text-center font-mono text-sm font-bold leading-[2.75rem] text-[#0a0a0c] active:bg-[#22d3ee]/80"
+            className="block h-11 w-full bg-primary text-center font-mono text-sm font-bold leading-[2.75rem] text-background active:bg-primary/80"
           >
             PLAY_AGAIN
           </Link>
@@ -274,19 +272,19 @@ function PromptRevealCard({
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="mb-3 border border-[#22d3ee]/20 bg-[#111118]">
+    <div className="mb-3 border border-primary/20 bg-popover">
       <button
-        className="flex h-11 w-full items-center justify-between px-4 font-mono text-sm text-[#e2e8f0] active:bg-[#22d3ee]/10"
+        className="flex h-11 w-full items-center justify-between px-4 font-mono text-sm text-foreground active:bg-primary/10"
         onClick={() => setIsOpen(!isOpen)}
       >
         <span>{displayName}</span>
-        <span className="text-[#22d3ee]">
+        <span className="text-primary">
           {isOpen ? 'HIDE PROMPT' : 'VIEW PROMPT >'}
         </span>
       </button>
       {isOpen && (
-        <div className="border-t border-[#22d3ee]/10 bg-[#0a0a0c] p-4">
-          <pre className="whitespace-pre-wrap font-mono text-xs text-[#4ade80]">
+        <div className="border-t border-primary/10 bg-background p-4">
+          <pre className="whitespace-pre-wrap font-mono text-xs text-accent">
             {prompt}
           </pre>
         </div>

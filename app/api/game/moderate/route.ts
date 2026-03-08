@@ -4,12 +4,17 @@ import { moderateMessage } from '@/lib/game/moderator'
 const INTERNAL_TOKEN = process.env.GAME_INTERNAL_TOKEN
 
 export async function POST(request: Request) {
-  // Verify internal caller
-  if (INTERNAL_TOKEN) {
-    const token = request.headers.get('x-internal-token')
-    if (token !== INTERNAL_TOKEN) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+  // Require token — fail closed if not configured
+  if (!INTERNAL_TOKEN) {
+    return NextResponse.json(
+      { error: 'Moderation not configured' },
+      { status: 500 }
+    )
+  }
+
+  const token = request.headers.get('x-internal-token')
+  if (token !== INTERNAL_TOKEN) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
@@ -26,7 +31,10 @@ export async function POST(request: Request) {
     const result = await moderateMessage(content, playerId)
     return NextResponse.json(result)
   } catch {
-    // Fail open
-    return NextResponse.json({ safe: true })
+    // Fail closed — block on error
+    return NextResponse.json(
+      { safe: false, reason: 'moderation_error' },
+      { status: 500 }
+    )
   }
 }

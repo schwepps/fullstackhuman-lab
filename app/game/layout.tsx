@@ -22,7 +22,7 @@ export default function GameLayout({
   return (
     <html lang="en">
       <body
-        className="bg-[#0a0a0a] font-mono text-foreground antialiased"
+        className="bg-background font-mono text-foreground antialiased"
         style={{ fontFamily: 'var(--font-geist-mono), monospace' }}
       >
         {children}

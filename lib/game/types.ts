@@ -175,9 +175,31 @@ export interface PositionUpdate {
   zone: ZoneType
 }
 
-export type RevealPlayer = PublicPlayer & {
+export type RevealPlayer = Omit<PublicPlayer, 'sessionToken'> & {
   type: PlayerType
   customPrompt?: string
+}
+
+// ─── Client-side shared types ────────────────────────────────────────────────
+
+export type LobbyPlayer = {
+  id: string
+  displayName: string
+  avatarColor: number
+}
+
+export type TypingPlayer = {
+  playerId: string
+  displayName: string
+}
+
+export type TypingState = TypingPlayer & {
+  zone: ZoneType
+}
+
+export type StoredSession = {
+  playerId: string
+  sessionToken: string
 }
 
 // ─── Agent types (for later phases) ──────────────────────────────────────────

@@ -19,42 +19,28 @@ import type {
   RevealPlayer,
   RoundResult,
   PlayerType,
+  TypingState,
+  LobbyPlayer,
+  StoredSession,
 } from '@/lib/game/types'
 
 const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? 'localhost:1999'
 const SESSION_KEY_PREFIX = 'game:session:'
 
-type TypingState = {
-  playerId: string
-  displayName: string
-  zone: ZoneType
-}
-
-type LobbyPlayer = {
-  id: string
-  displayName: string
-  avatarColor: number
-}
-
-type StoredSession = {
-  playerId: string
-  sessionToken: string
-}
-
 function saveSession(roomId: string, playerId: string, sessionToken: string) {
   try {
-    localStorage.setItem(
+    sessionStorage.setItem(
       `${SESSION_KEY_PREFIX}${roomId}`,
       JSON.stringify({ playerId, sessionToken })
     )
   } catch {
-    // localStorage may be unavailable
+    // sessionStorage may be unavailable
   }
 }
 
 function getExistingSession(roomId: string): StoredSession | null {
   try {
-    const raw = localStorage.getItem(`${SESSION_KEY_PREFIX}${roomId}`)
+    const raw = sessionStorage.getItem(`${SESSION_KEY_PREFIX}${roomId}`)
     if (!raw) return null
     const parsed = JSON.parse(raw)
     if (parsed?.playerId && parsed?.sessionToken) return parsed as StoredSession
@@ -66,9 +52,9 @@ function getExistingSession(roomId: string): StoredSession | null {
 
 function clearSession(roomId: string) {
   try {
-    localStorage.removeItem(`${SESSION_KEY_PREFIX}${roomId}`)
+    sessionStorage.removeItem(`${SESSION_KEY_PREFIX}${roomId}`)
   } catch {
-    // localStorage may be unavailable
+    // sessionStorage may be unavailable
   }
 }
 
@@ -294,9 +280,16 @@ export default function GameRoomPage() {
   }, [])
 
   const handleLobbyReady = useCallback(
-    (_displayName: string, _type: PlayerType, _customPrompt?: string) => {
+    (displayName: string, playerType: PlayerType, customPrompt?: string) => {
       if (socket?.readyState === WebSocket.OPEN) {
-        socket.send(JSON.stringify({ type: 'ready' }))
+        socket.send(
+          JSON.stringify({
+            type: 'ready',
+            displayName,
+            playerType,
+            customPrompt,
+          })
+        )
       }
     },
     [socket]
@@ -306,7 +299,7 @@ export default function GameRoomPage() {
     return (
       <main className="flex min-h-svh items-center justify-center p-4">
         <div className="text-center">
-          <h1 className="font-mono text-2xl text-[#22d3ee] sm:text-3xl">
+          <h1 className="font-mono text-2xl text-primary sm:text-3xl">
             {status === 'error' ? (
               '> CONNECTION_ERROR'
             ) : (
@@ -335,7 +328,7 @@ export default function GameRoomPage() {
   // Lobby phase
   if (phase === 'lobby') {
     return (
-      <main className="flex min-h-svh flex-col items-center justify-center bg-[#0a0a0c] p-2 sm:p-4">
+      <main className="flex min-h-svh flex-col items-center justify-center bg-background p-2 sm:p-4">
         <LobbyPanel
           isHost={isHost}
           players={lobbyPlayers}
@@ -352,7 +345,7 @@ export default function GameRoomPage() {
     .map((t) => ({ playerId: t.playerId, displayName: t.displayName }))
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center bg-[#0a0a0c] p-2 sm:p-4">
+    <main className="flex min-h-svh flex-col items-center justify-center bg-background p-2 sm:p-4">
       {phase === 'round' && topic && (
         <div className="w-full max-w-300">
           <TopicBanner
@@ -373,8 +366,8 @@ export default function GameRoomPage() {
           onZoneChange={handleZoneChange}
         />
         <div className="absolute right-2 top-2 flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-[#4ade80]" />
-          <span className="font-mono text-xs text-[#4ade80]">LIVE</span>
+          <span className="h-2 w-2 rounded-full bg-accent" />
+          <span className="font-mono text-xs text-accent">LIVE</span>
         </div>
       </div>
       <div className="mt-2 w-full max-w-300">

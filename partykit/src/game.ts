@@ -1,6 +1,5 @@
 import type * as Party from 'partykit/server'
 import type {
-  ClientMessage,
   ChatMessage,
   Player,
   Position,
@@ -11,6 +10,8 @@ import type {
 } from '../../lib/game/types'
 import {
   AVATAR_COLORS,
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
   ZONE_DEBOUNCE_MS,
   MAX_MESSAGE_LENGTH,
   MAX_CHAT_HISTORY_PER_ZONE,
@@ -238,7 +239,7 @@ export default class GameRoom implements Party.Server {
   }
 
   async onMessage(message: string, sender: Party.Connection) {
-    let msg: ClientMessage
+    let msg: Record<string, unknown>
     try {
       msg = JSON.parse(message)
     } catch {
@@ -248,17 +249,34 @@ export default class GameRoom implements Party.Server {
     // Always resolve playerId — conn.id diverges from playerId after reconnect
     const playerId = this.connToPlayer.get(sender.id) ?? sender.id
 
+    // Validate message shape before processing
+    if (typeof msg.type !== 'string') return
+
     switch (msg.type) {
-      case 'move':
-        this.handleMove(playerId, msg.position)
+      case 'move': {
+        const pos = msg.position as { x?: unknown; y?: unknown } | undefined
+        if (typeof pos?.x !== 'number' || typeof pos?.y !== 'number') return
+        this.handleMove(playerId, pos as Position)
         break
-      case 'move-to':
-        this.handleMove(playerId, msg.target)
+      }
+      case 'move-to': {
+        const tgt = msg.target as { x?: unknown; y?: unknown } | undefined
+        if (typeof tgt?.x !== 'number' || typeof tgt?.y !== 'number') return
+        this.handleMove(playerId, tgt as Position)
         break
+      }
       case 'chat':
-        await this.handleChat(playerId, msg.content, msg.zone, sender)
+        if (typeof msg.content !== 'string' || typeof msg.zone !== 'string')
+          return
+        await this.handleChat(
+          playerId,
+          msg.content,
+          msg.zone as ChatScope,
+          sender
+        )
         break
       case 'vote': {
+        if (typeof msg.targetId !== 'string') return
         const { handleVote } = await import('./vote-manager')
         await handleVote(this.room, playerId, msg.targetId, this.room.id)
         break
@@ -318,9 +336,21 @@ export default class GameRoom implements Party.Server {
   // ─── Movement ─────────────────────────────────────────────────────────────
 
   private handleMove(playerId: string, position: Position) {
-    this.positions.set(playerId, position)
+    if (
+      typeof position?.x !== 'number' ||
+      typeof position?.y !== 'number' ||
+      !Number.isFinite(position.x) ||
+      !Number.isFinite(position.y)
+    ) {
+      return
+    }
+    const clamped: Position = {
+      x: Math.max(0, Math.min(CANVAS_WIDTH, position.x)),
+      y: Math.max(0, Math.min(CANVAS_HEIGHT, position.y)),
+    }
+    this.positions.set(playerId, clamped)
 
-    const newZone = computeZone(position)
+    const newZone = computeZone(clamped)
     const prevZone = this.zones.get(playerId) ?? 'main'
     this.zones.set(playerId, newZone)
 
@@ -353,7 +383,7 @@ export default class GameRoom implements Party.Server {
     this.room.broadcast(
       JSON.stringify({
         type: 'position_update',
-        updates: [{ playerId, position, zone: newZone }],
+        updates: [{ playerId, position: clamped, zone: newZone }],
       }),
       [playerId]
     )
@@ -469,8 +499,8 @@ export default class GameRoom implements Party.Server {
       headers,
       body: JSON.stringify({ content, playerId }),
     })
-      .then((res) => res.json())
-      .then((result: { safe: boolean; reason?: string }) => {
+      .then((res) => res.json() as Promise<{ safe: boolean; reason?: string }>)
+      .then((result) => {
         if (!result.safe) {
           const removePayload = JSON.stringify({
             type: 'message_removed',
