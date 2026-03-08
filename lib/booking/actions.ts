@@ -19,19 +19,18 @@ import {
   bookingCancellationHtml,
 } from '@/lib/email/templates/booking-cancellation'
 import { FOUNDER_NAME } from '@/lib/constants/brand'
+import { log } from '@/lib/logger'
+import { LOG_EVENT } from '@/lib/constants/logging'
 import { checkBookingRateLimit } from './rate-limit'
+import { getUtcOffset } from './slots'
 import { BOOKING_ERROR } from './types'
 import type { ActionResult } from '@/types/action'
 import type { CreateBookingResult } from './types'
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? ''
 
-function getMeetingTypeDisplay(
-  slug: string | undefined,
-  durationMinutes: number
-): string {
-  const label = slug === 'intro' ? 'Intro' : 'Deep Dive'
-  return `${label} (${durationMinutes} min)`
+function getMeetingTypeDisplay(durationMinutes: number): string {
+  return `Intro (${durationMinutes} min)`
 }
 
 interface CreateBookingInput {
@@ -93,17 +92,21 @@ export async function createBooking(
   }
 
   // Call the atomic create_booking() RPC
-  const { data, error } = await supabase.rpc('create_booking', {
-    p_meeting_type_slug: meetingType,
-    p_starts_at: `${date}T${timeSlot}:00`,
-    p_timezone: timezone,
-    p_booker_name: name,
-    p_booker_email: email,
-    p_booker_message: message ?? null,
-    p_conversation_id: conversationId ?? null,
-  })
+  const utcOffset = getUtcOffset(date, timezone)
+  const { data, error } = await supabase
+    .rpc('create_booking', {
+      p_meeting_type_slug: meetingType,
+      p_starts_at: `${date}T${timeSlot}:00${utcOffset}`,
+      p_timezone: timezone,
+      p_booker_name: name,
+      p_booker_email: email,
+      p_booker_message: message ?? null,
+      p_conversation_id: conversationId ?? null,
+    })
+    .single()
 
   if (error) {
+    log('error', LOG_EVENT.BOOKING_RPC_FAILED, { error: error.message })
     return { success: false, error: BOOKING_ERROR.BOOKING_FAILED }
   }
 
@@ -114,8 +117,10 @@ export async function createBooking(
 
   const bookingId = result.booking_id
 
-  // Fetch the created booking for email details
-  const { data: booking } = await supabase
+  // Use service client for post-RPC operations (no SELECT/UPDATE grants on bookings)
+  const serviceClient = createServiceClient()
+
+  const { data: booking } = await serviceClient
     .from('bookings')
     .select('*, meeting_type:meeting_types(slug, duration_minutes)')
     .eq('id', bookingId)
@@ -123,10 +128,7 @@ export async function createBooking(
 
   if (booking) {
     const durationMinutes = booking.meeting_type?.duration_minutes ?? 30
-    const meetingTypeDisplay = getMeetingTypeDisplay(
-      booking.meeting_type?.slug,
-      durationMinutes
-    )
+    const meetingTypeDisplay = getMeetingTypeDisplay(durationMinutes)
 
     // Create Google Calendar event with Google Meet
     let meetLink: string | null = null
@@ -139,11 +141,12 @@ export async function createBooking(
       endsAt: booking.ends_at,
       attendeeEmail: email,
       timezone,
+      withMeet: true,
     })
 
     if (calResult) {
       meetLink = calResult.meetLink
-      await supabase
+      await serviceClient
         .from('bookings')
         .update({
           google_event_id: calResult.eventId,
@@ -251,10 +254,7 @@ export async function cancelBooking(
   }
 
   const durationMinutes = booking.meeting_type?.duration_minutes ?? 30
-  const meetingTypeDisplay = getMeetingTypeDisplay(
-    booking.meeting_type?.slug,
-    durationMinutes
-  )
+  const meetingTypeDisplay = getMeetingTypeDisplay(durationMinutes)
   const dateStr = new Date(booking.starts_at).toISOString().split('T')[0]
   const timeStr = new Date(booking.starts_at)
     .toISOString()

@@ -76,10 +76,7 @@ export function BookingForm({
     ]
   )
 
-  const meetingTypeLabel =
-    meetingType === 'intro'
-      ? t('meetingTypes.intro.title')
-      : t('meetingTypes.deepDive.title')
+  const meetingTypeLabel = t('meetingTypes.intro.title')
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
@@ -147,7 +144,9 @@ export function BookingForm({
         <p className="text-sm text-destructive">
           {error === 'slot_unavailable'
             ? t('errors.slotTaken')
-            : t('errors.generic')}
+            : error === 'booking_rate_limited'
+              ? t('errors.rateLimited')
+              : t('errors.generic')}
         </p>
       )}
 

@@ -60,7 +60,7 @@ export function DatePicker({
 
   return (
     <div>
-      <h2 className="mb-3 text-sm font-medium text-foreground">
+      <h2 className="mb-3 text-center text-sm font-medium text-foreground">
         {t('selectDate')}
       </h2>
       <Calendar
@@ -76,7 +76,7 @@ export function DatePicker({
           if (isLoading) return true
           return !availableDates.has(toLocalDateString(date))
         }}
-        className="terminal-border rounded-md border"
+        className="terminal-border rounded-md border [--cell-size:2.4rem]"
       />
     </div>
   )

@@ -1,6 +1,6 @@
 // IMPORTANT: MEETING_TYPES slugs must match CHECK constraint in
 // supabase/migrations/20260307000000_booking_tables.sql
-export const MEETING_TYPES = ['intro', 'deep-dive'] as const
+export const MEETING_TYPES = ['intro'] as const
 export type MeetingTypeSlug = (typeof MEETING_TYPES)[number]
 
 // IMPORTANT: BOOKING_STATUSES must match CHECK constraint in

@@ -109,6 +109,7 @@ interface CreateEventParams {
   endsAt: string
   attendeeEmail: string
   timezone: string
+  withMeet?: boolean
 }
 
 interface CalendarEventResult {
@@ -117,7 +118,8 @@ interface CalendarEventResult {
 }
 
 /**
- * Create a Google Calendar event with Google Meet for a booking.
+ * Create a Google Calendar event for a booking.
+ * Optionally attaches a Google Meet link (withMeet: true).
  * Returns the event ID and Meet link, or null if calendar is not configured.
  */
 export async function createCalendarEvent(
@@ -130,28 +132,34 @@ export async function createCalendarEvent(
     const auth = await getAuthorizedClient()
     const calendar = google.calendar({ version: 'v3', auth })
 
+    const requestBody: Record<string, unknown> = {
+      summary: params.summary,
+      description: params.description,
+      start: { dateTime: params.startsAt, timeZone: params.timezone },
+      end: { dateTime: params.endsAt, timeZone: params.timezone },
+      attendees: [{ email: params.attendeeEmail }],
+    }
+
+    if (params.withMeet) {
+      requestBody.conferenceData = {
+        createRequest: {
+          requestId: crypto.randomUUID(),
+          conferenceSolutionKey: { type: 'hangoutsMeet' },
+        },
+      }
+    }
+
     const { data } = await calendar.events.insert({
       calendarId,
-      conferenceDataVersion: 1,
-      requestBody: {
-        summary: params.summary,
-        description: params.description,
-        start: { dateTime: params.startsAt, timeZone: params.timezone },
-        end: { dateTime: params.endsAt, timeZone: params.timezone },
-        attendees: [{ email: params.attendeeEmail }],
-        conferenceData: {
-          createRequest: {
-            requestId: crypto.randomUUID(),
-            conferenceSolutionKey: { type: 'hangoutsMeet' },
-          },
-        },
-      },
+      conferenceDataVersion: params.withMeet ? 1 : undefined,
+      requestBody,
     })
 
-    const meetLink =
-      data.conferenceData?.entryPoints?.find(
-        (ep) => ep.entryPointType === 'video'
-      )?.uri ?? null
+    const meetLink = params.withMeet
+      ? (data.conferenceData?.entryPoints?.find(
+          (ep) => ep.entryPointType === 'video'
+        )?.uri ?? null)
+      : null
 
     return { eventId: data.id ?? '', meetLink }
   } catch (error) {

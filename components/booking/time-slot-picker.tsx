@@ -62,7 +62,7 @@ export function TimeSlotPicker({
 
   return (
     <div>
-      <h2 className="mb-3 text-sm font-medium text-foreground">
+      <h2 className="mb-3 text-center text-sm font-medium text-foreground">
         {t('selectTime')}
       </h2>
       <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
@@ -82,7 +82,7 @@ export function TimeSlotPicker({
           </Button>
         ))}
       </div>
-      <p className="mt-2 text-xs text-muted-foreground">
+      <p className="mt-2 text-center text-xs text-muted-foreground">
         {t('timezone', { tz: timezone })}
       </p>
     </div>

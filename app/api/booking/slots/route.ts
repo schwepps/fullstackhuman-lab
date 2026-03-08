@@ -10,7 +10,7 @@ import { checkSlotsRateLimit } from '@/lib/booking/rate-limit'
  * Query params:
  * - date: ISO date (YYYY-MM-DD) — returns slots for that date
  * - month: YYYY-MM — returns available dates for that month
- * - type: meeting type slug (intro | deep-dive)
+ * - type: meeting type slug (intro)
  * - tz: timezone string (e.g., Europe/Paris)
  */
 export async function GET(request: NextRequest) {

@@ -4,6 +4,21 @@ import { BOOKING_DEFAULTS } from '@/lib/constants/booking'
 import type { AvailabilityConfigRow, WeeklyScheduleEntry } from './types'
 
 /**
+ * Resolve IANA timezone to UTC offset string for a given date.
+ * e.g. ('2026-03-09', 'Europe/Paris') → '+01:00'
+ */
+export function getUtcOffset(date: string, tz: string): string {
+  const ref = new Date(`${date}T12:00:00Z`)
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    timeZoneName: 'longOffset',
+  }).formatToParts(ref)
+  const tzPart = parts.find((p) => p.type === 'timeZoneName')
+  const raw = tzPart?.value ?? 'GMT'
+  return raw === 'GMT' ? '+00:00' : raw.replace('GMT', '')
+}
+
+/**
  * Resolve "now" in a specific IANA timezone, returning a Date representing
  * the wall-clock instant in that timezone.
  */
@@ -81,8 +96,9 @@ export async function getAvailableSlots(
   if (candidates.length === 0) return []
 
   // Fetch existing confirmed bookings for this date
-  const dayStart = `${date}T00:00:00`
-  const dayEnd = `${date}T23:59:59`
+  const utcOffset = getUtcOffset(date, configTz)
+  const dayStart = `${date}T00:00:00${utcOffset}`
+  const dayEnd = `${date}T23:59:59${utcOffset}`
   const { data: bookings } = await supabase
     .from('bookings')
     .select('starts_at, ends_at')
@@ -102,7 +118,7 @@ export async function getAvailableSlots(
   const nowTz = nowInTimezone(configTz)
   const available: string[] = []
   for (const slot of candidates) {
-    const slotStart = new Date(`${date}T${slot}:00`)
+    const slotStart = new Date(`${date}T${slot}:00${utcOffset}`)
     const slotEnd = new Date(slotStart.getTime() + duration * 60_000)
 
     // Check min notice hours (compare in the same timezone frame)

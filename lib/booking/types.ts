@@ -37,6 +37,7 @@ export interface BookingRow {
   timezone: string
   status: BookingStatus
   google_event_id: string | null
+  meet_link: string | null
   briefing: string | null
   briefing_generated_at: string | null
   confirmation_sent_at: string | null

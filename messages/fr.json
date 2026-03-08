@@ -436,11 +436,6 @@
         "title": "Introduction",
         "description": "Appel rapide pour discuter de votre situation et voir si on matche.",
         "duration": "30 min"
-      },
-      "deepDive": {
-        "title": "Session approfondie",
-        "description": "Session en profondeur pour diagnostiquer, évaluer ou élaborer une stratégie.",
-        "duration": "60 min"
       }
     },
     "form": {
@@ -453,12 +448,29 @@
     },
     "errors": {
       "slotTaken": "Ce créneau vient d'être pris. Choisissez un autre horaire.",
+      "rateLimited": "Trop de tentatives. Veuillez patienter.",
       "generic": "Une erreur est survenue. Veuillez réessayer."
     },
     "confirmation": {
       "title": "C'est réservé !",
       "description": "Votre appel avec François est confirmé.",
       "emailSent": "Un email de confirmation a été envoyé.",
+      "backHome": "Retour à l'accueil"
+    },
+    "cancel": {
+      "title": "Annuler votre réservation ?",
+      "description": "Cela annulera votre prochain appel avec François. Cette action est irréversible.",
+      "confirmCancel": "Oui, annuler la réservation",
+      "cancelling": "Annulation...",
+      "keepBooking": "Non, garder ma réservation",
+      "successTitle": "Réservation annulée",
+      "successDescription": "Votre réservation a été annulée. Un email de confirmation a été envoyé.",
+      "errorTitle": "Échec de l'annulation",
+      "errors": {
+        "notFound": "Cette réservation est introuvable ou a déjà été annulée.",
+        "rateLimited": "Trop de tentatives. Veuillez patienter.",
+        "generic": "Une erreur est survenue. Veuillez réessayer."
+      },
       "backHome": "Retour à l'accueil"
     }
   },

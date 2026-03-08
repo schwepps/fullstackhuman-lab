@@ -5,6 +5,8 @@ import {
   createLazyRateLimiter,
 } from '@/lib/rate-limit-utils'
 
+const isDev = process.env.NODE_ENV === 'development'
+
 const BOOKING_MAX_ATTEMPTS = 5
 const BOOKING_WINDOW_MS = 60 * 60 * 1000 // 1 hour
 
@@ -31,6 +33,7 @@ const getSlotsLimiter = createLazyRateLimiter({
  * 5 bookings per hour per IP.
  */
 export async function checkBookingRateLimit(): Promise<boolean> {
+  if (isDev) return true
   const headerList = await headers()
   const ip = getClientIp(headerList)
   return consumeWithFallback(

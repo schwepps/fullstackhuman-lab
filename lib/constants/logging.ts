@@ -39,6 +39,7 @@ export const LOG_EVENT = {
   GOOGLE_CALENDAR_CREATE_FAILED: 'google_calendar_create_failed',
   GOOGLE_CALENDAR_DELETE_FAILED: 'google_calendar_delete_failed',
   GOOGLE_CALENDAR_FREEBUSY_FAILED: 'google_calendar_freebusy_failed',
+  BOOKING_RPC_FAILED: 'booking_rpc_failed',
   BRIEFING_GENERATION_FAILED: 'briefing_generation_failed',
 
   // Email events

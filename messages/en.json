@@ -433,14 +433,9 @@
     "contextBanner": "Booking from your AI conversation — François will have context.",
     "meetingTypes": {
       "intro": {
-        "title": "Intro",
+        "title": "Introduction",
         "description": "Quick call to discuss your situation and see if we're a fit.",
         "duration": "30 min"
-      },
-      "deepDive": {
-        "title": "Deep Dive",
-        "description": "In-depth session to diagnose, review, or strategize together.",
-        "duration": "60 min"
       }
     },
     "form": {
@@ -453,12 +448,29 @@
     },
     "errors": {
       "slotTaken": "This slot was just taken. Please pick another time.",
+      "rateLimited": "Too many attempts. Please try again later.",
       "generic": "Something went wrong. Please try again."
     },
     "confirmation": {
       "title": "You're booked!",
       "description": "Your call with François is confirmed.",
       "emailSent": "A confirmation email has been sent to your inbox.",
+      "backHome": "Back to homepage"
+    },
+    "cancel": {
+      "title": "Cancel your booking?",
+      "description": "This will cancel your upcoming call with François. This action cannot be undone.",
+      "confirmCancel": "Yes, cancel booking",
+      "cancelling": "Cancelling...",
+      "keepBooking": "No, keep my booking",
+      "successTitle": "Booking cancelled",
+      "successDescription": "Your booking has been cancelled. A confirmation email has been sent.",
+      "errorTitle": "Cancellation failed",
+      "errors": {
+        "notFound": "This booking was not found or has already been cancelled.",
+        "rateLimited": "Too many attempts. Please try again later.",
+        "generic": "Something went wrong. Please try again."
+      },
       "backHome": "Back to homepage"
     }
   },

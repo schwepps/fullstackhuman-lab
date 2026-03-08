@@ -2,14 +2,12 @@
 
 import { useState, useCallback } from 'react'
 import { useTranslations } from 'next-intl'
-import { MeetingTypeSelector } from './meeting-type-selector'
 import { DatePicker } from './date-picker'
 import { TimeSlotPicker } from './time-slot-picker'
 import { BookingForm } from './booking-form'
 import { BookingContextBanner } from './booking-context-banner'
-import type { MeetingTypeSlug } from '@/lib/constants/booking'
 
-type BookingStep = 'type' | 'datetime' | 'details' | 'confirming'
+type BookingStep = 'datetime' | 'details' | 'confirming'
 
 interface BookingPageProps {
   conversationId?: string
@@ -17,18 +15,12 @@ interface BookingPageProps {
 
 export function BookingPage({ conversationId }: BookingPageProps) {
   const t = useTranslations('booking')
-  const [step, setStep] = useState<BookingStep>('type')
-  const [meetingType, setMeetingType] = useState<MeetingTypeSlug | null>(null)
+  const [step, setStep] = useState<BookingStep>('datetime')
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [timezone] = useState(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone
   )
-
-  const handleTypeSelect = useCallback((type: MeetingTypeSlug) => {
-    setMeetingType(type)
-    setStep('datetime')
-  }, [])
 
   const handleDateSelect = useCallback((date: string) => {
     setSelectedDate(date)
@@ -43,10 +35,6 @@ export function BookingPage({ conversationId }: BookingPageProps) {
   const handleBack = useCallback(() => {
     if (step === 'details') {
       setStep('datetime')
-    } else if (step === 'datetime') {
-      setStep('type')
-      setSelectedDate(null)
-      setSelectedTime(null)
     }
   }, [step])
 
@@ -67,13 +55,13 @@ export function BookingPage({ conversationId }: BookingPageProps) {
 
       {/* Step indicator */}
       <div className="mb-6 flex items-center justify-center gap-2">
-        {(['type', 'datetime', 'details'] as const).map((s, i) => (
+        {(['datetime', 'details'] as const).map((s, i) => (
           <div
             key={s}
             className={`h-1.5 w-12 rounded-full transition-colors ${
               step === s || (step === 'confirming' && s === 'details')
                 ? 'bg-primary'
-                : i < ['type', 'datetime', 'details'].indexOf(step)
+                : i < ['datetime', 'details'].indexOf(step)
                   ? 'bg-primary/50'
                   : 'bg-border'
             }`}
@@ -81,18 +69,10 @@ export function BookingPage({ conversationId }: BookingPageProps) {
         ))}
       </div>
 
-      {step === 'type' && <MeetingTypeSelector onSelect={handleTypeSelect} />}
-
-      {step === 'datetime' && meetingType && (
-        <div className="space-y-6">
-          <button
-            onClick={handleBack}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            ← {t('back')}
-          </button>
+      {step === 'datetime' && (
+        <div className="flex flex-col items-center space-y-6">
           <DatePicker
-            meetingType={meetingType}
+            meetingType="intro"
             timezone={timezone}
             selectedDate={selectedDate}
             onSelect={handleDateSelect}
@@ -100,7 +80,7 @@ export function BookingPage({ conversationId }: BookingPageProps) {
           {selectedDate && (
             <TimeSlotPicker
               date={selectedDate}
-              meetingType={meetingType}
+              meetingType="intro"
               timezone={timezone}
               selectedTime={selectedTime}
               onSelect={handleTimeSelect}
@@ -110,7 +90,6 @@ export function BookingPage({ conversationId }: BookingPageProps) {
       )}
 
       {(step === 'details' || step === 'confirming') &&
-        meetingType &&
         selectedDate &&
         selectedTime && (
           <div className="space-y-6">
@@ -122,7 +101,7 @@ export function BookingPage({ conversationId }: BookingPageProps) {
               ← {t('back')}
             </button>
             <BookingForm
-              meetingType={meetingType}
+              meetingType="intro"
               date={selectedDate}
               timeSlot={selectedTime}
               timezone={timezone}

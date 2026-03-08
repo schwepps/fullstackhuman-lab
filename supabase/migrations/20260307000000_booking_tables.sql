@@ -12,7 +12,7 @@ ALTER TABLE public.users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT FALSE;
 
 CREATE TABLE public.meeting_types (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug TEXT NOT NULL UNIQUE CHECK (slug IN ('intro', 'deep-dive')),
+  slug TEXT NOT NULL UNIQUE CHECK (slug IN ('intro')),
   duration_minutes INTEGER NOT NULL CHECK (duration_minutes > 0),
   is_active BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -20,8 +20,7 @@ CREATE TABLE public.meeting_types (
 
 -- Seed data
 INSERT INTO public.meeting_types (slug, duration_minutes) VALUES
-  ('intro', 30),
-  ('deep-dive', 60);
+  ('intro', 30);
 
 -- RLS: public read, no client writes
 ALTER TABLE public.meeting_types ENABLE ROW LEVEL SECURITY;
@@ -92,8 +91,9 @@ CREATE TABLE public.bookings (
   -- Status
   status TEXT NOT NULL DEFAULT 'confirmed'
     CHECK (status IN ('confirmed', 'cancelled', 'completed', 'no_show')),
-  -- Google Calendar
+  -- Google Calendar & Meet
   google_event_id TEXT,
+  meet_link TEXT,
   -- AI briefing
   briefing TEXT,
   briefing_generated_at TIMESTAMPTZ,
@@ -208,13 +208,15 @@ BEGIN
   SELECT buffer_minutes INTO v_buffer FROM public.availability_config LIMIT 1;
   v_buffer := COALESCE(v_buffer, 15);
 
-  -- Check for overlapping bookings (including buffer)
-  SELECT COUNT(*) INTO v_conflict_count
+  -- Lock conflicting rows to prevent race conditions, then count
+  PERFORM 1
   FROM public.bookings b
   WHERE b.status = 'confirmed'
     AND b.starts_at < (v_ends_at + (v_buffer || ' minutes')::INTERVAL)
     AND (b.ends_at + (v_buffer || ' minutes')::INTERVAL) > p_starts_at
   FOR UPDATE;
+
+  GET DIAGNOSTICS v_conflict_count = ROW_COUNT;
 
   IF v_conflict_count > 0 THEN
     RETURN QUERY SELECT NULL::UUID, FALSE;
