@@ -220,6 +220,10 @@ export default function GameRoomPage() {
           setRevealRoundResults(msg.roundResults ?? [])
         }
 
+        if (msg.type === 'message_removed') {
+          setMessages((prev) => prev.filter((m) => m.id !== msg.messageId))
+        }
+
         if (msg.type === 'agent_typing') {
           setTypingPlayers((prev) => {
             if (msg.isTyping) {

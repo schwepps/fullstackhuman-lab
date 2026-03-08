@@ -392,6 +392,9 @@ export default class GameRoom implements Party.Server {
       }
     }
 
+    // Optimistic delivery — moderate async (never blocks message flow)
+    this.moderateAsync(chatMsg.id, trimmed, playerId, senderZone, playersInZone)
+
     // Persist and trigger agents
     try {
       const { roomStore } = await import('../../lib/game/room-store')
@@ -431,6 +434,43 @@ export default class GameRoom implements Party.Server {
     } catch {
       // Room may not exist yet
     }
+  }
+
+  // ─── Moderation (fire-and-forget) ─────────────────────────────────────
+
+  private moderateAsync(
+    messageId: string,
+    content: string,
+    playerId: string,
+    zone: ZoneType,
+    playersInZone: string[]
+  ) {
+    const baseUrl = process.env.NEXTJS_URL ?? 'http://localhost:3000'
+
+    fetch(`${baseUrl}/api/game/moderate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, playerId }),
+    })
+      .then((res) => res.json())
+      .then((result: { safe: boolean; reason?: string }) => {
+        if (!result.safe) {
+          const removePayload = JSON.stringify({
+            type: 'message_removed',
+            messageId,
+            reason: result.reason ?? 'moderated',
+          })
+          for (const [connId, pId] of this.connToPlayer) {
+            if (playersInZone.includes(pId)) {
+              const conn = this.room.getConnection(connId)
+              if (conn) conn.send(removePayload)
+            }
+          }
+        }
+      })
+      .catch(() => {
+        // Fail open — moderation service down, message stays
+      })
   }
 
   // ─── Ready / Round lifecycle ────────────────────────────────────────────
