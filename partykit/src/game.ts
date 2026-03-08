@@ -44,6 +44,9 @@ export default class GameRoom implements Party.Server {
   // Track display names for chat
   displayNames: Map<string, string> = new Map()
 
+  // Session tokens for reconnection (playerId → token)
+  sessionTokens: Map<string, string> = new Map()
+
   // Track current phase in memory
   currentPhase: GamePhase = 'lobby'
 
@@ -56,26 +59,98 @@ export default class GameRoom implements Party.Server {
     const sessionToken = url.searchParams.get('sessionToken')
     const requestedPlayerId = url.searchParams.get('playerId')
 
-    // Reconnection path (stub — will be implemented in Phase 11)
+    // Reconnection path
     if (requestedPlayerId && sessionToken) {
-      this.connToPlayer.set(conn.id, requestedPlayerId)
-      conn.send(
-        JSON.stringify({
-          type: 'phase_change',
-          phase: this.currentPhase,
-          yourPlayerId: requestedPlayerId,
-        })
-      )
-      return
+      const roomData = await this.getRoomData()
+
+      // Room expired — close with 4004
+      if (!roomData) {
+        conn.close(4004, 'Room not found')
+        return
+      }
+
+      const player = roomData.players.get(requestedPlayerId)
+
+      // Valid session — restore player state
+      if (player && player.sessionToken === sessionToken) {
+        this.connToPlayer.set(conn.id, requestedPlayerId)
+        this.positions.set(requestedPlayerId, player.position)
+        this.zones.set(requestedPlayerId, player.currentZone)
+        this.displayNames.set(requestedPlayerId, player.displayName)
+        this.assignedColors.add(player.avatarColor)
+
+        // Mark player as connected in Redis
+        try {
+          const { roomStore } = await import('../../lib/game/room-store')
+          await roomStore.update(this.room.id, (r) => {
+            const p = r.players.get(requestedPlayerId)
+            if (p) p.isConnected = true
+            return r
+          })
+        } catch {
+          // Non-critical
+        }
+
+        // Send reconnected event with full state
+        conn.send(
+          JSON.stringify({
+            type: 'reconnected',
+            phase: this.currentPhase,
+            round: roomData.round,
+            topic: roomData.currentTopic,
+            yourPlayerId: requestedPlayerId,
+            yourColor: player.avatarColor,
+            roundStartedAt: roomData.roundStartedAt,
+          })
+        )
+
+        // Send all current positions
+        const posUpdates = Array.from(this.positions.entries()).map(
+          ([id, pos]) => ({
+            playerId: id,
+            position: pos,
+            zone: this.zones.get(id) ?? 'main',
+          })
+        )
+        if (posUpdates.length) {
+          conn.send(
+            JSON.stringify({ type: 'position_update', updates: posUpdates })
+          )
+        }
+
+        // Broadcast reconnection to others
+        this.room.broadcast(
+          JSON.stringify({
+            type: 'player_joined',
+            player: {
+              id: requestedPlayerId,
+              displayName: player.displayName,
+              avatarColor: player.avatarColor,
+              isConnected: true,
+              isEliminated: player.isEliminated,
+            },
+          }),
+          [conn.id]
+        )
+
+        return
+      }
+
+      // Invalid session — fall through to fresh join
     }
 
-    // Fresh join — assign color
+    // Fresh join — assign color and session token
     const color =
       AVATAR_COLORS.find((c) => !this.assignedColors.has(c)) ?? AVATAR_COLORS[0]
     this.assignedColors.add(color)
 
+    const newSessionToken = crypto.randomUUID()
+
     // Map conn.id to itself for fresh joins
     this.connToPlayer.set(conn.id, conn.id)
+
+    // Store session token for later Redis persistence
+    this.sessionTokens.set(conn.id, newSessionToken)
 
     conn.send(
       JSON.stringify({
@@ -83,6 +158,7 @@ export default class GameRoom implements Party.Server {
         phase: this.currentPhase,
         yourPlayerId: conn.id,
         yourColor: color,
+        sessionToken: newSessionToken,
       })
     )
 
@@ -110,6 +186,52 @@ export default class GameRoom implements Party.Server {
       conn.send(
         JSON.stringify({ type: 'position_update', updates: posUpdates })
       )
+    }
+
+    // Persist player to Redis (create room if first player)
+    try {
+      const { roomStore } = await import('../../lib/game/room-store')
+      const existing = await roomStore.get(this.room.id)
+
+      const newPlayer: Player = {
+        id: conn.id,
+        displayName: conn.id.slice(0, 6),
+        type: 'human',
+        model: 'claude-sonnet-4-6',
+        revealPreference: 'public',
+        position: { x: 600, y: 400 },
+        currentZone: 'main',
+        avatarColor: color,
+        isConnected: true,
+        isEliminated: false,
+        score: 0,
+        roundsSurvived: 0,
+        correctVotes: 0,
+        sessionToken: newSessionToken,
+        chatHistory: [],
+      }
+
+      if (existing) {
+        await roomStore.update(this.room.id, (r) => {
+          r.players.set(conn.id, newPlayer)
+          return r
+        })
+      } else {
+        await roomStore.create({
+          id: this.room.id,
+          hostId: conn.id,
+          phase: 'lobby',
+          round: 0,
+          maxRounds: 4,
+          roundDuration: 180,
+          players: new Map([[conn.id, newPlayer]]),
+          votes: new Map(),
+          roundResults: [],
+          createdAt: Date.now(),
+        })
+      }
+    } catch {
+      // Redis may be unavailable
     }
   }
 
@@ -148,16 +270,30 @@ export default class GameRoom implements Party.Server {
   async onClose(conn: Party.Connection) {
     const playerId = this.connToPlayer.get(conn.id) ?? conn.id
     this.connToPlayer.delete(conn.id)
-    this.positions.delete(playerId)
-    this.zones.delete(playerId)
 
     // Clean up debounce timer
     const timer = this.zoneWriteDebounce.get(playerId)
     if (timer) clearTimeout(timer)
     this.zoneWriteDebounce.delete(playerId)
 
-    // Broadcast disconnection
-    this.room.broadcast(JSON.stringify({ type: 'player_left', playerId }))
+    // During game (not lobby), keep position/zone for reconnection
+    if (this.currentPhase === 'lobby') {
+      this.positions.delete(playerId)
+      this.zones.delete(playerId)
+      this.room.broadcast(JSON.stringify({ type: 'player_left', playerId }))
+    } else {
+      // Mark as disconnected in Redis but preserve state
+      try {
+        const { roomStore } = await import('../../lib/game/room-store')
+        await roomStore.update(this.room.id, (r) => {
+          const player = r.players.get(playerId)
+          if (player) player.isConnected = false
+          return r
+        })
+      } catch {
+        // Non-critical
+      }
+    }
   }
 
   // ─── onAlarm — the ONLY reliable timer in Cloudflare Workers ──────────────

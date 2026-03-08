@@ -64,13 +64,15 @@ export const roomStore = {
     return raw ? deserialise(raw) : null
   },
 
-  async update(id: string, updater: (room: Room) => Room): Promise<void> {
+  async update(id: string, updater: (room: Room) => Room): Promise<Room> {
     const room = await roomStore.get(id)
     if (!room) throw new Error(`Room ${id} not found`)
+    const updated = updater(room)
     const redis = getRedisClient()
-    await redis.set(`game:room:${id}`, serialise(updater(room)), {
+    await redis.set(`game:room:${id}`, serialise(updated), {
       ex: ROOM_TTL,
     })
+    return updated
   },
 
   async delete(id: string): Promise<void> {

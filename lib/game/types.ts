@@ -146,12 +146,22 @@ export type ServerMessage =
       phase: GamePhase
       round?: number
       topic?: string
+      sessionToken?: string
     }
   | { type: 'vote_progress'; count: number; total: number }
   | { type: 'elimination'; displayName: string }
   | { type: 'reveal'; result: GameResult; allPlayers: RevealPlayer[] }
   | { type: 'score_update'; scores: Record<string, number> }
   | { type: 'message_removed'; messageId: string; reason: string }
+  | {
+      type: 'reconnected'
+      phase: GamePhase
+      round: number
+      topic?: string
+      yourPlayerId: string
+      yourColor: number
+      roundStartedAt?: number
+    }
 
 export type PublicPlayer = Omit<Player, 'type' | 'customPrompt' | 'chatHistory'>
 

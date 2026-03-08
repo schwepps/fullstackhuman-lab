@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import usePartySocket from 'partysocket/react'
 import { GameCanvas } from '@/components/game/game-canvas'
@@ -18,6 +18,7 @@ import type {
 } from '@/lib/game/types'
 
 const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? 'localhost:1999'
+const SESSION_KEY_PREFIX = 'game:session:'
 
 type TypingState = {
   playerId: string
@@ -29,6 +30,42 @@ type LobbyPlayer = {
   id: string
   displayName: string
   avatarColor: number
+}
+
+type StoredSession = {
+  playerId: string
+  sessionToken: string
+}
+
+function saveSession(roomId: string, playerId: string, sessionToken: string) {
+  try {
+    localStorage.setItem(
+      `${SESSION_KEY_PREFIX}${roomId}`,
+      JSON.stringify({ playerId, sessionToken })
+    )
+  } catch {
+    // localStorage may be unavailable
+  }
+}
+
+function getExistingSession(roomId: string): StoredSession | null {
+  try {
+    const raw = localStorage.getItem(`${SESSION_KEY_PREFIX}${roomId}`)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (parsed?.playerId && parsed?.sessionToken) return parsed as StoredSession
+    return null
+  } catch {
+    return null
+  }
+}
+
+function clearSession(roomId: string) {
+  try {
+    localStorage.removeItem(`${SESSION_KEY_PREFIX}${roomId}`)
+  } catch {
+    // localStorage may be unavailable
+  }
 }
 
 export default function GameRoomPage() {
@@ -56,9 +93,21 @@ export default function GameRoomPage() {
   const [eliminatedName, setEliminatedName] = useState<string | null>(null)
   const [isEliminated] = useState(false)
 
+  // Build query string with session params for reconnection
+  const sessionQuery = useMemo(() => {
+    const existing = getExistingSession(roomId)
+    if (existing) {
+      return `playerId=${encodeURIComponent(existing.playerId)}&sessionToken=${encodeURIComponent(existing.sessionToken)}`
+    }
+    return ''
+  }, [roomId])
+
   const ws = usePartySocket({
     host: PARTYKIT_HOST,
     room: roomId,
+    query: sessionQuery
+      ? Object.fromEntries(new URLSearchParams(sessionQuery))
+      : undefined,
     onOpen() {
       setStatus('connected')
       setSocket(ws as unknown as WebSocket)
@@ -67,10 +116,24 @@ export default function GameRoomPage() {
       try {
         const msg = JSON.parse(event.data)
 
+        if (msg.type === 'reconnected') {
+          setMyPlayerId(msg.yourPlayerId)
+          setMyColor(msg.yourColor)
+          setPhase(msg.phase)
+          setRound(msg.round ?? 0)
+          if (msg.topic) setTopic(msg.topic)
+          if (msg.roundStartedAt) setRoundStartedAt(msg.roundStartedAt)
+          return
+        }
+
         if (msg.type === 'phase_change') {
           if (msg.yourPlayerId) {
             setMyPlayerId(msg.yourPlayerId)
             setIsHost(true) // First player is host
+            // Save session for reconnection
+            if (msg.sessionToken) {
+              saveSession(roomId, msg.yourPlayerId, msg.sessionToken)
+            }
           }
           if (msg.yourColor) setMyColor(msg.yourColor)
           if (msg.phase) {
@@ -78,6 +141,10 @@ export default function GameRoomPage() {
             if (msg.phase === 'vote') {
               setVoteStartedAt(Date.now())
               setVoteCount(0)
+            }
+            // Clear session on reveal/ended
+            if (msg.phase === 'reveal' || msg.phase === 'ended') {
+              clearSession(roomId)
             }
           }
           if (msg.round) setRound(msg.round)
@@ -151,8 +218,14 @@ export default function GameRoomPage() {
         // ignore malformed messages
       }
     },
-    onClose() {
-      setStatus('connecting')
+    onClose(event) {
+      // 4004 = room not found (expired) — clear stale session
+      if (event.code === 4004) {
+        clearSession(roomId)
+        setStatus('error')
+      } else {
+        setStatus('connecting')
+      }
       setSocket(null)
     },
     onError() {
