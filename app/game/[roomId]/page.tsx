@@ -6,7 +6,14 @@ import usePartySocket from 'partysocket/react'
 import { GameCanvas } from '@/components/game/game-canvas'
 import { ChatBubble } from '@/components/game/chat-bubble'
 import { ChatInput } from '@/components/game/chat-input'
-import type { ZoneType, ChatMessage } from '@/lib/game/types'
+import { TopicBanner } from '@/components/game/topic-banner'
+import { LobbyPanel } from '@/components/game/lobby-panel'
+import type {
+  ZoneType,
+  ChatMessage,
+  GamePhase,
+  PlayerType,
+} from '@/lib/game/types'
 
 const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? 'localhost:1999'
 
@@ -14,6 +21,12 @@ type TypingState = {
   playerId: string
   displayName: string
   zone: ZoneType
+}
+
+type LobbyPlayer = {
+  id: string
+  displayName: string
+  avatarColor: number
 }
 
 export default function GameRoomPage() {
@@ -28,6 +41,13 @@ export default function GameRoomPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [isChatFocused, setIsChatFocused] = useState(false)
   const [typingPlayers, setTypingPlayers] = useState<TypingState[]>([])
+  const [phase, setPhase] = useState<GamePhase>('lobby')
+  const [round, setRound] = useState(0)
+  const [topic, setTopic] = useState('')
+  const [roundStartedAt, setRoundStartedAt] = useState(0)
+  const [lobbyPlayers, setLobbyPlayers] = useState<LobbyPlayer[]>([])
+  const [isHost, setIsHost] = useState(false)
+  const [roundDuration] = useState(180)
 
   const ws = usePartySocket({
     host: PARTYKIT_HOST,
@@ -39,14 +59,41 @@ export default function GameRoomPage() {
     onMessage(event) {
       try {
         const msg = JSON.parse(event.data)
-        if (msg.type === 'phase_change' && msg.yourPlayerId) {
-          setMyPlayerId(msg.yourPlayerId)
+
+        if (msg.type === 'phase_change') {
+          if (msg.yourPlayerId) {
+            setMyPlayerId(msg.yourPlayerId)
+            setIsHost(true) // First player is host
+          }
           if (msg.yourColor) setMyColor(msg.yourColor)
+          if (msg.phase) setPhase(msg.phase)
+          if (msg.round) setRound(msg.round)
+          if (msg.topic) setTopic(msg.topic)
+          if (msg.roundStartedAt) setRoundStartedAt(msg.roundStartedAt)
         }
+
+        if (msg.type === 'player_joined' && msg.player) {
+          setLobbyPlayers((prev) => {
+            if (prev.some((p) => p.id === msg.player.id)) return prev
+            return [
+              ...prev,
+              {
+                id: msg.player.id,
+                displayName:
+                  msg.player.displayName ?? msg.player.id.slice(0, 6),
+                avatarColor: msg.player.avatarColor ?? 0x22d3ee,
+              },
+            ]
+          })
+        }
+
+        if (msg.type === 'player_left') {
+          setLobbyPlayers((prev) => prev.filter((p) => p.id !== msg.playerId))
+        }
+
         if (msg.type === 'chat_message' && msg.message) {
           const chatMsg = msg.message as ChatMessage
           setMessages((prev) => {
-            // If streaming, update existing message by ID
             if (chatMsg.isStreaming) {
               const idx = prev.findIndex((m) => m.id === chatMsg.id)
               if (idx >= 0) {
@@ -55,13 +102,13 @@ export default function GameRoomPage() {
                 return updated
               }
             }
-            // Remove streaming version if this is the final message
             const filtered = prev.filter(
               (m) => m.id !== chatMsg.id || !m.isStreaming
             )
             return [...filtered, chatMsg]
           })
         }
+
         if (msg.type === 'agent_typing') {
           setTypingPlayers((prev) => {
             if (msg.isTyping) {
@@ -91,9 +138,7 @@ export default function GameRoomPage() {
     },
   })
 
-  const handlePositionUpdate = useCallback(() => {
-    // Position updates handled internally by GameCanvas
-  }, [])
+  const handlePositionUpdate = useCallback(() => {}, [])
 
   const handleZoneChange = useCallback((zone: ZoneType) => {
     setCurrentZone(zone)
@@ -114,6 +159,15 @@ export default function GameRoomPage() {
     setIsChatFocused(focused)
   }, [])
 
+  const handleLobbyReady = useCallback(
+    (_displayName: string, _type: PlayerType, _customPrompt?: string) => {
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'ready' }))
+      }
+    },
+    [socket]
+  )
+
   if (status !== 'connected' || !myPlayerId) {
     return (
       <main className="flex min-h-svh items-center justify-center p-4">
@@ -133,6 +187,19 @@ export default function GameRoomPage() {
     )
   }
 
+  // Lobby phase
+  if (phase === 'lobby') {
+    return (
+      <main className="flex min-h-svh flex-col items-center justify-center bg-[#0a0a0c] p-2 sm:p-4">
+        <LobbyPanel
+          isHost={isHost}
+          players={lobbyPlayers}
+          onReady={handleLobbyReady}
+        />
+      </main>
+    )
+  }
+
   // Filter messages and typing indicators for current zone
   const zoneMessages = messages.filter((m) => m.zone === currentZone)
   const zoneTyping = typingPlayers
@@ -141,6 +208,16 @@ export default function GameRoomPage() {
 
   return (
     <main className="flex min-h-svh flex-col items-center justify-center bg-[#0a0a0c] p-2 sm:p-4">
+      {phase === 'round' && topic && (
+        <div className="w-full max-w-300">
+          <TopicBanner
+            round={round}
+            topic={topic}
+            roundDuration={roundDuration}
+            roundStartedAt={roundStartedAt}
+          />
+        </div>
+      )}
       <div className="relative w-full max-w-300">
         <GameCanvas
           socket={socket}
@@ -161,7 +238,8 @@ export default function GameRoomPage() {
           <ChatInput
             onSend={handleSendChat}
             onFocusChange={handleChatFocusChange}
-            disabled={false}
+            disabled={phase !== 'round'}
+            placeholder={phase === 'vote' ? 'VOTING...' : undefined}
           />
         </div>
       </div>

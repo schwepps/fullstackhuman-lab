@@ -2,23 +2,30 @@ import type * as Party from 'partykit/server'
 import type {
   ClientMessage,
   ChatMessage,
+  Player,
   Position,
   ZoneType,
   ChatScope,
   PublicPlayer,
+  GamePhase,
 } from '../../lib/game/types'
 import {
   AVATAR_COLORS,
   ZONE_DEBOUNCE_MS,
   MAX_MESSAGE_LENGTH,
   MAX_CHAT_HISTORY_PER_ZONE,
+  VOTE_TIMEOUT_MS,
 } from '../../lib/game/constants'
 import { computeZone, getPlayersInZone } from './proximity-router'
+import { getNextTopic } from './topic-engine'
+import { PERSONAS } from '../../lib/game/agent-personas'
 
 // Alarm key constants — stored in Partykit storage
 const ALARM_ROUND_END = 'alarm:roundEnd'
 const ALARM_VOTE_END = 'alarm:voteEnd'
 const ALARM_START_ROUND = 'alarm:startRound'
+
+const MIN_PLAYERS = 3
 
 export default class GameRoom implements Party.Server {
   // In-memory only — ephemeral, high-frequency, never persisted directly
@@ -37,6 +44,9 @@ export default class GameRoom implements Party.Server {
   // Track display names for chat
   displayNames: Map<string, string> = new Map()
 
+  // Track current phase in memory
+  currentPhase: GamePhase = 'lobby'
+
   constructor(readonly room: Party.Room) {}
 
   // ─── Lifecycle ──────────────────────────────────────────────────────────────
@@ -46,16 +56,13 @@ export default class GameRoom implements Party.Server {
     const sessionToken = url.searchParams.get('sessionToken')
     const requestedPlayerId = url.searchParams.get('playerId')
 
-    // TODO Phase 9+: load room from roomStore, handle reconnection
-    // For now, send a basic connection acknowledgment
-
     // Reconnection path (stub — will be implemented in Phase 11)
     if (requestedPlayerId && sessionToken) {
       this.connToPlayer.set(conn.id, requestedPlayerId)
       conn.send(
         JSON.stringify({
           type: 'phase_change',
-          phase: 'lobby',
+          phase: this.currentPhase,
           yourPlayerId: requestedPlayerId,
         })
       )
@@ -73,7 +80,7 @@ export default class GameRoom implements Party.Server {
     conn.send(
       JSON.stringify({
         type: 'phase_change',
-        phase: 'lobby',
+        phase: this.currentPhase,
         yourPlayerId: conn.id,
         yourColor: color,
       })
@@ -122,7 +129,6 @@ export default class GameRoom implements Party.Server {
         this.handleMove(playerId, msg.position)
         break
       case 'move-to':
-        // move-to is handled client-side (interpolation) — server treats as position update
         this.handleMove(playerId, msg.target)
         break
       case 'chat':
@@ -132,7 +138,7 @@ export default class GameRoom implements Party.Server {
         // Stub — implemented in Phase 10
         break
       case 'ready':
-        // Stub — implemented in Phase 9
+        await this.handleReady(playerId)
         break
     }
   }
@@ -160,9 +166,11 @@ export default class GameRoom implements Party.Server {
     if (alarmType === ALARM_ROUND_END) {
       await this.endRound()
     } else if (alarmType === ALARM_VOTE_END) {
-      // Stub — implemented in Phase 10
+      // Force tally — Phase 10
     } else if (alarmType === ALARM_START_ROUND) {
-      // Stub — implemented in Phase 9
+      const nextRound =
+        (await this.room.storage.get<number>('nextRoundNumber')) ?? 1
+      await this.startRound(nextRound)
     }
   }
 
@@ -171,18 +179,15 @@ export default class GameRoom implements Party.Server {
   private handleMove(playerId: string, position: Position) {
     this.positions.set(playerId, position)
 
-    // Compute zone and detect changes
     const newZone = computeZone(position)
     const prevZone = this.zones.get(playerId) ?? 'main'
     this.zones.set(playerId, newZone)
 
     if (newZone !== prevZone) {
-      // Broadcast zone change to all connections
       this.room.broadcast(
         JSON.stringify({ type: 'zone_update', playerId, zone: newZone })
       )
 
-      // Debounce Redis write for zone persistence
       const existingTimer = this.zoneWriteDebounce.get(playerId)
       if (existingTimer) clearTimeout(existingTimer)
 
@@ -192,29 +197,22 @@ export default class GameRoom implements Party.Server {
           this.zoneWriteDebounce.delete(playerId)
           try {
             const { roomStore } = await import('../../lib/game/room-store')
-            await roomStore.update(this.room.id, (room) => {
-              const player = room.players.get(playerId)
+            await roomStore.update(this.room.id, (r) => {
+              const player = r.players.get(playerId)
               if (player) player.currentZone = newZone
-              return room
+              return r
             })
           } catch {
-            // Room may not exist yet in early phases
+            // Room may not exist yet
           }
         }, ZONE_DEBOUNCE_MS)
       )
     }
 
-    // Broadcast position to all other players
     this.room.broadcast(
       JSON.stringify({
         type: 'position_update',
-        updates: [
-          {
-            playerId,
-            position,
-            zone: newZone,
-          },
-        ],
+        updates: [{ playerId, position, zone: newZone }],
       }),
       [playerId]
     )
@@ -228,11 +226,9 @@ export default class GameRoom implements Party.Server {
     _zone: ChatScope,
     _sender: Party.Connection
   ) {
-    // Validate content
     const trimmed = content.trim()
     if (!trimmed || trimmed.length > MAX_MESSAGE_LENGTH) return
 
-    // Use sender's zone, not the zone from the client message (prevent spoofing)
     const senderZone = this.zones.get(playerId) ?? 'main'
 
     const chatMsg: ChatMessage = {
@@ -244,7 +240,6 @@ export default class GameRoom implements Party.Server {
       timestamp: Date.now(),
     }
 
-    // Zone-scoped delivery: send to all players in the same zone
     const playersInZone = getPlayersInZone(senderZone, this.zones)
     const msgPayload = JSON.stringify({
       type: 'chat_message',
@@ -258,13 +253,12 @@ export default class GameRoom implements Party.Server {
       }
     }
 
-    // Persist to Redis (fire and forget)
+    // Persist and trigger agents
     try {
       const { roomStore } = await import('../../lib/game/room-store')
-      await roomStore.update(this.room.id, (room) => {
-        // Add message to all players in zone
+      const updatedRoom = await roomStore.update(this.room.id, (r) => {
         for (const pId of playersInZone) {
-          const player = room.players.get(pId)
+          const player = r.players.get(pId)
           if (!player) continue
 
           let entry = player.chatHistory.find(
@@ -276,19 +270,19 @@ export default class GameRoom implements Party.Server {
           }
           entry.messages.push(chatMsg)
 
-          // Cap at MAX_CHAT_HISTORY_PER_ZONE
           if (entry.messages.length > MAX_CHAT_HISTORY_PER_ZONE) {
             entry.messages = entry.messages.slice(-MAX_CHAT_HISTORY_PER_ZONE)
           }
         }
-        return room
+        return r
       })
+
       // Trigger agent responses if sender is human
-      const senderPlayer = room.players.get(playerId)
+      const senderPlayer = updatedRoom.players.get(playerId)
       if (senderPlayer?.type === 'human') {
         const { triggerAgentResponses } = await import('./agent-manager')
         triggerAgentResponses(
-          room,
+          updatedRoom,
           senderZone,
           playersInZone,
           this.room,
@@ -296,14 +290,154 @@ export default class GameRoom implements Party.Server {
         )
       }
     } catch {
-      // Room may not exist yet in early phases
+      // Room may not exist yet
     }
   }
 
-  // ─── Phase transition stubs ───────────────────────────────────────────────
+  // ─── Ready / Round lifecycle ────────────────────────────────────────────
+
+  private async handleReady(playerId: string) {
+    if (this.currentPhase !== 'lobby') return
+
+    // Only host can start
+    // For now, the first connected player is host
+    const firstPlayer = this.connToPlayer.values().next().value
+    if (playerId !== firstPlayer) return
+
+    // Need minimum players
+    if (this.connToPlayer.size < MIN_PLAYERS) return
+
+    // Fill empty slots with auto-agents (up to reasonable total)
+    try {
+      const { roomStore } = await import('../../lib/game/room-store')
+      await roomStore.update(this.room.id, (r) => {
+        const humanCount = r.players.size
+        const agentsNeeded = Math.max(0, MIN_PLAYERS - humanCount)
+        const availablePersonas = PERSONAS.filter((p) => !r.players.has(p.id))
+
+        for (let i = 0; i < agentsNeeded && i < availablePersonas.length; i++) {
+          const persona = availablePersonas[i]
+          const color =
+            AVATAR_COLORS.find((c) => !this.assignedColors.has(c)) ??
+            AVATAR_COLORS[0]
+          this.assignedColors.add(color)
+
+          const agentPlayer: Player = {
+            id: persona.id,
+            displayName: persona.name,
+            type: 'auto-agent',
+            model: 'claude-sonnet-4-6',
+            revealPreference: 'public',
+            position: {
+              x: 400 + Math.random() * 400,
+              y: 250 + Math.random() * 300,
+            },
+            currentZone: 'main',
+            avatarColor: color,
+            isConnected: true,
+            isEliminated: false,
+            score: 0,
+            roundsSurvived: 0,
+            correctVotes: 0,
+            sessionToken: crypto.randomUUID(),
+            chatHistory: [],
+          }
+          r.players.set(persona.id, agentPlayer)
+
+          // Track in memory
+          this.displayNames.set(persona.id, persona.name)
+          this.zones.set(persona.id, 'main')
+          this.positions.set(persona.id, agentPlayer.position)
+
+          // Broadcast agent joining
+          this.room.broadcast(
+            JSON.stringify({
+              type: 'player_joined',
+              player: {
+                id: persona.id,
+                displayName: persona.name,
+                avatarColor: color,
+                isConnected: true,
+                isEliminated: false,
+                position: agentPlayer.position,
+              },
+            })
+          )
+        }
+        return r
+      })
+    } catch {
+      // Room may not exist yet, create it in startRound
+    }
+
+    await this.startRound(1)
+  }
+
+  private async startRound(roundNumber: number) {
+    const topic = getNextTopic(roundNumber)
+    const roundStartedAt = Date.now()
+    this.currentPhase = 'round'
+
+    try {
+      const { roomStore } = await import('../../lib/game/room-store')
+      await roomStore.update(this.room.id, (r) => {
+        r.phase = 'round'
+        r.round = roundNumber
+        r.currentTopic = topic
+        r.votes = new Map()
+        r.roundStartedAt = roundStartedAt
+        return r
+      })
+    } catch {
+      // Non-critical
+    }
+
+    // Broadcast phase change
+    this.room.broadcast(
+      JSON.stringify({
+        type: 'phase_change',
+        phase: 'round',
+        round: roundNumber,
+        topic,
+        roundStartedAt,
+      })
+    )
+
+    // Set alarm for round end
+    const roomData = await this.getRoomData()
+    const duration = (roomData?.roundDuration ?? 180) * 1000
+    await this.room.storage.put('currentAlarm', ALARM_ROUND_END)
+    await this.room.storage.setAlarm(Date.now() + duration)
+  }
 
   private async endRound() {
-    // Stub — implemented in Phase 9/10
+    this.currentPhase = 'vote'
+
+    try {
+      const { roomStore } = await import('../../lib/game/room-store')
+      await roomStore.update(this.room.id, (r) => {
+        r.phase = 'vote'
+        return r
+      })
+    } catch {
+      // Non-critical
+    }
+
     this.room.broadcast(JSON.stringify({ type: 'phase_change', phase: 'vote' }))
+
+    // Set alarm for vote timeout
+    await this.room.storage.put('currentAlarm', ALARM_VOTE_END)
+    await this.room.storage.setAlarm(Date.now() + VOTE_TIMEOUT_MS)
+  }
+
+  // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  private async getRoomData() {
+    try {
+      const { roomStore } = await import('../../lib/game/room-store')
+      return await roomStore.get(this.room.id)
+    } catch {
+      return null
+    }
   }
 }
