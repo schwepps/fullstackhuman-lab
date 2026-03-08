@@ -1,0 +1,6 @@
+{
+  "name": "turing-game",
+  "main": "partykit/src/game.ts",
+  "compatibilityDate": "2025-01-01",
+  "port": 1999
+}

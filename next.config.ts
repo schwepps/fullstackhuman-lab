@@ -36,7 +36,7 @@ const securityHeaders = [
         "script-src 'self' 'unsafe-inline' https://eu-assets.i.posthog.com",
         "style-src 'self' 'unsafe-inline'",
         "img-src 'self' https: data:",
-        "connect-src 'self' https://*.supabase.co https://eu.i.posthog.com https://eu-assets.i.posthog.com",
+        "connect-src 'self' https://*.supabase.co https://eu.i.posthog.com https://eu-assets.i.posthog.com wss://*.partykit.dev ws://localhost:1999",
         "font-src 'self'",
         "frame-ancestors 'self'",
       ].join('; ') + ';',
