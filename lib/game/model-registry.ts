@@ -3,7 +3,7 @@ import { MAX_AGENT_TOKENS } from './constants'
 
 const anthropic = new Anthropic()
 
-const AGENT_MODEL = 'claude-sonnet-4-20250514'
+const AGENT_MODEL = 'claude-sonnet-4-6'
 
 export async function generateAgentResponse(
   systemPrompt: string,

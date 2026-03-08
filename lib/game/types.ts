@@ -110,7 +110,7 @@ export interface GameResult {
   agentsSurvived: string[]
   agentsCaught: string[]
   humansEliminated: string[]
-  scores: Map<string, number>
+  scores: Record<string, number>
   promptReveal: PromptRevealEntry[]
 }
 

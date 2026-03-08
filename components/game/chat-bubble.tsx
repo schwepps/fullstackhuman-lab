@@ -27,8 +27,7 @@ export function ChatBubble({ messages, typingPlayers = [] }: ChatBubbleProps) {
 
   return (
     <div
-      className="max-h-48 w-full overflow-y-auto border border-border font-mono lg:max-w-xs"
-      style={{ backgroundColor: 'rgba(10, 10, 12, 0.85)' }}
+      className="max-h-48 w-full overflow-y-auto border border-border bg-background/85 font-mono lg:max-w-xs"
       ref={scrollRef}
     >
       {recent.length === 0 && typingPlayers.length === 0 ? (

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 type EliminationScreenProps = {
   displayName: string
@@ -15,6 +15,10 @@ export function EliminationScreen({
 }: EliminationScreenProps) {
   const [opacity, setOpacity] = useState(1)
   const [flashOpacity, setFlashOpacity] = useState(0.15)
+  const onCompleteRef = useRef(onComplete)
+  useEffect(() => {
+    onCompleteRef.current = onComplete
+  }, [onComplete])
 
   // Red flash fade
   useEffect(() => {
@@ -25,12 +29,15 @@ export function EliminationScreen({
   // Auto-fade and unmount
   useEffect(() => {
     const fadeTimer = setTimeout(() => setOpacity(0), DISPLAY_DURATION_MS - 500)
-    const unmountTimer = setTimeout(onComplete, DISPLAY_DURATION_MS)
+    const unmountTimer = setTimeout(
+      () => onCompleteRef.current(),
+      DISPLAY_DURATION_MS
+    )
     return () => {
       clearTimeout(fadeTimer)
       clearTimeout(unmountTimer)
     }
-  }, [onComplete])
+  }, [])
 
   return (
     <div

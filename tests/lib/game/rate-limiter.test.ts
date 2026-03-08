@@ -6,7 +6,6 @@ import {
 } from '@/lib/game/rate-limiter'
 
 const mockRedis = {
-  get: vi.fn(),
   incr: vi.fn(),
   expire: vi.fn(),
   exists: vi.fn(),
@@ -17,11 +16,19 @@ vi.mock('@/lib/upstash', () => ({
   getRedisClient: () => mockRedis,
 }))
 
+const mockGetConcurrentCount = vi.fn()
+
+vi.mock('@/lib/game/room-store', () => ({
+  roomStore: {
+    getConcurrentCount: (...args: unknown[]) => mockGetConcurrentCount(...args),
+  },
+}))
+
 describe('checkRoomCreationAllowed', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('allows room creation when under limits', async () => {
-    mockRedis.get.mockResolvedValue(5)
+    mockGetConcurrentCount.mockResolvedValue(5)
     mockRedis.incr.mockResolvedValue(1)
 
     const result = await checkRoomCreationAllowed('127.0.0.1')
@@ -34,7 +41,7 @@ describe('checkRoomCreationAllowed', () => {
   })
 
   it('rejects when global room cap reached', async () => {
-    mockRedis.get.mockResolvedValue(20)
+    mockGetConcurrentCount.mockResolvedValue(20)
 
     const result = await checkRoomCreationAllowed('127.0.0.1')
 
@@ -43,7 +50,7 @@ describe('checkRoomCreationAllowed', () => {
   })
 
   it('rejects 4th room from same IP within an hour', async () => {
-    mockRedis.get.mockResolvedValue(5)
+    mockGetConcurrentCount.mockResolvedValue(5)
     mockRedis.incr.mockResolvedValue(4)
 
     const result = await checkRoomCreationAllowed('127.0.0.1')
@@ -53,7 +60,7 @@ describe('checkRoomCreationAllowed', () => {
   })
 
   it('allows 3rd room from same IP', async () => {
-    mockRedis.get.mockResolvedValue(5)
+    mockGetConcurrentCount.mockResolvedValue(5)
     mockRedis.incr.mockResolvedValue(3)
 
     const result = await checkRoomCreationAllowed('127.0.0.1')

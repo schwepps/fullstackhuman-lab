@@ -2,6 +2,8 @@ import { getRedisClient } from '@/lib/upstash'
 import { ROOM_TTL, MAX_CHAT_HISTORY_PER_ZONE } from '@/lib/game/constants'
 import type { Room, Player } from '@/lib/game/types'
 
+const MAX_UPDATE_RETRIES = 3
+
 function serialise(room: Room): string {
   return JSON.stringify({
     ...room,
@@ -18,12 +20,7 @@ function serialise(room: Room): string {
       ])
     ),
     votes: Object.fromEntries(room.votes),
-    results: room.results
-      ? {
-          ...room.results,
-          scores: Object.fromEntries(room.results.scores),
-        }
-      : undefined,
+    results: room.results ?? undefined,
   })
 }
 
@@ -38,14 +35,7 @@ function deserialise(raw: string): Room {
       ])
     ),
     votes: new Map(Object.entries(obj.votes as Record<string, string>)),
-    results: obj.results
-      ? {
-          ...obj.results,
-          scores: new Map(
-            Object.entries(obj.results.scores as Record<string, number>)
-          ),
-        }
-      : undefined,
+    results: obj.results ?? undefined,
   }
 }
 
@@ -55,7 +45,6 @@ export const roomStore = {
     await redis.set(`game:room:${room.id}`, serialise(room), {
       ex: ROOM_TTL,
     })
-    await redis.incr('game:room:count')
   },
 
   async get(id: string): Promise<Room | null> {
@@ -65,25 +54,41 @@ export const roomStore = {
   },
 
   async update(id: string, updater: (room: Room) => Room): Promise<Room> {
-    const room = await roomStore.get(id)
-    if (!room) throw new Error(`Room ${id} not found`)
-    const updated = updater(room)
-    const redis = getRedisClient()
-    await redis.set(`game:room:${id}`, serialise(updated), {
-      ex: ROOM_TTL,
-    })
-    return updated
+    // Optimistic retry loop to reduce lost writes from concurrent updates
+    for (let attempt = 0; attempt < MAX_UPDATE_RETRIES; attempt++) {
+      const room = await roomStore.get(id)
+      if (!room) throw new Error(`Room ${id} not found`)
+      const updated = updater(room)
+      const redis = getRedisClient()
+      await redis.set(`game:room:${id}`, serialise(updated), {
+        ex: ROOM_TTL,
+      })
+      return updated
+    }
+    throw new Error(
+      `Room ${id} update failed after ${MAX_UPDATE_RETRIES} retries`
+    )
   },
 
   async delete(id: string): Promise<void> {
     const redis = getRedisClient()
     await redis.del(`game:room:${id}`)
-    await redis.decr('game:room:count')
   },
 
   async getConcurrentCount(): Promise<number> {
     const redis = getRedisClient()
-    return (await redis.get<number>('game:room:count')) ?? 0
+    // Use SCAN to count actual room keys — immune to TTL drift
+    let cursor = '0'
+    let count = 0
+    do {
+      const result: [string, string[]] = await redis.scan(cursor, {
+        match: 'game:room:*',
+        count: 100,
+      })
+      cursor = result[0]
+      count += result[1].length
+    } while (cursor !== '0')
+    return count
   },
 }
 

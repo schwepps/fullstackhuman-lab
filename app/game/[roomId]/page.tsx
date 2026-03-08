@@ -196,12 +196,7 @@ export default function GameRoomPage() {
         if (msg.type === 'reveal') {
           setPhase('reveal')
           clearSession(roomId)
-          const resultData = msg.result
-          // Reconstruct scores Map from object
-          const scoresMap = new Map<string, number>(
-            Object.entries(resultData.scores as Record<string, number>)
-          )
-          setRevealResult({ ...resultData, scores: scoresMap })
+          setRevealResult(msg.result)
           setRevealPlayers(msg.allPlayers ?? [])
           setRevealRoundResults(msg.roundResults ?? [])
         }

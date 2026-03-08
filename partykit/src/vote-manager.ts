@@ -232,11 +232,14 @@ async function triggerReveal(
     }
   }
 
-  const scores = calculateScores(latestRoom)
+  const scoresMap = calculateScores(latestRoom)
+  const scores = Object.fromEntries(scoresMap)
 
   const result: GameResult = {
     wasAllHumans: agentsSurvived.length === 0 && agentsCaught.length === 0,
-    wasAllAgents: humansEliminated.length === latestRoom.players.size,
+    wasAllAgents: !Array.from(latestRoom.players.values()).some(
+      (p) => p.type === 'human'
+    ),
     agentsSurvived,
     agentsCaught,
     humansEliminated,
@@ -262,13 +265,13 @@ async function triggerReveal(
     type: p.type,
     avatarColor: p.avatarColor,
     isEliminated: p.isEliminated,
-    score: scores.get(p.id) ?? 0,
+    score: scores[p.id] ?? 0,
     roundsSurvived: p.roundsSurvived,
     correctVotes: p.correctVotes,
     position: p.position,
     currentZone: p.currentZone,
     isConnected: p.isConnected,
-    model: p.model,
+    model: isAgentType(p.type) ? p.model : undefined,
     revealPreference: p.revealPreference,
     customPrompt:
       p.type === 'custom-agent' &&
@@ -284,7 +287,7 @@ async function triggerReveal(
       type: 'reveal',
       result: {
         ...result,
-        scores: Object.fromEntries(result.scores),
+        scores: result.scores,
       },
       allPlayers,
       roundResults: latestRoom.roundResults,

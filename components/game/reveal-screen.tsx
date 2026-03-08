@@ -91,10 +91,7 @@ export function RevealScreen({
             const role = getRoleDisplay(player.type)
             const icon = getRoleIcon(player.type)
             const isAgent = isAgentType(player.type)
-            const playerScore =
-              scores instanceof Map
-                ? scores.get(player.id)
-                : (scores as Record<string, number>)?.[player.id]
+            const playerScore = scores[player.id]
 
             return (
               <div

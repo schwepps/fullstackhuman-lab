@@ -7,8 +7,7 @@ const mockRedis = {
   set: vi.fn(),
   get: vi.fn(),
   del: vi.fn(),
-  incr: vi.fn(),
-  decr: vi.fn(),
+  scan: vi.fn(),
 }
 
 vi.mock('@/lib/upstash', () => ({
@@ -133,7 +132,7 @@ describe('room-store serialisation', () => {
     expect(history?.messages[49].content).toBe('Message 99')
   })
 
-  it('preserves GameResult with scores Map through round-trip', () => {
+  it('preserves GameResult with scores through round-trip', () => {
     const room = createTestRoom({
       results: {
         wasAllHumans: false,
@@ -141,19 +140,16 @@ describe('room-store serialisation', () => {
         agentsSurvived: ['p2'],
         agentsCaught: [],
         humansEliminated: ['p1'],
-        scores: new Map([
-          ['p1', 30],
-          ['p2', 80],
-        ]),
+        scores: { p1: 30, p2: 80 },
         promptReveal: [],
       },
     })
 
     const deserialised = _deserialise(_serialise(room))
 
-    expect(deserialised.results?.scores).toBeInstanceOf(Map)
-    expect(deserialised.results?.scores.get('p1')).toBe(30)
-    expect(deserialised.results?.scores.get('p2')).toBe(80)
+    expect(deserialised.results?.scores).toEqual({ p1: 30, p2: 80 })
+    expect(deserialised.results?.scores['p1']).toBe(30)
+    expect(deserialised.results?.scores['p2']).toBe(80)
     expect(deserialised.results?.wasAllHumans).toBe(false)
     expect(deserialised.results?.agentsSurvived).toEqual(['p2'])
   })
@@ -186,7 +182,7 @@ describe('roomStore CRUD', () => {
     vi.clearAllMocks()
   })
 
-  it('create stores room with TTL and increments count', async () => {
+  it('create stores room with TTL', async () => {
     const { roomStore } = await import('@/lib/game/room-store')
     const room = createTestRoom()
 
@@ -197,7 +193,6 @@ describe('roomStore CRUD', () => {
       expect.any(String),
       { ex: 7200 }
     )
-    expect(mockRedis.incr).toHaveBeenCalledWith('game:room:count')
   })
 
   it('get returns null for missing room', async () => {
@@ -220,22 +215,25 @@ describe('roomStore CRUD', () => {
     expect(result?.players).toBeInstanceOf(Map)
   })
 
-  it('delete removes room and decrements count', async () => {
+  it('delete removes room key', async () => {
     const { roomStore } = await import('@/lib/game/room-store')
 
     await roomStore.delete('test-room-1')
 
     expect(mockRedis.del).toHaveBeenCalledWith('game:room:test-room-1')
-    expect(mockRedis.decr).toHaveBeenCalledWith('game:room:count')
   })
 
-  it('getConcurrentCount returns 0 when no count exists', async () => {
+  it('getConcurrentCount uses SCAN to count room keys', async () => {
     const { roomStore } = await import('@/lib/game/room-store')
-    mockRedis.get.mockResolvedValue(null)
+    mockRedis.scan.mockResolvedValueOnce(['0', ['game:room:a', 'game:room:b']])
 
     const count = await roomStore.getConcurrentCount()
 
-    expect(count).toBe(0)
+    expect(count).toBe(2)
+    expect(mockRedis.scan).toHaveBeenCalledWith('0', {
+      match: 'game:room:*',
+      count: 100,
+    })
   })
 
   it('update throws when room not found', async () => {

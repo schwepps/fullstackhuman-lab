@@ -1,4 +1,5 @@
 import { getRedisClient } from '@/lib/upstash'
+import { roomStore } from '@/lib/game/room-store'
 import {
   MAX_CONCURRENT_ROOMS,
   MAX_ROOMS_PER_IP_PER_HOUR,
@@ -10,7 +11,7 @@ export async function checkRoomCreationAllowed(
   ip: string
 ): Promise<{ allowed: boolean; reason?: string }> {
   const redis = getRedisClient()
-  const currentRooms = (await redis.get<number>('game:room:count')) ?? 0
+  const currentRooms = await roomStore.getConcurrentCount()
   if (currentRooms >= MAX_CONCURRENT_ROOMS) {
     return {
       allowed: false,

@@ -22,6 +22,7 @@ import {
   ALARM_START_ROUND,
 } from '../../lib/game/constants'
 import { computeZone, getPlayersInZone } from './proximity-router'
+import { ZONES } from '../../lib/game/zones'
 import { getNextTopic } from './topic-engine'
 import { PERSONAS } from '../../lib/game/agent-personas'
 
@@ -38,8 +39,9 @@ export default class GameRoom implements Party.Server {
   // Debounce zone-change Redis writes
   zoneWriteDebounce: Map<string, ReturnType<typeof setTimeout>> = new Map()
 
-  // Track assigned colors to prevent duplicates
+  // Track assigned colors to prevent duplicates (also maps playerId → color)
   assignedColors: Set<number> = new Set()
+  playerColors: Map<string, number> = new Map()
 
   // Track display names for chat
   displayNames: Map<string, string> = new Map()
@@ -81,6 +83,7 @@ export default class GameRoom implements Party.Server {
         this.zones.set(requestedPlayerId, player.currentZone)
         this.displayNames.set(requestedPlayerId, player.displayName)
         this.assignedColors.add(player.avatarColor)
+        this.playerColors.set(requestedPlayerId, player.avatarColor)
 
         // Mark player as connected in Redis
         try {
@@ -146,6 +149,7 @@ export default class GameRoom implements Party.Server {
     const color =
       AVATAR_COLORS.find((c) => !this.assignedColors.has(c)) ?? AVATAR_COLORS[0]
     this.assignedColors.add(color)
+    this.playerColors.set(conn.id, color)
 
     const newSessionToken = crypto.randomUUID()
 
@@ -188,6 +192,29 @@ export default class GameRoom implements Party.Server {
     if (posUpdates.length) {
       conn.send(
         JSON.stringify({ type: 'position_update', updates: posUpdates })
+      )
+    }
+
+    // Send lobby sync — all existing players so the joiner sees the full roster
+    const sentPlayerIds = new Set<string>()
+    for (const [existingConnId, existingPlayerId] of this.connToPlayer) {
+      if (existingConnId === conn.id) continue
+      if (sentPlayerIds.has(existingPlayerId)) continue
+      sentPlayerIds.add(existingPlayerId)
+      conn.send(
+        JSON.stringify({
+          type: 'player_joined',
+          player: {
+            id: existingPlayerId,
+            displayName:
+              this.displayNames.get(existingPlayerId) ??
+              existingPlayerId.slice(0, 6),
+            avatarColor:
+              this.playerColors.get(existingPlayerId) ?? AVATAR_COLORS[0],
+            isConnected: true,
+            isEliminated: false,
+          },
+        })
       )
     }
 
@@ -281,9 +308,18 @@ export default class GameRoom implements Party.Server {
         await handleVote(this.room, playerId, msg.targetId, this.room.id)
         break
       }
-      case 'ready':
-        await this.handleReady(playerId)
+      case 'ready': {
+        const readyName =
+          typeof msg.displayName === 'string'
+            ? msg.displayName.trim().slice(0, 16)
+            : undefined
+        const readyType =
+          typeof msg.playerType === 'string' ? msg.playerType : undefined
+        const readyPrompt =
+          typeof msg.customPrompt === 'string' ? msg.customPrompt : undefined
+        await this.handleReady(playerId, readyName, readyType, readyPrompt)
         break
+      }
     }
   }
 
@@ -350,8 +386,19 @@ export default class GameRoom implements Party.Server {
     }
     this.positions.set(playerId, clamped)
 
-    const newZone = computeZone(clamped)
+    let newZone = computeZone(clamped)
     const prevZone = this.zones.get(playerId) ?? 'main'
+
+    // Enforce zone capacity — reject entry to full private zones
+    if (newZone !== prevZone && newZone !== 'main') {
+      const zoneDef = ZONES.find((z) => z.id === newZone)
+      if (zoneDef) {
+        const occupants = getPlayersInZone(newZone, this.zones)
+        if (occupants.length >= zoneDef.capacity) {
+          newZone = prevZone // Stay in previous zone
+        }
+      }
+    }
     this.zones.set(playerId, newZone)
 
     if (newZone !== prevZone) {
@@ -516,22 +563,67 @@ export default class GameRoom implements Party.Server {
         }
       })
       .catch(() => {
-        // Fail open — moderation service down, message stays
+        // Fail closed — moderation service down, remove message
+        const removePayload = JSON.stringify({
+          type: 'message_removed',
+          messageId,
+          reason: 'moderation_unavailable',
+        })
+        for (const [connId, pId] of this.connToPlayer) {
+          if (playersInZone.includes(pId)) {
+            const conn = this.room.getConnection(connId)
+            if (conn) conn.send(removePayload)
+          }
+        }
       })
   }
 
   // ─── Ready / Round lifecycle ────────────────────────────────────────────
 
-  private async handleReady(playerId: string) {
+  private async handleReady(
+    playerId: string,
+    displayName?: string,
+    playerType?: string,
+    customPrompt?: string
+  ) {
     if (this.currentPhase !== 'lobby') return
+
+    // Apply display name if provided
+    if (displayName) {
+      this.displayNames.set(playerId, displayName)
+    }
+
+    // Update player in Redis with lobby choices
+    try {
+      const { roomStore } = await import('../../lib/game/room-store')
+      await roomStore.update(this.room.id, (r) => {
+        const player = r.players.get(playerId)
+        if (!player) return r
+        if (displayName) player.displayName = displayName
+        if (
+          playerType === 'human' ||
+          playerType === 'custom-agent' ||
+          playerType === 'spectator'
+        ) {
+          player.type = playerType
+        }
+        if (playerType === 'custom-agent' && customPrompt) {
+          player.customPrompt = customPrompt
+        }
+        return r
+      })
+    } catch {
+      // Non-critical
+    }
 
     // Only host can start
     // For now, the first connected player is host
     const firstPlayer = this.connToPlayer.values().next().value
     if (playerId !== firstPlayer) return
 
-    // Need minimum players
-    if (this.connToPlayer.size < MIN_PLAYERS) return
+    // Need minimum players (count unique player IDs, not connections)
+    const uniquePlayers = new Set(this.connToPlayer.values())
+    if (uniquePlayers.size < MIN_PLAYERS) return
 
     // Fill empty slots with auto-agents (up to reasonable total)
     try {
