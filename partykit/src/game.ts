@@ -1,12 +1,19 @@
 import type * as Party from 'partykit/server'
 import type {
   ClientMessage,
+  ChatMessage,
   Position,
   ZoneType,
+  ChatScope,
   PublicPlayer,
 } from '../../lib/game/types'
-import { AVATAR_COLORS, ZONE_DEBOUNCE_MS } from '../../lib/game/constants'
-import { computeZone } from './proximity-router'
+import {
+  AVATAR_COLORS,
+  ZONE_DEBOUNCE_MS,
+  MAX_MESSAGE_LENGTH,
+  MAX_CHAT_HISTORY_PER_ZONE,
+} from '../../lib/game/constants'
+import { computeZone, getPlayersInZone } from './proximity-router'
 
 // Alarm key constants — stored in Partykit storage
 const ALARM_ROUND_END = 'alarm:roundEnd'
@@ -26,6 +33,9 @@ export default class GameRoom implements Party.Server {
 
   // Track assigned colors to prevent duplicates
   assignedColors: Set<number> = new Set()
+
+  // Track display names for chat
+  displayNames: Map<string, string> = new Map()
 
   constructor(readonly room: Party.Room) {}
 
@@ -116,7 +126,7 @@ export default class GameRoom implements Party.Server {
         this.handleMove(playerId, msg.target)
         break
       case 'chat':
-        // Stub — implemented in Phase 6
+        await this.handleChat(playerId, msg.content, msg.zone, sender)
         break
       case 'vote':
         // Stub — implemented in Phase 10
@@ -208,6 +218,74 @@ export default class GameRoom implements Party.Server {
       }),
       [playerId]
     )
+  }
+
+  // ─── Chat ────────────────────────────────────────────────────────────────
+
+  private async handleChat(
+    playerId: string,
+    content: string,
+    _zone: ChatScope,
+    _sender: Party.Connection
+  ) {
+    // Validate content
+    const trimmed = content.trim()
+    if (!trimmed || trimmed.length > MAX_MESSAGE_LENGTH) return
+
+    // Use sender's zone, not the zone from the client message (prevent spoofing)
+    const senderZone = this.zones.get(playerId) ?? 'main'
+
+    const chatMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      playerId,
+      displayName: this.displayNames.get(playerId) ?? playerId.slice(0, 6),
+      content: trimmed,
+      zone: senderZone,
+      timestamp: Date.now(),
+    }
+
+    // Zone-scoped delivery: send to all players in the same zone
+    const playersInZone = getPlayersInZone(senderZone, this.zones)
+    const msgPayload = JSON.stringify({
+      type: 'chat_message',
+      message: chatMsg,
+    })
+
+    for (const [connId, pId] of this.connToPlayer) {
+      if (playersInZone.includes(pId)) {
+        const conn = this.room.getConnection(connId)
+        if (conn) conn.send(msgPayload)
+      }
+    }
+
+    // Persist to Redis (fire and forget)
+    try {
+      const { roomStore } = await import('../../lib/game/room-store')
+      await roomStore.update(this.room.id, (room) => {
+        // Add message to all players in zone
+        for (const pId of playersInZone) {
+          const player = room.players.get(pId)
+          if (!player) continue
+
+          let entry = player.chatHistory.find(
+            (e: { zone: string }) => e.zone === senderZone
+          )
+          if (!entry) {
+            entry = { zone: senderZone, messages: [] }
+            player.chatHistory.push(entry)
+          }
+          entry.messages.push(chatMsg)
+
+          // Cap at MAX_CHAT_HISTORY_PER_ZONE
+          if (entry.messages.length > MAX_CHAT_HISTORY_PER_ZONE) {
+            entry.messages = entry.messages.slice(-MAX_CHAT_HISTORY_PER_ZONE)
+          }
+        }
+        return room
+      })
+    } catch {
+      // Room may not exist yet in early phases
+    }
   }
 
   // ─── Phase transition stubs ───────────────────────────────────────────────
