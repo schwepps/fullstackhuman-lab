@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { MAX_MESSAGE_LENGTH } from './constants'
 
+const anthropic = new Anthropic()
 const SAFE_SHORT_PATTERN = /^[\w\s.,!?'"()-]+$/
 
 const MODERATION_SYSTEM = `You are a chat moderator for a social deduction game where players try to identify AI impostors.
@@ -28,8 +29,7 @@ export async function moderateMessage(
 
   // AI moderation
   try {
-    const client = new Anthropic()
-    const response = await client.messages.create({
+    const response = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 10,
       system: MODERATION_SYSTEM,

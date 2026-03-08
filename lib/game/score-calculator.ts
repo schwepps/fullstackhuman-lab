@@ -1,4 +1,5 @@
 import type { Room } from '@/lib/game/types'
+import { isAgentType } from '@/lib/game/types'
 
 const CORRECT_VOTE_POINTS = 20
 const ROUND_SURVIVED_POINTS = 10
@@ -10,8 +11,7 @@ export function calculateScores(room: Room): Map<string, number> {
   const scores = new Map<string, number>()
 
   for (const [id, player] of room.players) {
-    const isAgent =
-      player.type === 'auto-agent' || player.type === 'custom-agent'
+    const isAgent = isAgentType(player.type)
 
     // Agents don't get scores (they have humanityScore instead)
     if (isAgent) {

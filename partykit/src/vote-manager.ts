@@ -5,9 +5,11 @@ import type {
   RoundResult,
   GameResult,
 } from '../../lib/game/types'
-import { ELIMINATION_PAUSE_MS } from '../../lib/game/constants'
-
-const ALARM_START_ROUND = 'alarm:startRound'
+import { isAgentType } from '../../lib/game/types'
+import {
+  ELIMINATION_PAUSE_MS,
+  ALARM_START_ROUND,
+} from '../../lib/game/constants'
 
 export async function handleVote(
   partyRoom: Party.Room,
@@ -47,9 +49,7 @@ export async function handleVote(
 
   const activePlayers = getActivePlayers(room)
   const agents = activePlayers.filter(
-    (p) =>
-      (p.type === 'auto-agent' || p.type === 'custom-agent') &&
-      !room.votes.has(p.id)
+    (p) => isAgentType(p.type) && !room.votes.has(p.id)
   )
 
   if (agents.length > 0) {
@@ -205,8 +205,7 @@ async function triggerReveal(
   const promptReveal: GameResult['promptReveal'] = []
 
   for (const [, player] of latestRoom.players) {
-    const isAgent =
-      player.type === 'auto-agent' || player.type === 'custom-agent'
+    const isAgent = isAgentType(player.type)
     if (isAgent && !player.isEliminated) agentsSurvived.push(player.id)
     if (isAgent && player.isEliminated) agentsCaught.push(player.id)
     if (player.type === 'human' && player.isEliminated) {

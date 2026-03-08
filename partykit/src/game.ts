@@ -14,16 +14,15 @@ import {
   ZONE_DEBOUNCE_MS,
   MAX_MESSAGE_LENGTH,
   MAX_CHAT_HISTORY_PER_ZONE,
+  MAX_MESSAGES_PER_MINUTE,
   VOTE_TIMEOUT_MS,
+  ALARM_ROUND_END,
+  ALARM_VOTE_END,
+  ALARM_START_ROUND,
 } from '../../lib/game/constants'
 import { computeZone, getPlayersInZone } from './proximity-router'
 import { getNextTopic } from './topic-engine'
 import { PERSONAS } from '../../lib/game/agent-personas'
-
-// Alarm key constants — stored in Partykit storage
-const ALARM_ROUND_END = 'alarm:roundEnd'
-const ALARM_VOTE_END = 'alarm:voteEnd'
-const ALARM_START_ROUND = 'alarm:startRound'
 
 const MIN_PLAYERS = 3
 
@@ -46,6 +45,9 @@ export default class GameRoom implements Party.Server {
 
   // Session tokens for reconnection (playerId → token)
   sessionTokens: Map<string, string> = new Map()
+
+  // Per-player chat rate limiting (playerId → timestamps[])
+  chatTimestamps: Map<string, number[]> = new Map()
 
   // Track current phase in memory
   currentPhase: GamePhase = 'lobby'
@@ -368,6 +370,14 @@ export default class GameRoom implements Party.Server {
     const trimmed = content.trim()
     if (!trimmed || trimmed.length > MAX_MESSAGE_LENGTH) return
 
+    // Per-player rate limiting
+    const now = Date.now()
+    const timestamps = this.chatTimestamps.get(playerId) ?? []
+    const recent = timestamps.filter((t) => now - t < 60_000)
+    if (recent.length >= MAX_MESSAGES_PER_MINUTE) return
+    recent.push(now)
+    this.chatTimestamps.set(playerId, recent)
+
     const senderZone = this.zones.get(playerId) ?? 'main'
 
     const chatMsg: ChatMessage = {
@@ -428,7 +438,8 @@ export default class GameRoom implements Party.Server {
           senderZone,
           playersInZone,
           this.room,
-          this.connToPlayer
+          this.connToPlayer,
+          this.zones
         )
       }
     } catch {
@@ -446,10 +457,16 @@ export default class GameRoom implements Party.Server {
     playersInZone: string[]
   ) {
     const baseUrl = process.env.NEXTJS_URL ?? 'http://localhost:3000'
+    const internalToken = process.env.GAME_INTERNAL_TOKEN ?? ''
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    }
+    if (internalToken) headers['x-internal-token'] = internalToken
 
     fetch(`${baseUrl}/api/game/moderate`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify({ content, playerId }),
     })
       .then((res) => res.json())

@@ -49,3 +49,8 @@ export const MAX_AGENT_TOKENS = 120
 // ─── Touch / mobile ─────────────────────────────────────────────────────────
 export const DOUBLE_TAP_THRESHOLD_MS = 300
 export const DOUBLE_TAP_DISTANCE_PX = 30
+
+// ─── Partykit alarm keys ────────────────────────────────────────────────────
+export const ALARM_ROUND_END = 'alarm:roundEnd'
+export const ALARM_VOTE_END = 'alarm:voteEnd'
+export const ALARM_START_ROUND = 'alarm:startRound'

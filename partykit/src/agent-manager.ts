@@ -1,5 +1,6 @@
 import type * as Party from 'partykit/server'
 import type { Room, Player, ZoneType, ChatMessage } from '../../lib/game/types'
+import { isAgentType } from '../../lib/game/types'
 import { buildChatPrompt } from '../../lib/game/prompt-builder'
 import { streamAtHumanPace } from '../../lib/game/typing-simulator'
 import { generateAgentResponse } from '../../lib/game/model-registry'
@@ -17,16 +18,14 @@ export function triggerAgentResponses(
   zone: ZoneType,
   playersInZone: string[],
   partyRoom: Party.Room,
-  connToPlayer: Map<string, string>
+  connToPlayer: Map<string, string>,
+  liveZones?: Map<string, ZoneType>
 ) {
   // Find agents in this zone
   const agentsInZone = playersInZone
     .map((id) => room.players.get(id))
     .filter(
-      (p): p is Player =>
-        p != null &&
-        (p.type === 'auto-agent' || p.type === 'custom-agent') &&
-        !p.isEliminated
+      (p): p is Player => p != null && isAgentType(p.type) && !p.isEliminated
     )
 
   for (const agent of agentsInZone) {
@@ -39,7 +38,14 @@ export function triggerAgentResponses(
       Math.random() * (AGENT_STAGGER_MAX_MS - AGENT_STAGGER_BASE_MS)
 
     setTimeout(() => {
-      respondAsAgent(room, agent, zone, partyRoom, connToPlayer).catch(() => {
+      respondAsAgent(
+        room,
+        agent,
+        zone,
+        partyRoom,
+        connToPlayer,
+        liveZones
+      ).catch(() => {
         // Agent response failure is non-critical
       })
     }, staggerDelay)
@@ -51,7 +57,8 @@ async function respondAsAgent(
   agent: Player,
   zone: ZoneType,
   partyRoom: Party.Room,
-  connToPlayer: Map<string, string>
+  connToPlayer: Map<string, string>,
+  liveZones?: Map<string, ZoneType>
 ) {
   // Build prompt
   const systemPrompt = buildChatPrompt(agent, room)
@@ -83,7 +90,7 @@ async function respondAsAgent(
     partyRoom,
     connToPlayer,
     zone,
-    room,
+    liveZones,
     JSON.stringify({
       type: 'agent_typing',
       playerId: agent.id,
@@ -191,12 +198,13 @@ function broadcastToZone(
   partyRoom: Party.Room,
   connToPlayer: Map<string, string>,
   zone: ZoneType,
-  room: Room,
+  liveZones: Map<string, ZoneType> | undefined,
   payload: string
 ) {
   for (const [connId, playerId] of connToPlayer) {
-    const player = room.players.get(playerId)
-    if (player && player.currentZone === zone) {
+    // Use live zones map (real-time) if available, otherwise skip
+    const playerZone = liveZones?.get(playerId)
+    if (playerZone === zone) {
       const conn = partyRoom.getConnection(connId)
       if (conn) conn.send(payload)
     }

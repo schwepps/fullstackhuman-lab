@@ -1,6 +1,10 @@
 // ─── Core enums ───────────────────────────────────────────────────────────────
 
 export type PlayerType = 'human' | 'custom-agent' | 'auto-agent' | 'spectator'
+
+export function isAgentType(type: PlayerType): boolean {
+  return type === 'auto-agent' || type === 'custom-agent'
+}
 export type GamePhase =
   | 'lobby'
   | 'round'

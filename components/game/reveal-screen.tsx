@@ -1,13 +1,14 @@
 'use client'
 
 import { useState } from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import type {
   GameResult,
   RevealPlayer,
   RoundResult,
   PlayerType,
 } from '@/lib/game/types'
+import { isAgentType } from '@/lib/game/types'
 
 interface RevealScreenProps {
   result: GameResult
@@ -89,8 +90,7 @@ export function RevealScreen({
           {allPlayers.map((player, i) => {
             const role = getRoleDisplay(player.type)
             const icon = getRoleIcon(player.type)
-            const isAgent =
-              player.type === 'auto-agent' || player.type === 'custom-agent'
+            const isAgent = isAgentType(player.type)
             const playerScore =
               scores instanceof Map
                 ? scores.get(player.id)
