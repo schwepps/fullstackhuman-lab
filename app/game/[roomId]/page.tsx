@@ -8,6 +8,8 @@ import { ChatBubble } from '@/components/game/chat-bubble'
 import { ChatInput } from '@/components/game/chat-input'
 import { TopicBanner } from '@/components/game/topic-banner'
 import { LobbyPanel } from '@/components/game/lobby-panel'
+import { VotePanel } from '@/components/game/vote-panel'
+import { EliminationScreen } from '@/components/game/elimination-screen'
 import type {
   ZoneType,
   ChatMessage,
@@ -48,6 +50,11 @@ export default function GameRoomPage() {
   const [lobbyPlayers, setLobbyPlayers] = useState<LobbyPlayer[]>([])
   const [isHost, setIsHost] = useState(false)
   const [roundDuration] = useState(180)
+  const [voteCount, setVoteCount] = useState(0)
+  const [totalVoters, setTotalVoters] = useState(0)
+  const [voteStartedAt, setVoteStartedAt] = useState(0)
+  const [eliminatedName, setEliminatedName] = useState<string | null>(null)
+  const [isEliminated] = useState(false)
 
   const ws = usePartySocket({
     host: PARTYKIT_HOST,
@@ -66,7 +73,13 @@ export default function GameRoomPage() {
             setIsHost(true) // First player is host
           }
           if (msg.yourColor) setMyColor(msg.yourColor)
-          if (msg.phase) setPhase(msg.phase)
+          if (msg.phase) {
+            setPhase(msg.phase)
+            if (msg.phase === 'vote') {
+              setVoteStartedAt(Date.now())
+              setVoteCount(0)
+            }
+          }
           if (msg.round) setRound(msg.round)
           if (msg.topic) setTopic(msg.topic)
           if (msg.roundStartedAt) setRoundStartedAt(msg.roundStartedAt)
@@ -107,6 +120,15 @@ export default function GameRoomPage() {
             )
             return [...filtered, chatMsg]
           })
+        }
+
+        if (msg.type === 'vote_progress') {
+          setVoteCount(msg.count)
+          setTotalVoters(msg.total)
+        }
+
+        if (msg.type === 'elimination') {
+          setEliminatedName(msg.displayName)
         }
 
         if (msg.type === 'agent_typing') {
@@ -157,6 +179,19 @@ export default function GameRoomPage() {
 
   const handleChatFocusChange = useCallback((focused: boolean) => {
     setIsChatFocused(focused)
+  }, [])
+
+  const handleVote = useCallback(
+    (targetId: string) => {
+      if (socket?.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({ type: 'vote', targetId }))
+      }
+    },
+    [socket]
+  )
+
+  const handleEliminationComplete = useCallback(() => {
+    setEliminatedName(null)
   }, [])
 
   const handleLobbyReady = useCallback(
@@ -243,6 +278,23 @@ export default function GameRoomPage() {
           />
         </div>
       </div>
+      {phase === 'vote' && myPlayerId && !isEliminated && (
+        <VotePanel
+          candidates={lobbyPlayers}
+          myPlayerId={myPlayerId}
+          onVote={handleVote}
+          voteCount={voteCount}
+          totalVoters={totalVoters}
+          voteStartedAt={voteStartedAt}
+        />
+      )}
+
+      {eliminatedName && (
+        <EliminationScreen
+          displayName={eliminatedName}
+          onComplete={handleEliminationComplete}
+        />
+      )}
     </main>
   )
 }

@@ -134,9 +134,11 @@ export default class GameRoom implements Party.Server {
       case 'chat':
         await this.handleChat(playerId, msg.content, msg.zone, sender)
         break
-      case 'vote':
-        // Stub — implemented in Phase 10
+      case 'vote': {
+        const { handleVote } = await import('./vote-manager')
+        await handleVote(this.room, playerId, msg.targetId, this.room.id)
         break
+      }
       case 'ready':
         await this.handleReady(playerId)
         break
@@ -166,7 +168,8 @@ export default class GameRoom implements Party.Server {
     if (alarmType === ALARM_ROUND_END) {
       await this.endRound()
     } else if (alarmType === ALARM_VOTE_END) {
-      // Force tally — Phase 10
+      const { handleVote } = await import('./vote-manager')
+      await handleVote(this.room, null, null, this.room.id)
     } else if (alarmType === ALARM_START_ROUND) {
       const nextRound =
         (await this.room.storage.get<number>('nextRoundNumber')) ?? 1
