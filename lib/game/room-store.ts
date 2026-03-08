@@ -2,8 +2,6 @@ import { getRedisClient } from '@/lib/upstash'
 import { ROOM_TTL, MAX_CHAT_HISTORY_PER_ZONE } from '@/lib/game/constants'
 import type { Room, Player } from '@/lib/game/types'
 
-const MAX_UPDATE_RETRIES = 3
-
 function serialise(room: Room): string {
   return JSON.stringify({
     ...room,
@@ -54,20 +52,14 @@ export const roomStore = {
   },
 
   async update(id: string, updater: (room: Room) => Room): Promise<Room> {
-    // Optimistic retry loop to reduce lost writes from concurrent updates
-    for (let attempt = 0; attempt < MAX_UPDATE_RETRIES; attempt++) {
-      const room = await roomStore.get(id)
-      if (!room) throw new Error(`Room ${id} not found`)
-      const updated = updater(room)
-      const redis = getRedisClient()
-      await redis.set(`game:room:${id}`, serialise(updated), {
-        ex: ROOM_TTL,
-      })
-      return updated
-    }
-    throw new Error(
-      `Room ${id} update failed after ${MAX_UPDATE_RETRIES} retries`
-    )
+    const room = await roomStore.get(id)
+    if (!room) throw new Error(`Room ${id} not found`)
+    const updated = updater(room)
+    const redis = getRedisClient()
+    await redis.set(`game:room:${id}`, serialise(updated), {
+      ex: ROOM_TTL,
+    })
+    return updated
   },
 
   async delete(id: string): Promise<void> {

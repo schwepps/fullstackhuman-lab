@@ -60,8 +60,10 @@ export async function handleReady(
   try {
     const { roomStore } = await import('../../lib/game/room-store')
     await roomStore.update(roomId, (r) => {
-      const humanCount = r.players.size
-      const agentsNeeded = Math.max(0, MIN_PLAYERS - humanCount)
+      const activeCount = Array.from(r.players.values()).filter(
+        (p) => p.type !== 'spectator'
+      ).length
+      const agentsNeeded = Math.max(0, MIN_PLAYERS - activeCount)
       const availablePersonas = PERSONAS.filter((p) => !r.players.has(p.id))
 
       for (let i = 0; i < agentsNeeded && i < availablePersonas.length; i++) {
@@ -130,9 +132,10 @@ export async function startRound(
   const roundStartedAt = Date.now()
   state.currentPhase = 'round'
 
+  let roundDuration = 180
   try {
     const { roomStore } = await import('../../lib/game/room-store')
-    await roomStore.update(roomId, (r) => {
+    const updatedRoom = await roomStore.update(roomId, (r) => {
       r.phase = 'round'
       r.round = roundNumber
       r.currentTopic = topic
@@ -140,8 +143,9 @@ export async function startRound(
       r.roundStartedAt = roundStartedAt
       return r
     })
+    roundDuration = updatedRoom.roundDuration
   } catch {
-    // Non-critical
+    // Non-critical — use default roundDuration
   }
 
   partyRoom.broadcast(
@@ -151,20 +155,13 @@ export async function startRound(
       round: roundNumber,
       topic,
       roundStartedAt,
+      roundDuration,
     })
   )
 
   // Set alarm for round end
-  let duration = 180 * 1000
-  try {
-    const { roomStore } = await import('../../lib/game/room-store')
-    const roomData = await roomStore.get(roomId)
-    if (roomData) duration = roomData.roundDuration * 1000
-  } catch {
-    // Use default
-  }
   await partyRoom.storage.put('currentAlarm', ALARM_ROUND_END)
-  await partyRoom.storage.setAlarm(Date.now() + duration)
+  await partyRoom.storage.setAlarm(Date.now() + roundDuration * 1000)
 }
 
 export async function endRound(

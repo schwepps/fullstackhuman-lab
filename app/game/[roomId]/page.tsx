@@ -76,12 +76,12 @@ export default function GameRoomPage() {
   const [roundStartedAt, setRoundStartedAt] = useState(0)
   const [lobbyPlayers, setLobbyPlayers] = useState<LobbyPlayer[]>([])
   const [isHost, setIsHost] = useState(false)
-  const [roundDuration] = useState(180)
+  const [roundDuration, setRoundDuration] = useState(180)
   const [voteCount, setVoteCount] = useState(0)
   const [totalVoters, setTotalVoters] = useState(0)
   const [voteStartedAt, setVoteStartedAt] = useState(0)
   const [eliminatedName, setEliminatedName] = useState<string | null>(null)
-  const [isEliminated] = useState(false)
+  const [isEliminated, setIsEliminated] = useState(false)
   const [revealResult, setRevealResult] = useState<GameResult | null>(null)
   const [revealPlayers, setRevealPlayers] = useState<RevealPlayer[]>([])
   const [revealRoundResults, setRevealRoundResults] = useState<RoundResult[]>(
@@ -145,6 +145,7 @@ export default function GameRoomPage() {
           if (msg.round) setRound(msg.round)
           if (msg.topic) setTopic(msg.topic)
           if (msg.roundStartedAt) setRoundStartedAt(msg.roundStartedAt)
+          if (msg.roundDuration) setRoundDuration(msg.roundDuration)
         }
 
         if (msg.type === 'player_joined' && msg.player) {
@@ -191,6 +192,10 @@ export default function GameRoomPage() {
 
         if (msg.type === 'elimination') {
           setEliminatedName(msg.displayName)
+          // Check if current player was eliminated
+          if (msg.playerId === myPlayerId) {
+            setIsEliminated(true)
+          }
         }
 
         if (msg.type === 'reveal') {
@@ -213,7 +218,7 @@ export default function GameRoomPage() {
                 ...prev,
                 {
                   playerId: msg.playerId,
-                  displayName: msg.playerId.slice(0, 6),
+                  displayName: msg.displayName ?? msg.playerId.slice(0, 6),
                   zone: msg.zone,
                 },
               ]

@@ -13,7 +13,7 @@ import {
   MAX_CHAT_HISTORY_PER_ZONE,
 } from '../../lib/game/constants'
 
-export function triggerAgentResponses(
+export async function triggerAgentResponses(
   room: Room,
   zone: ZoneType,
   playersInZone: string[],
@@ -21,6 +21,15 @@ export function triggerAgentResponses(
   connToPlayer: Map<string, string>,
   liveZones?: Map<string, ZoneType>
 ) {
+  // Per-zone cooldown to prevent overlapping agent response batches
+  try {
+    const { checkAgentCooldown } = await import('../../lib/game/rate-limiter')
+    const allowed = await checkAgentCooldown(partyRoom.id, zone)
+    if (!allowed) return
+  } catch {
+    // Rate limiter unavailable — proceed without cooldown
+  }
+
   // Find agents in this zone
   const agentsInZone = playersInZone
     .map((id) => room.players.get(id))
@@ -85,7 +94,7 @@ async function respondAsAgent(
   // Create message ID for streaming updates
   const messageId = crypto.randomUUID()
 
-  // Broadcast typing indicator ON
+  // Broadcast typing indicator ON (include displayName for UI)
   broadcastToZone(
     partyRoom,
     connToPlayer,
@@ -94,6 +103,7 @@ async function respondAsAgent(
     JSON.stringify({
       type: 'agent_typing',
       playerId: agent.id,
+      displayName: agent.displayName,
       zone,
       isTyping: true,
     })
@@ -155,6 +165,7 @@ async function respondAsAgent(
         JSON.stringify({
           type: 'agent_typing',
           playerId: agent.id,
+          displayName: agent.displayName,
           zone,
           isTyping: false,
         })

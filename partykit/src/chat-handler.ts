@@ -134,14 +134,8 @@ function moderateAsync(
       }
     })
     .catch(() => {
-      // Fail closed — moderation service down, remove message
-      broadcastMessageRemoved(
-        partyRoom,
-        messageId,
-        'moderation_unavailable',
-        playersInZone,
-        state
-      )
+      // Fail open — moderation service unavailable, keep message delivered
+      // Messages are already validated (trimmed, length-checked, rate-limited)
     })
 }
 

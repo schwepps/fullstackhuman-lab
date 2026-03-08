@@ -153,7 +153,7 @@ export type ServerMessage =
       sessionToken?: string
     }
   | { type: 'vote_progress'; count: number; total: number }
-  | { type: 'elimination'; displayName: string }
+  | { type: 'elimination'; playerId: string; displayName: string }
   | { type: 'reveal'; result: GameResult; allPlayers: RevealPlayer[] }
   | { type: 'score_update'; scores: Record<string, number> }
   | { type: 'message_removed'; messageId: string; reason: string }

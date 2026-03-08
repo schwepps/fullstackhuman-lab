@@ -83,7 +83,9 @@ export default class GameRoom implements Party.Server {
             ? msg.displayName.trim().slice(0, 16)
             : undefined,
           typeof msg.playerType === 'string' ? msg.playerType : undefined,
-          typeof msg.customPrompt === 'string' ? msg.customPrompt : undefined,
+          typeof msg.customPrompt === 'string'
+            ? (msg.customPrompt as string).slice(0, 2000)
+            : undefined,
           this.state
         )
         break

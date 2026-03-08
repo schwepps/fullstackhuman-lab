@@ -145,10 +145,10 @@ export async function handleVote(
     return r
   })
 
-  // CRITICAL: No 'type' field in elimination broadcast — just displayName
   partyRoom.broadcast(
     JSON.stringify({
       type: 'elimination',
+      playerId: eliminatedId,
       displayName: eliminatedPlayer.displayName,
     })
   )
@@ -192,7 +192,7 @@ async function triggerReveal(
   // Re-read latest state for correct roundsSurvived/correctVotes
   const latestRoom = (await roomStore.get(roomId)) ?? room
 
-  // Update roundsSurvived for non-eliminated players
+  // Mutate in-memory for score calculation — persisted separately in roomStore.update below
   for (const [, player] of latestRoom.players) {
     if (!player.isEliminated) {
       player.roundsSurvived = latestRoom.round
