@@ -37,7 +37,8 @@ GRANT SELECT ON public.meeting_types TO anon, authenticated;
 -- Blocked dates: JSONB array of ISO date strings ["2026-04-01", ...]
 
 CREATE TABLE public.availability_config (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid()
+    CHECK (id = '00000000-0000-0000-0000-000000000001'::uuid),
   timezone TEXT NOT NULL DEFAULT 'Europe/Paris',
   buffer_minutes INTEGER NOT NULL DEFAULT 15 CHECK (buffer_minutes >= 0),
   weekly_schedule JSONB NOT NULL DEFAULT '[]'::jsonb,
@@ -52,8 +53,9 @@ CREATE TRIGGER availability_config_updated_at
   FOR EACH ROW EXECUTE FUNCTION handle_updated_at();
 
 -- Seed default config (Mon-Fri 9:00-17:00, Europe/Paris)
-INSERT INTO public.availability_config (timezone, buffer_minutes, weekly_schedule, blocked_dates, max_advance_days, min_notice_hours)
+INSERT INTO public.availability_config (id, timezone, buffer_minutes, weekly_schedule, blocked_dates, max_advance_days, min_notice_hours)
 VALUES (
+  '00000000-0000-0000-0000-000000000001',
   'Europe/Paris',
   15,
   '[{"day":1,"start":"09:00","end":"17:00"},{"day":2,"start":"09:00","end":"17:00"},{"day":3,"start":"09:00","end":"17:00"},{"day":4,"start":"09:00","end":"17:00"},{"day":5,"start":"09:00","end":"17:00"}]'::jsonb,
@@ -200,6 +202,16 @@ BEGIN
   IF NOT FOUND THEN
     RETURN QUERY SELECT NULL::UUID, FALSE;
     RETURN;
+  END IF;
+
+  -- Validate conversation ownership if provided
+  IF p_conversation_id IS NOT NULL THEN
+    PERFORM 1 FROM public.conversations
+    WHERE id = p_conversation_id AND user_id = auth.uid();
+    IF NOT FOUND THEN
+      RETURN QUERY SELECT NULL::UUID, FALSE;
+      RETURN;
+    END IF;
   END IF;
 
   v_ends_at := p_starts_at + (v_duration || ' minutes')::INTERVAL;
