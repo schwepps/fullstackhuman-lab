@@ -6,6 +6,15 @@ export type AgentMovementState = {
   nextIdleUntil: number
   targetZone: ZoneType | null
   zoneDwellUntil: number
+  // Per-agent tick offset — stagger so agents don't all move at once
+  tickPhase: number
+  // Natural movement: track journey origin for sigmoid velocity
+  journeyStart: Position | null
+  journeyDist: number
+  // Curved path: perpendicular offset direction (+1 or -1)
+  curveSign: number
+  // Axis-aligned movement: 'x' = horizontal first, 'y' = vertical first
+  axisFirst: 'x' | 'y'
 }
 
 export type GameState = {
@@ -27,4 +36,10 @@ export type GameState = {
   // Agent loop state (per-room, not module-level)
   agentIntervalId: ReturnType<typeof setInterval> | null
   agentRoundStartedAt: number
+  // Fallback timer when Durable Object alarms are unavailable
+  alarmFallbackTimer: ReturnType<typeof setTimeout> | null
+  // Late joiners who can only watch
+  spectators: Set<string>
+  // Players eliminated during voting — blocked from chat/vote/move
+  eliminatedPlayers: Set<string>
 }

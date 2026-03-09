@@ -58,12 +58,26 @@ export default class GameRoom implements Party.Server {
     zoneAgentMsgCount: new Map(),
     agentIntervalId: null,
     agentRoundStartedAt: 0,
+    alarmFallbackTimer: null,
+    spectators: new Set(),
+    eliminatedPlayers: new Set(),
   }
+
+  // Party.id is inaccessible in onAlarm — cache it on first connection
+  private cachedRoomId: string | null = null
 
   constructor(readonly room: Party.Room) {}
 
+  private getRoomId(): string {
+    if (this.cachedRoomId) return this.cachedRoomId
+    // This will work outside onAlarm
+    this.cachedRoomId = this.room.id
+    return this.cachedRoomId
+  }
+
   async onConnect(conn: Party.Connection, ctx: Party.ConnectionContext) {
-    await handleConnect(conn, ctx, this.room, this.room.id, this.state)
+    const roomId = this.getRoomId()
+    await handleConnect(conn, ctx, this.room, roomId, this.state)
   }
 
   async onMessage(message: string, sender: Party.Connection) {
@@ -74,27 +88,35 @@ export default class GameRoom implements Party.Server {
       return
     }
 
+    // Spectators and eliminated players can only watch — block all game messages
+    if (this.state.spectators.has(sender.id)) return
     const playerId = this.state.connToPlayer.get(sender.id) ?? sender.id
+    if (this.state.eliminatedPlayers.has(playerId)) return
+
     if (typeof msg.type !== 'string') return
+    const roomId = this.getRoomId()
 
     switch (msg.type) {
       case 'move':
       case 'move-to': {
+        if (this.state.currentPhase !== 'round') return
         const pos = (msg.type === 'move' ? msg.position : msg.target) as
           | { x?: unknown; y?: unknown }
           | undefined
         if (typeof pos?.x !== 'number' || typeof pos?.y !== 'number') return
+        if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return
         applyMove(playerId, pos as Position, this.state, this.room, {
           skipBroadcastToSender: true,
         })
         break
       }
       case 'chat':
+        if (this.state.currentPhase !== 'round') return
         if (typeof msg.content !== 'string' || typeof msg.zone !== 'string')
           return
         await handleChat(
           this.room,
-          this.room.id,
+          roomId,
           playerId,
           msg.content,
           msg.zone as ChatScope,
@@ -102,15 +124,16 @@ export default class GameRoom implements Party.Server {
         )
         break
       case 'vote': {
+        if (this.state.currentPhase !== 'vote') return
         if (typeof msg.targetId !== 'string') return
         const { handleVote } = await import('./vote-manager')
-        await handleVote(this.room, playerId, msg.targetId, this.room.id)
+        await handleVote(this.room, playerId, msg.targetId, roomId, this.state)
         break
       }
       case 'ready':
         await handleReady(
           this.room,
-          this.room.id,
+          roomId,
           playerId,
           typeof msg.displayName === 'string'
             ? sanitizeDisplayName(msg.displayName, this.state)
@@ -126,6 +149,7 @@ export default class GameRoom implements Party.Server {
   }
 
   async onClose(conn: Party.Connection) {
+    this.state.spectators.delete(conn.id)
     const playerId = this.state.connToPlayer.get(conn.id) ?? conn.id
     this.state.connToPlayer.delete(conn.id)
 
@@ -139,30 +163,53 @@ export default class GameRoom implements Party.Server {
       this.room.broadcast(JSON.stringify({ type: 'player_left', playerId }))
     } else {
       // Fire-and-forget — don't block onClose with Redis calls
+      const roomId = this.getRoomId()
       import('../../lib/game/room-store')
         .then(({ roomStore }) =>
-          roomStore.update(this.room.id, (r) => {
+          roomStore.update(roomId, (r) => {
             const player = r.players.get(playerId)
             if (player) player.isConnected = false
             return r
           })
         )
-        .catch(() => {})
+        .catch((e) =>
+          console.error('[onClose] Redis disconnect update failed:', e)
+        )
     }
   }
 
   async onAlarm() {
+    // Party.id is inaccessible in onAlarm — use cached value or storage fallback
+    const roomId =
+      this.cachedRoomId ?? (await this.room.storage.get<string>('roomId')) ?? ''
     const alarmType = await this.room.storage.get<string>('currentAlarm')
 
-    if (alarmType === ALARM_ROUND_END) {
-      await endRound(this.room, this.room.id, this.state)
-    } else if (alarmType === ALARM_VOTE_END) {
-      const { handleVote } = await import('./vote-manager')
-      await handleVote(this.room, null, null, this.room.id)
-    } else if (alarmType === ALARM_START_ROUND) {
-      const nextRound =
-        (await this.room.storage.get<number>('nextRoundNumber')) ?? 1
-      await startRound(this.room, this.room.id, nextRound, this.state)
+    try {
+      if (alarmType === ALARM_ROUND_END) {
+        await endRound(this.room, roomId, this.state)
+      } else if (alarmType === ALARM_VOTE_END) {
+        const { handleVote } = await import('./vote-manager')
+        await handleVote(this.room, null, null, roomId, this.state)
+      } else if (alarmType === ALARM_START_ROUND) {
+        const nextRound =
+          (await this.room.storage.get<number>('nextRoundNumber')) ?? 1
+        await startRound(this.room, roomId, nextRound, this.state)
+      }
+    } catch (e) {
+      console.error('[onAlarm] Handler failed, retrying in 3s:', e)
+      // Retry the same alarm after a short delay
+      try {
+        await this.room.storage.setAlarm(Date.now() + 3000)
+      } catch {
+        // Last resort: use setTimeout fallback
+        setTimeout(async () => {
+          try {
+            await this.onAlarm()
+          } catch (retryErr) {
+            console.error('[onAlarm] Retry also failed:', retryErr)
+          }
+        }, 3000)
+      }
     }
   }
 }

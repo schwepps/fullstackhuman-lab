@@ -13,6 +13,10 @@ import type {
   LobbyPlayer,
   StoredSession,
 } from '@/lib/game/types'
+import {
+  DEFAULT_AVATAR_COLOR,
+  FALLBACK_NAME_LENGTH,
+} from '@/lib/game/constants'
 
 const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? '127.0.0.1:1999'
 const SESSION_KEY_PREFIX = 'game:session:'
@@ -53,7 +57,7 @@ export function useGameSocket(roomId: string) {
     'connecting'
   )
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null)
-  const [myColor, setMyColor] = useState(0x22d3ee)
+  const [myColor, setMyColor] = useState(DEFAULT_AVATAR_COLOR)
   const [socket, setSocket] = useState<WebSocket | null>(null)
   const [currentZone, setCurrentZone] = useState<ZoneType>('main')
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -76,6 +80,9 @@ export function useGameSocket(roomId: string) {
   const [revealRoundResults, setRevealRoundResults] = useState<RoundResult[]>(
     []
   )
+  const [isSpectator, setIsSpectator] = useState(false)
+  const [lobbyError, setLobbyError] = useState<string | null>(null)
+  const [myDisplayName, setMyDisplayName] = useState<string | null>(null)
 
   // Ref for myPlayerId — used inside message handler to avoid stale closure
   const myPlayerIdRef = useRef<string | null>(null)
@@ -120,24 +127,32 @@ export function useGameSocket(roomId: string) {
         }
 
         if (msg.type === 'phase_change') {
+          if (msg.isSpectator) {
+            setIsSpectator(true)
+          }
           if (msg.yourPlayerId) {
             setMyPlayerId(msg.yourPlayerId)
             setIsHost(msg.isHost ?? false)
             if (msg.sessionToken) {
               saveSession(roomId, msg.yourPlayerId, msg.sessionToken)
             }
-            // Add self to lobby player list
-            setLobbyPlayers((prev) => {
-              if (prev.some((p) => p.id === msg.yourPlayerId)) return prev
-              return [
-                ...prev,
-                {
-                  id: msg.yourPlayerId,
-                  displayName: msg.yourPlayerId.slice(0, 6),
-                  avatarColor: msg.yourColor ?? 0x22d3ee,
-                },
-              ]
-            })
+            // Add self to lobby player list (skip for spectators)
+            if (!msg.isSpectator) {
+              setLobbyPlayers((prev) => {
+                if (prev.some((p) => p.id === msg.yourPlayerId)) return prev
+                return [
+                  ...prev,
+                  {
+                    id: msg.yourPlayerId,
+                    displayName: msg.yourPlayerId.slice(
+                      0,
+                      FALLBACK_NAME_LENGTH
+                    ),
+                    avatarColor: msg.yourColor ?? DEFAULT_AVATAR_COLOR,
+                  },
+                ]
+              })
+            }
           }
           if (msg.yourColor) setMyColor(msg.yourColor)
           if (msg.phase) {
@@ -164,8 +179,9 @@ export function useGameSocket(roomId: string) {
               {
                 id: msg.player.id,
                 displayName:
-                  msg.player.displayName ?? msg.player.id.slice(0, 6),
-                avatarColor: msg.player.avatarColor ?? 0x22d3ee,
+                  msg.player.displayName ??
+                  msg.player.id.slice(0, FALLBACK_NAME_LENGTH),
+                avatarColor: msg.player.avatarColor ?? DEFAULT_AVATAR_COLOR,
               },
             ]
           })
@@ -217,6 +233,24 @@ export function useGameSocket(roomId: string) {
           setMessages((prev) => prev.filter((m) => m.id !== msg.messageId))
         }
 
+        if (msg.type === 'player_name_update') {
+          if (msg.playerId === myPlayerIdRef.current) {
+            setMyDisplayName(msg.displayName)
+          }
+          // Update lobby player name
+          setLobbyPlayers((prev) =>
+            prev.map((p) =>
+              p.id === msg.playerId ? { ...p, displayName: msg.displayName } : p
+            )
+          )
+        }
+
+        if (msg.type === 'lobby_error') {
+          setLobbyError(
+            typeof msg.message === 'string' ? msg.message : 'Unknown error'
+          )
+        }
+
         if (msg.type === 'agent_typing') {
           setTypingPlayers((prev) => {
             if (msg.isTyping) {
@@ -225,7 +259,9 @@ export function useGameSocket(roomId: string) {
                 ...prev,
                 {
                   playerId: msg.playerId,
-                  displayName: msg.displayName ?? msg.playerId.slice(0, 6),
+                  displayName:
+                    msg.displayName ??
+                    msg.playerId.slice(0, FALLBACK_NAME_LENGTH),
                   zone: msg.zone,
                 },
               ]
@@ -297,6 +333,9 @@ export function useGameSocket(roomId: string) {
     revealResult,
     revealPlayers,
     revealRoundResults,
+    isSpectator,
+    lobbyError,
+    myDisplayName,
     setCurrentZone: handleSetCurrentZone,
     setIsChatFocused: handleSetIsChatFocused,
     clearEliminatedName: handleClearEliminatedName,

@@ -2,11 +2,13 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import type { PlayerType, LobbyPlayer } from '@/lib/game/types'
+import { MAX_PLAYERS_PER_ROOM } from '@/lib/game/constants'
 
 type LobbyPanelProps = {
   roomId: string
   isHost: boolean
   players: LobbyPlayer[]
+  lobbyError: string | null
   onReady: (
     displayName: string,
     type: PlayerType,
@@ -62,14 +64,26 @@ export function LobbyPanel({
   roomId,
   isHost,
   players,
+  lobbyError,
   onReady,
 }: LobbyPanelProps) {
   const [displayName, setDisplayName] = useState('')
   const [selectedType, setSelectedType] = useState<PlayerType>('human')
   const [customPrompt, setCustomPrompt] = useState('')
   const [isStarting, setIsStarting] = useState(false)
+  const [isReady, setIsReady] = useState(false)
 
-  const canStart = isHost && displayName.trim().length > 0 && !isStarting
+  // If there's a lobby error, the server rejected the start — override isStarting
+  const effectiveStarting = isStarting && !lobbyError
+
+  // Solo human not allowed — must have 2+ players or pick custom-agent/spectator
+  const isSoloHuman = isHost && selectedType === 'human' && players.length < 2
+
+  const hasName = displayName.trim().length > 0
+
+  const canStart = isHost && hasName && !effectiveStarting && !isSoloHuman
+
+  const canReady = !isHost && hasName && !isReady
 
   const handleStart = useCallback(() => {
     const trimmed = displayName.trim()
@@ -82,7 +96,18 @@ export function LobbyPanel({
     )
   }, [displayName, selectedType, customPrompt, onReady])
 
-  if (isStarting) {
+  const handleReady = useCallback(() => {
+    const trimmed = displayName.trim()
+    if (!trimmed) return
+    setIsReady(true)
+    onReady(
+      trimmed,
+      selectedType,
+      selectedType === 'custom-agent' ? customPrompt.trim() : undefined
+    )
+  }, [displayName, selectedType, customPrompt, onReady])
+
+  if (effectiveStarting) {
     return <BootSequence />
   }
 
@@ -153,41 +178,57 @@ export function LobbyPanel({
         />
       )}
 
-      {/* Player list */}
-      <div className="space-y-1 border border-border bg-background p-3">
-        <p className="text-xs text-muted-foreground">
-          {players.length}/10 CONNECTED
+      {/* Player count */}
+      <div className="border border-border bg-background p-3">
+        <p className="text-sm text-muted-foreground">
+          {players.length}/{MAX_PLAYERS_PER_ROOM} CONNECTED
         </p>
-        {players.map((p) => (
-          <div key={p.id} className="flex items-center gap-2 text-sm">
-            <span
-              className="inline-block h-2 w-2 rounded-full"
-              style={{
-                backgroundColor: `#${p.avatarColor.toString(16).padStart(6, '0')}`,
-              }}
-            />
-            <span className="text-foreground">{p.displayName}</span>
-          </div>
-        ))}
       </div>
 
-      {/* Start / waiting button */}
-      <button
-        type="button"
-        onClick={handleStart}
-        disabled={!canStart}
-        className={`h-11 w-full touch-manipulation font-bold transition-all active:scale-[0.98] ${
-          canStart
-            ? 'bg-primary text-background shadow-[0_0_12px_rgba(34,211,238,0.3)]'
-            : 'bg-muted text-muted-foreground opacity-50'
-        }`}
-      >
-        {canStart
-          ? '> START_GAME'
-          : isHost
+      {/* Hint message when button is disabled */}
+      {isHost && isSoloHuman && (
+        <div className="border border-warning/30 bg-warning/5 p-3 text-sm text-warning">
+          {'> '}Playing as human requires 2+ players. Switch to CUSTOM_AGENT for
+          solo testing.
+        </div>
+      )}
+
+      {/* Action button — host starts game, non-host submits name */}
+      {isHost ? (
+        <button
+          type="button"
+          onClick={handleStart}
+          disabled={!canStart}
+          className={`h-11 w-full touch-manipulation font-bold transition-all active:scale-[0.98] ${
+            canStart
+              ? 'bg-primary text-background shadow-[0_0_12px_rgba(34,211,238,0.3)]'
+              : 'bg-muted text-muted-foreground opacity-50'
+          }`}
+        >
+          {!hasName
             ? 'ENTER_CALLSIGN'
-            : 'WAITING_FOR_HOST'}
-      </button>
+            : isSoloHuman
+              ? 'NEED_MORE_PLAYERS'
+              : '> START_GAME'}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={handleReady}
+          disabled={!canReady}
+          className={`h-11 w-full touch-manipulation font-bold transition-all active:scale-[0.98] ${
+            canReady
+              ? 'bg-primary text-background shadow-[0_0_12px_rgba(34,211,238,0.3)]'
+              : 'bg-muted text-muted-foreground opacity-50'
+          }`}
+        >
+          {isReady
+            ? 'WAITING_FOR_HOST'
+            : !hasName
+              ? 'ENTER_CALLSIGN'
+              : '> READY'}
+        </button>
+      )}
     </div>
   )
 }

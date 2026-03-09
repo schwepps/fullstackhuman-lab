@@ -5,7 +5,11 @@ import 'pixi.js/unsafe-eval'
 import { Application, Graphics } from 'pixi.js'
 import type { Ticker } from 'pixi.js'
 import type { Position, ZoneType } from '@/lib/game/types'
-import { CANVAS_WIDTH, CANVAS_HEIGHT } from '@/lib/game/constants'
+import {
+  CANVAS_WIDTH,
+  CANVAS_HEIGHT,
+  DEFAULT_SPAWN_POSITION,
+} from '@/lib/game/constants'
 import { createParticles, createAvatar } from './canvas-renderer'
 import type {
   AvatarData,
@@ -22,6 +26,7 @@ import { handleServerMessage } from './canvas-messages'
 type GameCanvasProps = {
   socket: WebSocket | null
   myPlayerId: string | null
+  myDisplayName?: string | null
   myColor: number
   isChatFocused: boolean
   onPositionUpdate?: (position: Position) => void
@@ -31,6 +36,7 @@ type GameCanvasProps = {
 export function GameCanvas({
   socket,
   myPlayerId,
+  myDisplayName,
   myColor,
   isChatFocused,
   onPositionUpdate,
@@ -39,7 +45,7 @@ export function GameCanvas({
   const containerRef = useRef<HTMLDivElement>(null)
   const appRef = useRef<Application | null>(null)
   const avatarsRef = useRef<Map<string, AvatarData>>(new Map())
-  const myPositionRef = useRef<Position>({ x: 600, y: 400 })
+  const myPositionRef = useRef<Position>({ ...DEFAULT_SPAWN_POSITION })
   const keysRef = useRef<Set<string>>(new Set())
   const scaleRef = useRef(1)
   const lastBroadcastRef = useRef(0)
@@ -120,7 +126,7 @@ export function GameCanvas({
           createAvatar(
             myPlayerId,
             myColor,
-            'You',
+            myDisplayName ?? 'You',
             myPositionRef.current,
             true,
             avatarsRef.current
@@ -191,7 +197,7 @@ export function GameCanvas({
       avatars.clear()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [myPlayerId, myColor])
+  }, [myPlayerId, myColor, myDisplayName])
 
   // ─── Handle server messages ──────────────────────────────────────────────
   const onMessage = useCallback(

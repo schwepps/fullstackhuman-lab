@@ -39,6 +39,9 @@ export default function GameRoomPage() {
     revealResult,
     revealPlayers,
     revealRoundResults,
+    isSpectator,
+    lobbyError,
+    myDisplayName,
     setCurrentZone,
     setIsChatFocused,
     clearEliminatedName,
@@ -120,6 +123,7 @@ export default function GameRoomPage() {
           roomId={roomId}
           isHost={isHost}
           players={lobbyPlayers}
+          lobbyError={lobbyError}
           onReady={handleLobbyReady}
         />
       </main>
@@ -147,7 +151,8 @@ export default function GameRoomPage() {
       <div className="relative w-full max-w-300">
         <GameCanvas
           socket={socket}
-          myPlayerId={myPlayerId}
+          myPlayerId={isSpectator ? null : myPlayerId}
+          myDisplayName={myDisplayName}
           myColor={myColor}
           isChatFocused={isChatFocused}
           onPositionUpdate={handlePositionUpdate}
@@ -155,7 +160,9 @@ export default function GameRoomPage() {
         />
         <div className="absolute right-2 top-2 flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-accent" />
-          <span className="font-mono text-xs text-accent">LIVE</span>
+          <span className="font-mono text-xs text-accent">
+            {isSpectator ? 'SPECTATING' : 'LIVE'}
+          </span>
         </div>
       </div>
       <div className="mt-2 w-full max-w-300">
@@ -164,12 +171,18 @@ export default function GameRoomPage() {
           <ChatInput
             onSend={handleSendChat}
             onFocusChange={setIsChatFocused}
-            disabled={phase !== 'round'}
-            placeholder={phase === 'vote' ? 'VOTING...' : undefined}
+            disabled={phase !== 'round' || isSpectator}
+            placeholder={
+              isSpectator
+                ? 'SPECTATING...'
+                : phase === 'vote'
+                  ? 'VOTING...'
+                  : undefined
+            }
           />
         </div>
       </div>
-      {phase === 'vote' && myPlayerId && !isEliminated && (
+      {phase === 'vote' && myPlayerId && !isEliminated && !isSpectator && (
         <VotePanel
           candidates={lobbyPlayers}
           myPlayerId={myPlayerId}

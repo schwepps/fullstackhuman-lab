@@ -22,8 +22,9 @@ function serialise(room: Room): string {
   })
 }
 
-function deserialise(raw: string): Room {
-  const obj = JSON.parse(raw)
+function deserialise(raw: string | Record<string, unknown>): Room {
+  // Upstash auto-deserializes JSON by default — raw may already be an object
+  const obj = typeof raw === 'string' ? JSON.parse(raw) : raw
   return {
     ...obj,
     players: new Map(
@@ -47,8 +48,11 @@ export const roomStore = {
 
   async get(id: string): Promise<Room | null> {
     const redis = getRedisClient()
-    const raw = await redis.get<string>(`game:room:${id}`)
-    return raw ? deserialise(raw) : null
+    const raw = await redis.get<string | Record<string, unknown>>(
+      `game:room:${id}`
+    )
+    if (!raw) return null
+    return deserialise(raw)
   },
 
   async update(
@@ -60,12 +64,15 @@ export const roomStore = {
     const key = `game:room:${id}`
 
     for (let attempt = 0; attempt < retries; attempt++) {
-      const raw = await redis.get<string>(key)
+      const raw = await redis.get<string | Record<string, unknown>>(key)
       if (!raw) throw new Error(`Room ${id} not found`)
 
       const room = deserialise(raw)
       const updated = updater(room)
       const newVal = serialise(updated)
+
+      // For optimistic lock comparison, we need the string as stored in Redis
+      const rawStr = typeof raw === 'string' ? raw : JSON.stringify(raw)
 
       // Optimistic lock: only SET if the value hasn't changed since we read it
       // Uses a Lua script for atomicity: compare old value, set if unchanged
@@ -77,7 +84,7 @@ export const roomStore = {
           return 0
         end`,
         [key],
-        [raw, newVal, String(ROOM_TTL)]
+        [rawStr, newVal, String(ROOM_TTL)]
       )
 
       if (success === 1) return updated

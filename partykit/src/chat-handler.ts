@@ -3,15 +3,25 @@ import type { ChatMessage, ChatScope, ZoneType } from '../../lib/game/types'
 import { isAgentType } from '../../lib/game/types'
 import {
   MAX_MESSAGE_LENGTH,
-  MAX_CHAT_HISTORY_PER_ZONE,
   MAX_MESSAGES_PER_MINUTE,
   MAX_CONSECUTIVE_AGENT_MSGS,
   AGENT_TO_AGENT_PROBABILITY,
   AGENT_TO_AGENT_STAGGER_BASE_MS,
   AGENT_TO_AGENT_STAGGER_MAX_MS,
+  FALLBACK_NAME_LENGTH,
 } from '../../lib/game/constants'
 import { getPlayersInZone } from './proximity-router'
+import { appendToChatHistory } from './chat-persistence'
 import type { GameState } from './game-state'
+
+/** Encode HTML special chars for defense-in-depth XSS prevention */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
 
 export async function handleChat(
   partyRoom: Party.Room,
@@ -37,8 +47,11 @@ export async function handleChat(
   const chatMsg: ChatMessage = {
     id: crypto.randomUUID(),
     playerId,
-    displayName: state.displayNames.get(playerId) ?? playerId.slice(0, 6),
-    content: trimmed,
+    displayName: escapeHtml(
+      state.displayNames.get(playerId) ??
+        playerId.slice(0, FALLBACK_NAME_LENGTH)
+    ),
+    content: escapeHtml(trimmed),
     zone: senderZone,
     timestamp: Date.now(),
   }
@@ -70,20 +83,7 @@ export async function handleChat(
     const updatedRoom = await roomStore.update(roomId, (r) => {
       for (const pId of playersInZone) {
         const player = r.players.get(pId)
-        if (!player) continue
-
-        let entry = player.chatHistory.find(
-          (e: { zone: string }) => e.zone === senderZone
-        )
-        if (!entry) {
-          entry = { zone: senderZone, messages: [] }
-          player.chatHistory.push(entry)
-        }
-        entry.messages.push(chatMsg)
-
-        if (entry.messages.length > MAX_CHAT_HISTORY_PER_ZONE) {
-          entry.messages = entry.messages.slice(-MAX_CHAT_HISTORY_PER_ZONE)
-        }
+        if (player) appendToChatHistory(player, senderZone, chatMsg)
       }
       return r
     })
@@ -125,8 +125,8 @@ export async function handleChat(
         state.zones
       )
     }
-  } catch {
-    // Room may not exist yet
+  } catch (e) {
+    console.error('[handleChat] Redis persist/agent trigger failed:', e)
   }
 }
 
@@ -191,8 +191,8 @@ function moderateAsync(
         )
       }
     })
-    .catch(() => {
-      // Fail open for non-blocklist content — moderation service unavailable
+    .catch((e) => {
+      console.error('[moderateAsync] Moderation service unavailable:', e)
     })
 }
 

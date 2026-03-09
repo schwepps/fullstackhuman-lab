@@ -21,8 +21,9 @@ import {
   AGENT_STAGGER_MAX_MS,
   AGENT_RESPONSE_PROBABILITY,
   AGENT_CONTEXT_MESSAGES,
-  MAX_CHAT_HISTORY_PER_ZONE,
+  FALLBACK_NAME_LENGTH,
 } from '../../lib/game/constants'
+import { appendToChatHistory } from './chat-persistence'
 import type { GameState } from './game-state'
 import { getPlayersInZone } from './proximity-router'
 
@@ -67,8 +68,8 @@ export async function triggerAgentResponses(
         partyRoom,
         connToPlayer,
         liveZones
-      ).catch(() => {
-        // Agent response failure is non-critical
+      ).catch((e) => {
+        console.error('[triggerAgentResponses] Agent response failed:', e)
       })
     }, staggerDelay)
   }
@@ -166,32 +167,21 @@ async function respondAsAgent(
   // Persist final message to agent's own chat history
   try {
     const { roomStore } = await import('../../lib/game/room-store')
+    const chatMsg: ChatMessage = {
+      id: messageId,
+      playerId: agent.id,
+      displayName: agent.displayName,
+      content: fullResponse,
+      zone,
+      timestamp: Date.now(),
+    }
     await roomStore.update(partyRoom.id, (r) => {
       const agentPlayer = r.players.get(agent.id)
-      if (!agentPlayer) return r
-
-      let entry = agentPlayer.chatHistory.find(
-        (e: { zone: string }) => e.zone === zone
-      )
-      if (!entry) {
-        entry = { zone, messages: [] }
-        agentPlayer.chatHistory.push(entry)
-      }
-      entry.messages.push({
-        id: messageId,
-        playerId: agent.id,
-        displayName: agent.displayName,
-        content: fullResponse,
-        zone,
-        timestamp: Date.now(),
-      })
-      if (entry.messages.length > MAX_CHAT_HISTORY_PER_ZONE) {
-        entry.messages = entry.messages.slice(-MAX_CHAT_HISTORY_PER_ZONE)
-      }
+      if (agentPlayer) appendToChatHistory(agentPlayer, zone, chatMsg)
       return r
     })
-  } catch {
-    // Non-critical
+  } catch (e) {
+    console.error('[respondAsAgent] Redis chat history persist failed:', e)
   }
 }
 
@@ -207,7 +197,9 @@ export async function initiateAgentChat(
 ) {
   const playersInZone = getPlayersInZone(zone, liveZones)
   const playerNames = playersInZone
-    .map((id) => state.displayNames.get(id) ?? id.slice(0, 6))
+    .map(
+      (id) => state.displayNames.get(id) ?? id.slice(0, FALLBACK_NAME_LENGTH)
+    )
     .filter((n) => n !== agent.displayName)
 
   const zoneHistory = agent.chatHistory.find((h) => h.zone === zone)
@@ -244,34 +236,23 @@ export async function initiateAgentChat(
   // Persist to chat history
   try {
     const { roomStore } = await import('../../lib/game/room-store')
+    const chatMsg: ChatMessage = {
+      id: messageId,
+      playerId: agent.id,
+      displayName: agent.displayName,
+      content: fullResponse,
+      zone,
+      timestamp: Date.now(),
+    }
     await roomStore.update(partyRoom.id, (r) => {
-      // Persist to all players in zone (so they have context)
       for (const pId of playersInZone) {
         const player = r.players.get(pId)
-        if (!player) continue
-        let entry = player.chatHistory.find(
-          (e: { zone: string }) => e.zone === zone
-        )
-        if (!entry) {
-          entry = { zone, messages: [] }
-          player.chatHistory.push(entry)
-        }
-        entry.messages.push({
-          id: messageId,
-          playerId: agent.id,
-          displayName: agent.displayName,
-          content: fullResponse,
-          zone,
-          timestamp: Date.now(),
-        })
-        if (entry.messages.length > MAX_CHAT_HISTORY_PER_ZONE) {
-          entry.messages = entry.messages.slice(-MAX_CHAT_HISTORY_PER_ZONE)
-        }
+        if (player) appendToChatHistory(player, zone, chatMsg)
       }
       return r
     })
-  } catch {
-    // Non-critical
+  } catch (e) {
+    console.error('[initiateAgentChat] Redis chat history persist failed:', e)
   }
 }
 

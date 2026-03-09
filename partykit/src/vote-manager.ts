@@ -10,12 +10,14 @@ import {
   ELIMINATION_PAUSE_MS,
   ALARM_START_ROUND,
 } from '../../lib/game/constants'
+import type { GameState } from './game-state'
 
 export async function handleVote(
   partyRoom: Party.Room,
   voterId: string | null,
   targetId: string | null,
-  roomId: string
+  roomId: string,
+  state: GameState
 ) {
   const { roomStore } = await import('../../lib/game/room-store')
 
@@ -65,8 +67,8 @@ export async function handleVote(
           })
         }
       }
-    } catch {
-      // Agent voting failure is non-critical
+    } catch (e) {
+      console.error('[handleVote] Agent voting failed:', e)
     }
   }
 
@@ -100,7 +102,7 @@ export async function handleVote(
 
   // Tie = no elimination
   if (mostVoted.length !== 1) {
-    await advanceRound(updatedRoom, roomId, partyRoom, null, voteCounts)
+    await advanceRound(updatedRoom, roomId, partyRoom, state)
     return
   }
 
@@ -130,10 +132,7 @@ export async function handleVote(
     r.roundResults.push(result)
 
     // Update correct voters if eliminated was an agent
-    if (
-      eliminatedPlayer.type === 'auto-agent' ||
-      eliminatedPlayer.type === 'custom-agent'
-    ) {
+    if (isAgentType(eliminatedPlayer.type)) {
       for (const [vid, tid] of r.votes) {
         if (tid === eliminatedId) {
           const voter = r.players.get(vid)
@@ -145,6 +144,9 @@ export async function handleVote(
     return r
   })
 
+  // Track elimination in-memory for onMessage gate
+  state.eliminatedPlayers.add(eliminatedId)
+
   partyRoom.broadcast(
     JSON.stringify({
       type: 'elimination',
@@ -153,15 +155,14 @@ export async function handleVote(
     })
   )
 
-  await advanceRound(updatedRoom, roomId, partyRoom, eliminatedId, voteCounts)
+  await advanceRound(updatedRoom, roomId, partyRoom, state)
 }
 
 async function advanceRound(
   room: Room,
   roomId: string,
   partyRoom: Party.Room,
-  _eliminatedId: string | null,
-  _voteCounts: Map<string, number>
+  state: GameState
 ) {
   const { roomStore } = await import('../../lib/game/room-store')
   const currentRoom = await roomStore.get(roomId)
@@ -170,7 +171,7 @@ async function advanceRound(
   const activePlayers = getActivePlayers(currentRoom)
 
   if (currentRoom.round >= currentRoom.maxRounds || activePlayers.length <= 1) {
-    await triggerReveal(currentRoom, roomId, partyRoom)
+    await triggerReveal(currentRoom, roomId, partyRoom, state)
     return
   }
 
@@ -184,11 +185,12 @@ async function advanceRound(
 async function triggerReveal(
   room: Room,
   roomId: string,
-  partyRoom: Party.Room
+  partyRoom: Party.Room,
+  state: GameState
 ) {
   // Stop agent behavior during reveal
   const { stopAgentLoop } = await import('./agent-behavior-loop')
-  stopAgentLoop()
+  stopAgentLoop(state)
 
   const { roomStore } = await import('../../lib/game/room-store')
   const { calculateScores } = await import('../../lib/game/score-calculator')
@@ -282,8 +284,6 @@ async function triggerReveal(
       (p.revealPreference === 'public' || p.revealPreference === 'leaderboard')
         ? p.customPrompt
         : undefined,
-    sessionToken: '',
-    votedFor: undefined,
   }))
 
   partyRoom.broadcast(

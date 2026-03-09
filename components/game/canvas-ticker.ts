@@ -180,6 +180,20 @@ export function createGameTicker(refs: TickerRefs): (ticker: Ticker) => void {
       }
     }
 
+    // Smoothly interpolate remote avatars toward their target positions
+    for (const [id, remote] of refs.avatars) {
+      if (id === refs.myPlayerId || !remote.targetPosition) continue
+      const dx = remote.targetPosition.x - remote.container.x
+      const dy = remote.targetPosition.y - remote.container.y
+      if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+        remote.container.x += dx * 0.2
+        remote.container.y += dy * 0.2
+      } else {
+        remote.container.x = remote.targetPosition.x
+        remote.container.y = remote.targetPosition.y
+      }
+    }
+
     // Update ambient particles
     updateAmbientParticles(refs.particles.current)
 

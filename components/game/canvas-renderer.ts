@@ -4,13 +4,15 @@ import {
   CANVAS_WIDTH,
   CANVAS_HEIGHT,
   AVATAR_RADIUS,
+  DEFAULT_AVATAR_COLOR,
+  NAME_DISPLAY_MAX_LENGTH,
 } from '@/lib/game/constants'
 
 // ─── Color palette from art direction ──────────────────────────────────────
 export const DEEP_BLACK = 0x0a0a0c
 export const SURFACE_DARK = 0x111118
 export const MUTED_BORDER = 0x1e293b
-export const ELECTRIC_CYAN = 0x22d3ee
+export const ELECTRIC_CYAN = DEFAULT_AVATAR_COLOR
 export const MATRIX_GREEN = 0x4ade80
 
 // ─── Types ────────────────────────────────────────────────────────────────
@@ -21,6 +23,7 @@ export type AvatarData = {
   nameTag: Container
   color: number
   isOwn: boolean
+  targetPosition?: Position
 }
 
 export type Particle = {
@@ -97,6 +100,33 @@ export function spawnZoneEntryParticles(
   return particles
 }
 
+/** Build name tag content: truncated text + pill background */
+function buildNameTag(container: Container, name: string): void {
+  container.removeChildren()
+  const truncName =
+    name.length > NAME_DISPLAY_MAX_LENGTH
+      ? name.slice(0, NAME_DISPLAY_MAX_LENGTH - 1) + '\u2026'
+      : name
+  const nameText = new Text({
+    text: truncName,
+    style: new TextStyle({
+      fontFamily: 'monospace',
+      fontSize: 9,
+      fill: 0xffffff,
+    }),
+  })
+  nameText.anchor.set(0.5)
+
+  const pillBg = new Graphics()
+  const pillW = nameText.width + 10
+  const pillH = nameText.height + 4
+  pillBg
+    .roundRect(-pillW / 2, -pillH / 2, pillW, pillH, 4)
+    .fill({ color: DEEP_BLACK, alpha: 0.8 })
+  container.addChild(pillBg)
+  container.addChild(nameText)
+}
+
 export function createAvatar(
   playerId: string,
   color: number,
@@ -135,31 +165,15 @@ export function createAvatar(
 
   // Name tag
   const nameTag = new Container()
-  const truncName =
-    displayName.length > 8 ? displayName.slice(0, 7) + '\u2026' : displayName
-  const nameText = new Text({
-    text: truncName,
-    style: new TextStyle({
-      fontFamily: 'monospace',
-      fontSize: 9,
-      fill: 0xffffff,
-    }),
-  })
-  nameText.anchor.set(0.5)
-
-  const pillBg = new Graphics()
-  const pillW = nameText.width + 10
-  const pillH = nameText.height + 4
-  pillBg
-    .roundRect(-pillW / 2, -pillH / 2, pillW, pillH, 4)
-    .fill({ color: DEEP_BLACK, alpha: 0.8 })
-  nameTag.addChild(pillBg)
-  nameTag.addChild(nameText)
+  buildNameTag(nameTag, displayName)
   nameTag.y = 30
-
   container.addChild(nameTag)
 
   avatars.set(playerId, { container, body, glow, nameTag, color, isOwn })
 
   return container
+}
+
+export function updateAvatarName(avatar: AvatarData, newName: string): void {
+  buildNameTag(avatar.nameTag, newName)
 }

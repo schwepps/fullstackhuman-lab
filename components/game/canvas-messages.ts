@@ -2,9 +2,14 @@ import type { MutableRefObject } from 'react'
 import type { Application } from 'pixi.js'
 import type { Position, PositionUpdate, ZoneType } from '@/lib/game/types'
 import {
+  DEFAULT_SPAWN_POSITION,
+  FALLBACK_NAME_LENGTH,
+} from '@/lib/game/constants'
+import {
   ELECTRIC_CYAN,
   MATRIX_GREEN,
   createAvatar,
+  updateAvatarName,
   spawnZoneEntryParticles,
 } from './canvas-renderer'
 import type { AvatarData, ZoneEntryParticle } from './canvas-renderer'
@@ -38,8 +43,8 @@ export function handleServerMessage(
         createAvatar(
           p.id,
           p.avatarColor ?? ELECTRIC_CYAN,
-          p.displayName ?? p.id.slice(0, 6),
-          p.position ?? { x: 600, y: 400 },
+          p.displayName ?? p.id.slice(0, FALLBACK_NAME_LENGTH),
+          p.position ?? { ...DEFAULT_SPAWN_POSITION },
           false,
           refs.avatars
         )
@@ -49,10 +54,23 @@ export function handleServerMessage(
     case 'position_update':
       for (const upd of msg.updates as PositionUpdate[]) {
         if (upd.playerId === refs.myPlayerId) continue
-        const avatar = refs.avatars.get(upd.playerId)
+        let avatar = refs.avatars.get(upd.playerId)
+        if (!avatar) {
+          // Auto-create avatar for players we haven't seen yet (e.g. agents)
+          const container = createAvatar(
+            upd.playerId,
+            ELECTRIC_CYAN,
+            upd.playerId.slice(0, FALLBACK_NAME_LENGTH),
+            upd.position,
+            false,
+            refs.avatars
+          )
+          refs.app.stage.addChild(container)
+          avatar = refs.avatars.get(upd.playerId)
+        }
         if (avatar) {
-          avatar.container.x += (upd.position.x - avatar.container.x) * 0.3
-          avatar.container.y += (upd.position.y - avatar.container.y) * 0.3
+          // Store target — canvas ticker will smoothly interpolate each frame
+          avatar.targetPosition = { x: upd.position.x, y: upd.position.y }
         }
       }
       break
@@ -82,6 +100,13 @@ export function handleServerMessage(
         }
       }
       break
+    case 'player_name_update': {
+      const avatar = refs.avatars.get(msg.playerId)
+      if (avatar && typeof msg.displayName === 'string') {
+        updateAvatarName(avatar, msg.displayName)
+      }
+      break
+    }
     case 'player_left': {
       const avatar = refs.avatars.get(msg.playerId)
       if (avatar) {

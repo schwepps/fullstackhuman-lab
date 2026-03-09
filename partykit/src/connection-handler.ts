@@ -2,6 +2,9 @@ import type * as Party from 'partykit/server'
 import type { Player, PublicPlayer } from '../../lib/game/types'
 import {
   AVATAR_COLORS,
+  DEFAULT_AVATAR_COLOR,
+  DEFAULT_SPAWN_POSITION,
+  FALLBACK_NAME_LENGTH,
   MAX_PLAYERS_PER_ROOM,
   ROOM_ID_PATTERN,
 } from '../../lib/game/constants'
@@ -53,7 +56,9 @@ export async function handleConnect(
             return r
           })
         )
-        .catch(() => {})
+        .catch((e) =>
+          console.error('[handleConnect] Redis reconnect update failed:', e)
+        )
 
       conn.send(
         JSON.stringify({
@@ -76,6 +81,7 @@ export async function handleConnect(
             id: requestedPlayerId,
             displayName: player.displayName,
             avatarColor: player.avatarColor,
+            position: player.position,
             isConnected: true,
             isEliminated: player.isEliminated,
           },
@@ -89,13 +95,33 @@ export async function handleConnect(
 
   // Fresh join
   const color =
-    AVATAR_COLORS.find((c) => !state.assignedColors.has(c)) ?? AVATAR_COLORS[0]
+    AVATAR_COLORS.find((c) => !state.assignedColors.has(c)) ??
+    DEFAULT_AVATAR_COLOR
   state.assignedColors.add(color)
   state.playerColors.set(conn.id, color)
+
+  // Late joiner → spectator (game already in progress)
+  if (state.currentPhase !== 'lobby') {
+    state.spectators.add(conn.id)
+    conn.send(
+      JSON.stringify({
+        type: 'phase_change',
+        phase: state.currentPhase,
+        yourPlayerId: conn.id,
+        yourColor: color,
+        isSpectator: true,
+      })
+    )
+    sendFullPlayerList(conn, state)
+    sendPositionUpdates(conn, state)
+    return
+  }
 
   const newSessionToken = crypto.randomUUID()
   state.connToPlayer.set(conn.id, conn.id)
   state.sessionTokens.set(conn.id, newSessionToken)
+  state.zones.set(conn.id, 'main')
+  state.positions.set(conn.id, { ...DEFAULT_SPAWN_POSITION })
 
   // First player in the room is the host
   if (!state.hostId) state.hostId = conn.id
@@ -114,7 +140,10 @@ export async function handleConnect(
 
   const publicPlayer: Partial<PublicPlayer> = {
     id: conn.id,
+    displayName:
+      state.displayNames.get(conn.id) ?? conn.id.slice(0, FALLBACK_NAME_LENGTH),
     avatarColor: color,
+    position: state.positions.get(conn.id),
     isConnected: true,
     isEliminated: false,
   }
@@ -123,12 +152,14 @@ export async function handleConnect(
     [conn.id]
   )
 
+  sendFullPlayerList(conn, state)
   sendPositionUpdates(conn, state)
-  sendLobbySyncToNewJoiner(conn, state)
 
   // Persist player to Redis — fire-and-forget to avoid blocking the WebSocket.
   // Upstash REST calls can hang in workerd/miniflare, killing the Durable Object.
-  persistNewPlayer(roomId, conn.id, newSessionToken, color).catch(() => {})
+  persistNewPlayer(roomId, conn.id, newSessionToken, color).catch((e) =>
+    console.error('[handleConnect] Redis persist failed:', e)
+  )
 }
 
 function sendPositionUpdates(conn: Party.Connection, state: GameState) {
@@ -142,8 +173,12 @@ function sendPositionUpdates(conn: Party.Connection, state: GameState) {
   }
 }
 
-function sendLobbySyncToNewJoiner(conn: Party.Connection, state: GameState) {
+/** Send full player list (humans from connToPlayer + agents from positions) */
+function sendFullPlayerList(conn: Party.Connection, state: GameState) {
   const sentPlayerIds = new Set<string>()
+  const ownPlayerId = state.connToPlayer.get(conn.id)
+
+  // Human players (from WebSocket connections)
   for (const [existingConnId, existingPlayerId] of state.connToPlayer) {
     if (existingConnId === conn.id) continue
     if (sentPlayerIds.has(existingPlayerId)) continue
@@ -155,9 +190,32 @@ function sendLobbySyncToNewJoiner(conn: Party.Connection, state: GameState) {
           id: existingPlayerId,
           displayName:
             state.displayNames.get(existingPlayerId) ??
-            existingPlayerId.slice(0, 6),
+            existingPlayerId.slice(0, FALLBACK_NAME_LENGTH),
           avatarColor:
-            state.playerColors.get(existingPlayerId) ?? AVATAR_COLORS[0],
+            state.playerColors.get(existingPlayerId) ?? DEFAULT_AVATAR_COLOR,
+          position: state.positions.get(existingPlayerId),
+          isConnected: true,
+          isEliminated: false,
+        },
+      })
+    )
+  }
+
+  // Agents and any other players in positions but not in connToPlayer
+  for (const [playerId] of state.positions) {
+    if (sentPlayerIds.has(playerId)) continue
+    if (playerId === ownPlayerId) continue
+    sentPlayerIds.add(playerId)
+    conn.send(
+      JSON.stringify({
+        type: 'player_joined',
+        player: {
+          id: playerId,
+          displayName:
+            state.displayNames.get(playerId) ??
+            playerId.slice(0, FALLBACK_NAME_LENGTH),
+          avatarColor: state.playerColors.get(playerId) ?? DEFAULT_AVATAR_COLOR,
+          position: state.positions.get(playerId),
           isConnected: true,
           isEliminated: false,
         },
@@ -177,11 +235,11 @@ async function persistNewPlayer(
 
   const newPlayer: Player = {
     id: connId,
-    displayName: connId.slice(0, 6),
+    displayName: connId.slice(0, FALLBACK_NAME_LENGTH),
     type: 'human',
     model: 'claude-sonnet-4-6',
     revealPreference: 'public',
-    position: { x: 600, y: 400 },
+    position: { ...DEFAULT_SPAWN_POSITION },
     currentZone: 'main',
     avatarColor: color,
     isConnected: true,
