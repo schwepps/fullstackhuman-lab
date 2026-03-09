@@ -49,12 +49,8 @@ export async function handleReady(
     // Non-critical
   }
 
-  // Only host (first connected player) can start
-  const firstPlayer = state.connToPlayer.values().next().value
-  if (playerId !== firstPlayer) return
-
-  const uniquePlayers = new Set(state.connToPlayer.values())
-  if (uniquePlayers.size < MIN_PLAYERS) return
+  // Only host can start
+  if (playerId !== state.hostId) return
 
   // Fill empty slots with auto-agents
   try {
@@ -160,8 +156,16 @@ export async function startRound(
   )
 
   // Set alarm for round end
-  await partyRoom.storage.put('currentAlarm', ALARM_ROUND_END)
-  await partyRoom.storage.setAlarm(Date.now() + roundDuration * 1000)
+  try {
+    await partyRoom.storage.put('currentAlarm', ALARM_ROUND_END)
+    await partyRoom.storage.setAlarm(Date.now() + roundDuration * 1000)
+  } catch {
+    // Storage/alarm may be unavailable — round will not auto-end
+  }
+
+  // Start autonomous agent behavior (movement + chat initiative)
+  const { startAgentLoop } = await import('./agent-behavior-loop')
+  startAgentLoop(partyRoom, roomId, state)
 }
 
 export async function endRound(
@@ -169,6 +173,10 @@ export async function endRound(
   roomId: string,
   state: GameState
 ) {
+  // Stop agent behavior during vote phase
+  const { stopAgentLoop } = await import('./agent-behavior-loop')
+  stopAgentLoop(state)
+
   state.currentPhase = 'vote'
 
   try {
@@ -183,6 +191,10 @@ export async function endRound(
 
   partyRoom.broadcast(JSON.stringify({ type: 'phase_change', phase: 'vote' }))
 
-  await partyRoom.storage.put('currentAlarm', ALARM_VOTE_END)
-  await partyRoom.storage.setAlarm(Date.now() + VOTE_TIMEOUT_MS)
+  try {
+    await partyRoom.storage.put('currentAlarm', ALARM_VOTE_END)
+    await partyRoom.storage.setAlarm(Date.now() + VOTE_TIMEOUT_MS)
+  } catch {
+    // Storage/alarm may be unavailable — vote will not auto-end
+  }
 }

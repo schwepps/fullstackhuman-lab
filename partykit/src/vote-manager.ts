@@ -186,6 +186,10 @@ async function triggerReveal(
   roomId: string,
   partyRoom: Party.Room
 ) {
+  // Stop agent behavior during reveal
+  const { stopAgentLoop } = await import('./agent-behavior-loop')
+  stopAgentLoop()
+
   const { roomStore } = await import('../../lib/game/room-store')
   const { calculateScores } = await import('../../lib/game/score-calculator')
 

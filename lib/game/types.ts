@@ -204,6 +204,14 @@ export type StoredSession = {
 
 // ─── Agent types (for later phases) ──────────────────────────────────────────
 
+export interface MovementProfile {
+  wanderRadius: number
+  idleChance: number
+  zoneExploreChance: number
+  zoneDwellMs: [number, number]
+  speedFactor: number
+}
+
 export interface AgentPersona {
   id: string
   name: string
@@ -211,6 +219,9 @@ export interface AgentPersona {
   styleNotes: string
   quirks: string[]
   opinions: string[]
+  movement: MovementProfile
+  typoRate: number
+  casualness: 'low' | 'medium' | 'high'
 }
 
 export interface TypingProfile {

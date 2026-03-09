@@ -77,7 +77,7 @@ describe('buildChatPrompt', () => {
     const prompt = buildChatPrompt(agent, room)
 
     expect(prompt).toContain('You are a pirate named Blackbeard.')
-    expect(prompt).toContain('CONTEXT')
+    expect(prompt).toContain('PLAYER DESCRIPTION')
     expect(prompt).toContain('What is your earliest memory?')
   })
 

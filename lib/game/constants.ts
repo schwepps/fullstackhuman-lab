@@ -27,6 +27,11 @@ export const ZONE_DEBOUNCE_MS = 500
 
 // ─── Game rules ──────────────────────────────────────────────────────────────
 export const MIN_PLAYERS = 3
+export const MAX_PLAYERS_PER_ROOM = 10
+export const MIN_AGENTS_TO_ADD = 2
+export const MAX_AGENTS_TO_ADD = 5
+export const ROOM_ID_PATTERN = /^[a-z0-9]{1,20}$/
+export const DEFAULT_AVATAR_COLOR = 0x22d3ee
 
 // ─── Vote + elimination ─────────────────────────────────────────────────────
 export const VOTE_TIMEOUT_MS = 60_000
@@ -42,6 +47,37 @@ export const AGENT_RESPONSE_COOLDOWN_MS = 4000
 export const AGENT_STAGGER_BASE_MS = 2000
 export const AGENT_STAGGER_MAX_MS = 8000
 export const AGENT_RESPONSE_PROBABILITY = 0.6
+
+// ─── Agent autonomous behavior ──────────────────────────────────────────────
+export const AGENT_TICK_MS = 500
+export const AGENT_WAYPOINT_JITTER_PX = 15
+export const AGENT_PATH_NOISE_PX = 1
+export const AGENT_WAYPOINT_ARRIVAL_PX = 5
+export const AGENT_CANVAS_MARGIN_PX = 20
+export const AGENT_IDLE_BASE_MS = 1000
+export const AGENT_IDLE_JITTER_MS = 3000
+export const AGENT_WANDER_IDLE_BASE_MS = 2000
+export const AGENT_WANDER_IDLE_JITTER_MS = 4000
+export const AGENT_READING_MS_PER_CHAR = 30
+export const AGENT_READING_MAX_MS = 3000
+export const AGENT_FALSE_START_CHANCE = 0.15
+export const AGENT_TOPIC_REACT_WINDOW_START_MS = 5000
+export const AGENT_TOPIC_REACT_WINDOW_JITTER_MS = 10_000
+export const AGENT_TOPIC_REACT_WINDOW_END_MS = 20_000
+export const AGENT_ZONE_ENTRY_WINDOW_MS = 3000
+export const AGENT_ZONE_ENTRY_DELAY_MS = 1000
+export const AGENT_META_GAME_DELAY_MS = 30_000
+
+// ─── Agent chat initiative ──────────────────────────────────────────────────
+export const AGENT_INITIATIVE_COOLDOWN_MS = 15_000
+export const AGENT_ZONE_ENTRY_GREET_CHANCE = 0.4
+export const AGENT_TOPIC_REACT_CHANCE = 0.5
+export const AGENT_IDLE_CHAT_CHANCE = 0.15
+export const AGENT_META_GAME_CHANCE = 0.05
+export const AGENT_TO_AGENT_PROBABILITY = 0.3
+export const AGENT_TO_AGENT_STAGGER_BASE_MS = 4_000
+export const AGENT_TO_AGENT_STAGGER_MAX_MS = 12_000
+export const MAX_CONSECUTIVE_AGENT_MSGS = 3
 
 // ─── Chat limits ────────────────────────────────────────────────────────────
 export const MAX_MESSAGE_LENGTH = 300

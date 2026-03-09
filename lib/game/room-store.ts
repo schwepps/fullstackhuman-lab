@@ -1,6 +1,6 @@
-import { getRedisClient } from '@/lib/upstash'
-import { ROOM_TTL, MAX_CHAT_HISTORY_PER_ZONE } from '@/lib/game/constants'
-import type { Room, Player } from '@/lib/game/types'
+import { getRedisClient } from '../upstash'
+import { ROOM_TTL, MAX_CHAT_HISTORY_PER_ZONE } from './constants'
+import type { Room, Player } from './types'
 
 function serialise(room: Room): string {
   return JSON.stringify({
@@ -51,14 +51,48 @@ export const roomStore = {
     return raw ? deserialise(raw) : null
   },
 
-  async update(id: string, updater: (room: Room) => Room): Promise<Room> {
+  async update(
+    id: string,
+    updater: (room: Room) => Room,
+    retries = 3
+  ): Promise<Room> {
+    const redis = getRedisClient()
+    const key = `game:room:${id}`
+
+    for (let attempt = 0; attempt < retries; attempt++) {
+      const raw = await redis.get<string>(key)
+      if (!raw) throw new Error(`Room ${id} not found`)
+
+      const room = deserialise(raw)
+      const updated = updater(room)
+      const newVal = serialise(updated)
+
+      // Optimistic lock: only SET if the value hasn't changed since we read it
+      // Uses a Lua script for atomicity: compare old value, set if unchanged
+      const success = await redis.eval<string[], number>(
+        `if redis.call('GET', KEYS[1]) == ARGV[1] then
+          redis.call('SET', KEYS[1], ARGV[2], 'EX', ARGV[3])
+          return 1
+        else
+          return 0
+        end`,
+        [key],
+        [raw, newVal, String(ROOM_TTL)]
+      )
+
+      if (success === 1) return updated
+
+      // Conflict — retry with fresh data
+      if (attempt < retries - 1) {
+        await new Promise((r) => setTimeout(r, 50 + Math.random() * 100))
+      }
+    }
+
+    // Fallback: force write after retries exhausted (prefer stale write over failure)
     const room = await roomStore.get(id)
     if (!room) throw new Error(`Room ${id} not found`)
     const updated = updater(room)
-    const redis = getRedisClient()
-    await redis.set(`game:room:${id}`, serialise(updated), {
-      ex: ROOM_TTL,
-    })
+    await redis.set(key, serialise(updated), { ex: ROOM_TTL })
     return updated
   },
 

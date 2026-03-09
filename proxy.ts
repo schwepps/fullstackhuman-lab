@@ -29,11 +29,17 @@ function isProtectedRoute(pathname: string): boolean {
 }
 
 export default async function middleware(request: NextRequest) {
-  // 1. Refresh Supabase session (must happen on every request)
+  const { pathname } = request.nextUrl
+
+  // 1. Skip intl middleware for game routes (outside [locale], no i18n)
+  if (pathname === '/game' || pathname.startsWith('/game/')) {
+    return NextResponse.next()
+  }
+
+  // 2. Refresh Supabase session (must happen on every request)
   const { supabaseResponse, user } = await updateSession(request)
 
-  // 2. Redirect protected routes to login if unauthenticated
-  const { pathname } = request.nextUrl
+  // 3. Redirect protected routes to login if unauthenticated
   if (isProtectedRoute(pathname) && !user) {
     const hasLocalePrefix = localePrefixRegex?.test(pathname)
     const locale = hasLocalePrefix
@@ -60,10 +66,10 @@ export default async function middleware(request: NextRequest) {
     return redirectResponse
   }
 
-  // 3. Run next-intl locale detection
+  // 4. Run next-intl locale detection
   const intlResponse = intlMiddleware(request)
 
-  // 4. Merge Supabase session cookies (including security attributes) onto intl response
+  // 5. Merge Supabase session cookies (including security attributes) onto intl response
   supabaseResponse.cookies.getAll().forEach((cookie) => {
     intlResponse.cookies.set(cookie)
   })

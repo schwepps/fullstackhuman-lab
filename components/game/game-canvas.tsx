@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useCallback } from 'react'
+import 'pixi.js/unsafe-eval'
 import { Application, Graphics } from 'pixi.js'
 import type { Ticker } from 'pixi.js'
 import type { Position, ZoneType } from '@/lib/game/types'

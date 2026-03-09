@@ -1,11 +1,11 @@
-import { getRedisClient } from '@/lib/upstash'
-import { roomStore } from '@/lib/game/room-store'
+import { getRedisClient } from '../upstash'
+import { roomStore } from './room-store'
 import {
   MAX_CONCURRENT_ROOMS,
   MAX_ROOMS_PER_IP_PER_HOUR,
   MAX_MESSAGES_PER_MINUTE,
   AGENT_RESPONSE_COOLDOWN_MS,
-} from '@/lib/game/constants'
+} from './constants'
 
 export async function checkRoomCreationAllowed(
   ip: string

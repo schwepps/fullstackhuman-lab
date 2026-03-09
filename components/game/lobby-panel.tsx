@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { PlayerType, LobbyPlayer } from '@/lib/game/types'
 
 type LobbyPanelProps = {
+  roomId: string
   isHost: boolean
   players: LobbyPlayer[]
   onReady: (
@@ -19,17 +20,61 @@ const ROLE_OPTIONS: Array<{ type: PlayerType; label: string; icon: string }> = [
   { type: 'spectator', label: 'SPECTATOR', icon: '👁️' },
 ]
 
-export function LobbyPanel({ isHost, players, onReady }: LobbyPanelProps) {
+const BOOT_LINES = [
+  '> INITIALIZING TURING PROTOCOL...',
+  '> DEPLOYING AI AGENTS...',
+  '> CALIBRATING DECEPTION MODULES...',
+  '> SCANNING FOR HUMANS...',
+  '> ESTABLISHING SECURE CHANNELS...',
+  '> GAME READY_',
+]
+
+function BootSequence() {
+  const [visibleLines, setVisibleLines] = useState(0)
+
+  useEffect(() => {
+    if (visibleLines >= BOOT_LINES.length) return
+    const delay = 300 + Math.random() * 400
+    const timer = setTimeout(() => setVisibleLines((v) => v + 1), delay)
+    return () => clearTimeout(timer)
+  }, [visibleLines])
+
+  return (
+    <div className="mx-auto w-full max-w-md space-y-2 p-4 font-mono">
+      {BOOT_LINES.slice(0, visibleLines).map((line, i) => (
+        <p
+          key={i}
+          className={`text-sm transition-opacity duration-300 ${
+            i === visibleLines - 1 ? 'text-primary' : 'text-muted-foreground'
+          }`}
+        >
+          {line}
+        </p>
+      ))}
+      {visibleLines < BOOT_LINES.length && (
+        <span className="inline-block h-4 w-2 animate-pulse bg-primary" />
+      )}
+    </div>
+  )
+}
+
+export function LobbyPanel({
+  roomId,
+  isHost,
+  players,
+  onReady,
+}: LobbyPanelProps) {
   const [displayName, setDisplayName] = useState('')
   const [selectedType, setSelectedType] = useState<PlayerType>('human')
   const [customPrompt, setCustomPrompt] = useState('')
+  const [isStarting, setIsStarting] = useState(false)
 
-  const canStart =
-    isHost && players.length >= 3 && displayName.trim().length > 0
+  const canStart = isHost && displayName.trim().length > 0 && !isStarting
 
   const handleStart = useCallback(() => {
     const trimmed = displayName.trim()
     if (!trimmed) return
+    setIsStarting(true)
     onReady(
       trimmed,
       selectedType,
@@ -37,11 +82,33 @@ export function LobbyPanel({ isHost, players, onReady }: LobbyPanelProps) {
     )
   }, [displayName, selectedType, customPrompt, onReady])
 
+  if (isStarting) {
+    return <BootSequence />
+  }
+
   return (
     <div className="mx-auto w-full max-w-md space-y-4 p-4 font-mono">
       <h2 className="text-center text-xl font-bold text-primary">
         {'> LOBBY'}
       </h2>
+
+      {/* Room code */}
+      <div className="flex items-center justify-center gap-2">
+        <span className="text-xs text-muted-foreground">ROOM:</span>
+        <span className="text-sm font-bold uppercase text-foreground">
+          {roomId}
+        </span>
+        <button
+          type="button"
+          onClick={() => {
+            const url = `${window.location.origin}/game/${roomId}`
+            navigator.clipboard.writeText(url).catch(() => {})
+          }}
+          className="touch-manipulation border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary active:scale-[0.95]"
+        >
+          COPY_URL
+        </button>
+      </div>
 
       {/* Name input */}
       <div className="flex items-center gap-1">
@@ -104,23 +171,23 @@ export function LobbyPanel({ isHost, players, onReady }: LobbyPanelProps) {
         ))}
       </div>
 
-      {/* Start button (host only) */}
-      {isHost && (
-        <button
-          type="button"
-          onClick={handleStart}
-          disabled={!canStart}
-          className={`h-11 w-full touch-manipulation font-bold transition-all active:scale-[0.98] ${
-            canStart
-              ? 'bg-primary text-background shadow-[0_0_12px_rgba(34,211,238,0.3)]'
-              : 'bg-muted text-muted-foreground opacity-50'
-          }`}
-        >
-          {players.length < 3
-            ? `WAITING (${players.length}/3 MIN)`
-            : '> START_GAME'}
-        </button>
-      )}
+      {/* Start / waiting button */}
+      <button
+        type="button"
+        onClick={handleStart}
+        disabled={!canStart}
+        className={`h-11 w-full touch-manipulation font-bold transition-all active:scale-[0.98] ${
+          canStart
+            ? 'bg-primary text-background shadow-[0_0_12px_rgba(34,211,238,0.3)]'
+            : 'bg-muted text-muted-foreground opacity-50'
+        }`}
+      >
+        {canStart
+          ? '> START_GAME'
+          : isHost
+            ? 'ENTER_CALLSIGN'
+            : 'WAITING_FOR_HOST'}
+      </button>
     </div>
   )
 }

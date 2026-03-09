@@ -1,6 +1,10 @@
 import type * as Party from 'partykit/server'
 import type { Player, PublicPlayer } from '../../lib/game/types'
-import { AVATAR_COLORS } from '../../lib/game/constants'
+import {
+  AVATAR_COLORS,
+  MAX_PLAYERS_PER_ROOM,
+  ROOM_ID_PATTERN,
+} from '../../lib/game/constants'
 import type { GameState } from './game-state'
 
 export async function handleConnect(
@@ -10,21 +14,29 @@ export async function handleConnect(
   roomId: string,
   state: GameState
 ) {
+  // Validate room ID
+  if (!ROOM_ID_PATTERN.test(roomId)) {
+    conn.close(4001, 'Invalid room ID')
+    return
+  }
+
+  // Enforce player cap (reconnections bypass — they're re-joining, not adding)
   const url = new URL(ctx.request.url)
   const sessionToken = url.searchParams.get('sessionToken')
   const requestedPlayerId = url.searchParams.get('playerId')
+  const isReconnection = requestedPlayerId && sessionToken
+
+  if (!isReconnection && state.connToPlayer.size >= MAX_PLAYERS_PER_ROOM) {
+    conn.close(4003, 'Room is full')
+    return
+  }
 
   // Reconnection path
   if (requestedPlayerId && sessionToken) {
     const roomData = await getRoomData(roomId)
-    if (!roomData) {
-      conn.close(4004, 'Room not found')
-      return
-    }
+    const player = roomData?.players.get(requestedPlayerId)
 
-    const player = roomData.players.get(requestedPlayerId)
-
-    if (player && player.sessionToken === sessionToken) {
+    if (roomData && player && player.sessionToken === sessionToken) {
       state.connToPlayer.set(conn.id, requestedPlayerId)
       state.positions.set(requestedPlayerId, player.position)
       state.zones.set(requestedPlayerId, player.currentZone)
@@ -32,16 +44,16 @@ export async function handleConnect(
       state.assignedColors.add(player.avatarColor)
       state.playerColors.set(requestedPlayerId, player.avatarColor)
 
-      try {
-        const { roomStore } = await import('../../lib/game/room-store')
-        await roomStore.update(roomId, (r) => {
-          const p = r.players.get(requestedPlayerId)
-          if (p) p.isConnected = true
-          return r
-        })
-      } catch {
-        // Non-critical
-      }
+      // Mark reconnected in Redis — fire-and-forget
+      import('../../lib/game/room-store')
+        .then(({ roomStore }) =>
+          roomStore.update(roomId, (r) => {
+            const p = r.players.get(requestedPlayerId)
+            if (p) p.isConnected = true
+            return r
+          })
+        )
+        .catch(() => {})
 
       conn.send(
         JSON.stringify({
@@ -72,7 +84,7 @@ export async function handleConnect(
       )
       return
     }
-    // Invalid session — fall through to fresh join
+    // Room not found or invalid session — fall through to fresh join
   }
 
   // Fresh join
@@ -85,6 +97,10 @@ export async function handleConnect(
   state.connToPlayer.set(conn.id, conn.id)
   state.sessionTokens.set(conn.id, newSessionToken)
 
+  // First player in the room is the host
+  if (!state.hostId) state.hostId = conn.id
+  const isFirstPlayer = state.hostId === conn.id
+
   conn.send(
     JSON.stringify({
       type: 'phase_change',
@@ -92,6 +108,7 @@ export async function handleConnect(
       yourPlayerId: conn.id,
       yourColor: color,
       sessionToken: newSessionToken,
+      isHost: isFirstPlayer,
     })
   )
 
@@ -109,51 +126,9 @@ export async function handleConnect(
   sendPositionUpdates(conn, state)
   sendLobbySyncToNewJoiner(conn, state)
 
-  // Persist player to Redis
-  try {
-    const { roomStore } = await import('../../lib/game/room-store')
-    const existing = await roomStore.get(roomId)
-
-    const newPlayer: Player = {
-      id: conn.id,
-      displayName: conn.id.slice(0, 6),
-      type: 'human',
-      model: 'claude-sonnet-4-6',
-      revealPreference: 'public',
-      position: { x: 600, y: 400 },
-      currentZone: 'main',
-      avatarColor: color,
-      isConnected: true,
-      isEliminated: false,
-      score: 0,
-      roundsSurvived: 0,
-      correctVotes: 0,
-      sessionToken: newSessionToken,
-      chatHistory: [],
-    }
-
-    if (existing) {
-      await roomStore.update(roomId, (r) => {
-        r.players.set(conn.id, newPlayer)
-        return r
-      })
-    } else {
-      await roomStore.create({
-        id: roomId,
-        hostId: conn.id,
-        phase: 'lobby',
-        round: 0,
-        maxRounds: 4,
-        roundDuration: 180,
-        players: new Map([[conn.id, newPlayer]]),
-        votes: new Map(),
-        roundResults: [],
-        createdAt: Date.now(),
-      })
-    }
-  } catch {
-    // Redis may be unavailable
-  }
+  // Persist player to Redis — fire-and-forget to avoid blocking the WebSocket.
+  // Upstash REST calls can hang in workerd/miniflare, killing the Durable Object.
+  persistNewPlayer(roomId, conn.id, newSessionToken, color).catch(() => {})
 }
 
 function sendPositionUpdates(conn: Party.Connection, state: GameState) {
@@ -188,6 +163,54 @@ function sendLobbySyncToNewJoiner(conn: Party.Connection, state: GameState) {
         },
       })
     )
+  }
+}
+
+async function persistNewPlayer(
+  roomId: string,
+  connId: string,
+  sessionToken: string,
+  color: number
+) {
+  const { roomStore } = await import('../../lib/game/room-store')
+  const existing = await roomStore.get(roomId)
+
+  const newPlayer: Player = {
+    id: connId,
+    displayName: connId.slice(0, 6),
+    type: 'human',
+    model: 'claude-sonnet-4-6',
+    revealPreference: 'public',
+    position: { x: 600, y: 400 },
+    currentZone: 'main',
+    avatarColor: color,
+    isConnected: true,
+    isEliminated: false,
+    score: 0,
+    roundsSurvived: 0,
+    correctVotes: 0,
+    sessionToken,
+    chatHistory: [],
+  }
+
+  if (existing) {
+    await roomStore.update(roomId, (r) => {
+      r.players.set(connId, newPlayer)
+      return r
+    })
+  } else {
+    await roomStore.create({
+      id: roomId,
+      hostId: connId,
+      phase: 'lobby',
+      round: 0,
+      maxRounds: 4,
+      roundDuration: 180,
+      players: new Map([[connId, newPlayer]]),
+      votes: new Map(),
+      roundResults: [],
+      createdAt: Date.now(),
+    })
   }
 }
 

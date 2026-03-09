@@ -1,10 +1,21 @@
 import type * as Party from 'partykit/server'
-import type { Room, Player, ZoneType, ChatMessage } from '../../lib/game/types'
+import type {
+  Room,
+  Player,
+  ZoneType,
+  ChatMessage,
+  TypingProfile,
+} from '../../lib/game/types'
 import { isAgentType } from '../../lib/game/types'
-import { buildChatPrompt } from '../../lib/game/prompt-builder'
+import {
+  buildChatPrompt,
+  buildInitiativePrompt,
+} from '../../lib/game/prompt-builder'
+import type { InitiativeTrigger } from '../../lib/game/prompt-builder'
 import { streamAtHumanPace } from '../../lib/game/typing-simulator'
 import { generateAgentResponse } from '../../lib/game/model-registry'
-import { TYPING_PROFILES } from '../../lib/game/agent-personas'
+import { TYPING_PROFILES, PERSONAS } from '../../lib/game/agent-personas'
+import { humanizeText } from '../../lib/game/text-humanizer'
 import {
   AGENT_STAGGER_BASE_MS,
   AGENT_STAGGER_MAX_MS,
@@ -12,6 +23,8 @@ import {
   AGENT_CONTEXT_MESSAGES,
   MAX_CHAT_HISTORY_PER_ZONE,
 } from '../../lib/game/constants'
+import type { GameState } from './game-state'
+import { getPlayersInZone } from './proximity-router'
 
 export async function triggerAgentResponses(
   room: Room,
@@ -19,7 +32,10 @@ export async function triggerAgentResponses(
   playersInZone: string[],
   partyRoom: Party.Room,
   connToPlayer: Map<string, string>,
-  liveZones?: Map<string, ZoneType>
+  liveZones?: Map<string, ZoneType>,
+  responseProbability = AGENT_RESPONSE_PROBABILITY,
+  staggerBase = AGENT_STAGGER_BASE_MS,
+  staggerMax = AGENT_STAGGER_MAX_MS
 ) {
   // Per-zone cooldown to prevent overlapping agent response batches
   try {
@@ -38,13 +54,10 @@ export async function triggerAgentResponses(
     )
 
   for (const agent of agentsInZone) {
-    // Each agent has AGENT_RESPONSE_PROBABILITY chance to respond
-    if (Math.random() > AGENT_RESPONSE_PROBABILITY) continue
+    if (Math.random() > responseProbability) continue
 
-    // Stagger responses
     const staggerDelay =
-      AGENT_STAGGER_BASE_MS +
-      Math.random() * (AGENT_STAGGER_MAX_MS - AGENT_STAGGER_BASE_MS)
+      staggerBase + Math.random() * (staggerMax - staggerBase)
 
     setTimeout(() => {
       respondAsAgent(
@@ -84,17 +97,206 @@ async function respondAsAgent(
     }))
 
   // Generate full response silently (not streamed to client yet)
-  const fullResponse = await generateAgentResponse(systemPrompt, recentMessages)
+  const rawResponse = await generateAgentResponse(systemPrompt, recentMessages)
+  if (!rawResponse.trim()) return
 
-  if (!fullResponse.trim()) return
+  // Humanize: add typos, casual formatting, strip AI patterns
+  const persona = PERSONAS.find((p) => p.id === agent.id)
+  const fullResponse = persona
+    ? humanizeText(rawResponse, persona)
+    : rawResponse
 
   // Get typing profile
   const profile = TYPING_PROFILES[agent.id] ?? TYPING_PROFILES['default']
 
+  // Reading delay — proportional to last message length
+  const lastMsg = recentMessages[recentMessages.length - 1]
+  if (lastMsg) {
+    const readingDelay = Math.min(lastMsg.content.length * 30, 3000)
+    await new Promise((r) => setTimeout(r, readingDelay))
+  }
+
   // Create message ID for streaming updates
   const messageId = crypto.randomUUID()
 
-  // Broadcast typing indicator ON (include displayName for UI)
+  // False-start typing (15% chance) — simulates typing then deleting
+  if (Math.random() < 0.15) {
+    broadcastToZone(
+      partyRoom,
+      connToPlayer,
+      zone,
+      liveZones,
+      JSON.stringify({
+        type: 'agent_typing',
+        playerId: agent.id,
+        displayName: agent.displayName,
+        zone,
+        isTyping: true,
+      })
+    )
+    await new Promise((r) => setTimeout(r, 800 + Math.random() * 1200))
+    broadcastToZone(
+      partyRoom,
+      connToPlayer,
+      zone,
+      liveZones,
+      JSON.stringify({
+        type: 'agent_typing',
+        playerId: agent.id,
+        displayName: agent.displayName,
+        zone,
+        isTyping: false,
+      })
+    )
+    await new Promise((r) => setTimeout(r, 500 + Math.random() * 1000))
+  }
+
+  // Stream response at human pace with typing indicators
+  await broadcastStreamedMessage({
+    fullResponse,
+    profile,
+    agent,
+    zone,
+    messageId,
+    partyRoom,
+    connToPlayer,
+    liveZones,
+  })
+
+  // Persist final message to agent's own chat history
+  try {
+    const { roomStore } = await import('../../lib/game/room-store')
+    await roomStore.update(partyRoom.id, (r) => {
+      const agentPlayer = r.players.get(agent.id)
+      if (!agentPlayer) return r
+
+      let entry = agentPlayer.chatHistory.find(
+        (e: { zone: string }) => e.zone === zone
+      )
+      if (!entry) {
+        entry = { zone, messages: [] }
+        agentPlayer.chatHistory.push(entry)
+      }
+      entry.messages.push({
+        id: messageId,
+        playerId: agent.id,
+        displayName: agent.displayName,
+        content: fullResponse,
+        zone,
+        timestamp: Date.now(),
+      })
+      if (entry.messages.length > MAX_CHAT_HISTORY_PER_ZONE) {
+        entry.messages = entry.messages.slice(-MAX_CHAT_HISTORY_PER_ZONE)
+      }
+      return r
+    })
+  } catch {
+    // Non-critical
+  }
+}
+
+export async function initiateAgentChat(
+  room: Room,
+  agent: Player,
+  zone: ZoneType,
+  trigger: InitiativeTrigger,
+  partyRoom: Party.Room,
+  connToPlayer: Map<string, string>,
+  liveZones: Map<string, ZoneType>,
+  state: GameState
+) {
+  const playersInZone = getPlayersInZone(zone, liveZones)
+  const playerNames = playersInZone
+    .map((id) => state.displayNames.get(id) ?? id.slice(0, 6))
+    .filter((n) => n !== agent.displayName)
+
+  const zoneHistory = agent.chatHistory.find((h) => h.zone === zone)
+  const recentMessages = (zoneHistory?.messages ?? []).slice(-5)
+
+  const systemPrompt = buildInitiativePrompt(agent, room, trigger, {
+    playersInZone: playerNames,
+    recentMessages,
+  })
+
+  const rawResponse = await generateAgentResponse(systemPrompt, [])
+  if (!rawResponse.trim()) return
+
+  const persona = PERSONAS.find((p) => p.id === agent.id)
+  const fullResponse = persona
+    ? humanizeText(rawResponse, persona)
+    : rawResponse
+
+  const profile = TYPING_PROFILES[agent.id] ?? TYPING_PROFILES['default']
+  const messageId = crypto.randomUUID()
+
+  // Stream response at human pace with typing indicators
+  await broadcastStreamedMessage({
+    fullResponse,
+    profile,
+    agent,
+    zone,
+    messageId,
+    partyRoom,
+    connToPlayer,
+    liveZones,
+  })
+
+  // Persist to chat history
+  try {
+    const { roomStore } = await import('../../lib/game/room-store')
+    await roomStore.update(partyRoom.id, (r) => {
+      // Persist to all players in zone (so they have context)
+      for (const pId of playersInZone) {
+        const player = r.players.get(pId)
+        if (!player) continue
+        let entry = player.chatHistory.find(
+          (e: { zone: string }) => e.zone === zone
+        )
+        if (!entry) {
+          entry = { zone, messages: [] }
+          player.chatHistory.push(entry)
+        }
+        entry.messages.push({
+          id: messageId,
+          playerId: agent.id,
+          displayName: agent.displayName,
+          content: fullResponse,
+          zone,
+          timestamp: Date.now(),
+        })
+        if (entry.messages.length > MAX_CHAT_HISTORY_PER_ZONE) {
+          entry.messages = entry.messages.slice(-MAX_CHAT_HISTORY_PER_ZONE)
+        }
+      }
+      return r
+    })
+  } catch {
+    // Non-critical
+  }
+}
+
+async function broadcastStreamedMessage(opts: {
+  fullResponse: string
+  profile: TypingProfile
+  agent: Player
+  zone: ZoneType
+  messageId: string
+  partyRoom: Party.Room
+  connToPlayer: Map<string, string>
+  liveZones?: Map<string, ZoneType>
+}): Promise<void> {
+  const {
+    fullResponse,
+    profile,
+    agent,
+    zone,
+    messageId,
+    partyRoom,
+    connToPlayer,
+    liveZones,
+  } = opts
+
+  // Typing indicator ON
   broadcastToZone(
     partyRoom,
     connToPlayer,
@@ -114,12 +316,9 @@ async function respondAsAgent(
   await streamAtHumanPace(
     fullResponse,
     profile,
-    () => {
-      // onTypingStart — already broadcasting typing indicator
-    },
+    () => {},
     (char: string) => {
       accumulated += char
-      // Broadcast streaming message update
       const streamMsg: ChatMessage = {
         id: messageId,
         playerId: agent.id,
@@ -138,7 +337,7 @@ async function respondAsAgent(
       )
     },
     () => {
-      // onTypingEnd — send final message
+      // Final message
       const finalMsg: ChatMessage = {
         id: messageId,
         playerId: agent.id,
@@ -172,37 +371,6 @@ async function respondAsAgent(
       )
     }
   )
-
-  // Persist final message to agent's own chat history
-  try {
-    const { roomStore } = await import('../../lib/game/room-store')
-    await roomStore.update(partyRoom.id, (r) => {
-      const agentPlayer = r.players.get(agent.id)
-      if (!agentPlayer) return r
-
-      let entry = agentPlayer.chatHistory.find(
-        (e: { zone: string }) => e.zone === zone
-      )
-      if (!entry) {
-        entry = { zone, messages: [] }
-        agentPlayer.chatHistory.push(entry)
-      }
-      entry.messages.push({
-        id: messageId,
-        playerId: agent.id,
-        displayName: agent.displayName,
-        content: fullResponse,
-        zone,
-        timestamp: Date.now(),
-      })
-      if (entry.messages.length > MAX_CHAT_HISTORY_PER_ZONE) {
-        entry.messages = entry.messages.slice(-MAX_CHAT_HISTORY_PER_ZONE)
-      }
-      return r
-    })
-  } catch {
-    // Non-critical
-  }
 }
 
 function broadcastToZone(

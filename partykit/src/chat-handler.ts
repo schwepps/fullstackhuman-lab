@@ -1,9 +1,14 @@
 import type * as Party from 'partykit/server'
 import type { ChatMessage, ChatScope, ZoneType } from '../../lib/game/types'
+import { isAgentType } from '../../lib/game/types'
 import {
   MAX_MESSAGE_LENGTH,
   MAX_CHAT_HISTORY_PER_ZONE,
   MAX_MESSAGES_PER_MINUTE,
+  MAX_CONSECUTIVE_AGENT_MSGS,
+  AGENT_TO_AGENT_PROBABILITY,
+  AGENT_TO_AGENT_STAGGER_BASE_MS,
+  AGENT_TO_AGENT_STAGGER_MAX_MS,
 } from '../../lib/game/constants'
 import { getPlayersInZone } from './proximity-router'
 import type { GameState } from './game-state'
@@ -83,9 +88,33 @@ export async function handleChat(
       return r
     })
 
-    // Trigger agent responses if sender is human
+    // Trigger agent responses — both from human and agent senders
     const senderPlayer = updatedRoom.players.get(playerId)
-    if (senderPlayer?.type === 'human') {
+    const senderIsAgent = senderPlayer ? isAgentType(senderPlayer.type) : false
+
+    if (senderIsAgent) {
+      // Track consecutive agent messages per zone
+      const count = (state.zoneAgentMsgCount.get(senderZone) ?? 0) + 1
+      state.zoneAgentMsgCount.set(senderZone, count)
+
+      // Allow agent-to-agent with lower probability and longer delay
+      if (count < MAX_CONSECUTIVE_AGENT_MSGS) {
+        const { triggerAgentResponses } = await import('./agent-manager')
+        triggerAgentResponses(
+          updatedRoom,
+          senderZone,
+          playersInZone,
+          partyRoom,
+          state.connToPlayer,
+          state.zones,
+          AGENT_TO_AGENT_PROBABILITY,
+          AGENT_TO_AGENT_STAGGER_BASE_MS,
+          AGENT_TO_AGENT_STAGGER_MAX_MS
+        )
+      }
+    } else {
+      // Human sender — reset consecutive counter, trigger with normal probability
+      state.zoneAgentMsgCount.set(senderZone, 0)
       const { triggerAgentResponses } = await import('./agent-manager')
       triggerAgentResponses(
         updatedRoom,
@@ -101,6 +130,23 @@ export async function handleChat(
   }
 }
 
+// Synchronous keyword blocklist — catches worst-case content even when moderation API is down
+const BLOCKED_PATTERNS = [
+  /\bn[i1]gg[aer]/i,
+  /\bf[a@]gg?[o0]t/i,
+  /\bk[i1]ke\b/i,
+  /\btr[a@]nn[yi]/i,
+  /\bch[i1]nk\b/i,
+  /\bsp[i1]c\b/i,
+  /\bw[e3]tb[a@]ck/i,
+  /\bk[yi]s\b/i, // "kill yourself"
+  /\bkill\s*your\s*self/i,
+]
+
+function matchesBlocklist(content: string): boolean {
+  return BLOCKED_PATTERNS.some((p) => p.test(content))
+}
+
 function moderateAsync(
   partyRoom: Party.Room,
   messageId: string,
@@ -110,6 +156,18 @@ function moderateAsync(
   playersInZone: string[],
   state: GameState
 ) {
+  // Synchronous blocklist — immediate removal, no API call needed
+  if (matchesBlocklist(content)) {
+    broadcastMessageRemoved(
+      partyRoom,
+      messageId,
+      'moderated',
+      playersInZone,
+      state
+    )
+    return
+  }
+
   const baseUrl = process.env.NEXTJS_URL ?? 'http://localhost:3000'
   const internalToken = process.env.GAME_INTERNAL_TOKEN ?? ''
 
@@ -134,8 +192,7 @@ function moderateAsync(
       }
     })
     .catch(() => {
-      // Fail open — moderation service unavailable, keep message delivered
-      // Messages are already validated (trimmed, length-checked, rate-limited)
+      // Fail open for non-blocklist content — moderation service unavailable
     })
 }
 

@@ -1,23 +1,49 @@
 import type * as Party from 'partykit/server'
 import type { Position, ChatScope, GamePhase } from '../../lib/game/types'
 import {
-  CANVAS_WIDTH,
-  CANVAS_HEIGHT,
-  ZONE_DEBOUNCE_MS,
   ALARM_ROUND_END,
   ALARM_VOTE_END,
   ALARM_START_ROUND,
 } from '../../lib/game/constants'
-import { computeZone, getPlayersInZone } from './proximity-router'
-import { ZONES } from '../../lib/game/zones'
 import type { GameState } from './game-state'
 import { handleConnect } from './connection-handler'
 import { handleChat } from './chat-handler'
 import { handleReady, startRound, endRound } from './lobby-handler'
+import { applyMove } from './movement-handler'
+import { PERSONAS } from '../../lib/game/agent-personas'
+
+/** Strip zero-width chars, control chars, and check against reserved persona names */
+function sanitizeDisplayName(
+  raw: string,
+  state: GameState
+): string | undefined {
+  // Strip non-printable and zero-width characters
+  const cleaned = raw
+    .trim()
+    .replace(
+      /[\u200B-\u200F\u2028-\u202F\uFEFF\u0000-\u001F\u007F-\u009F]/g,
+      ''
+    )
+    .slice(0, 16)
+  if (!cleaned) return undefined
+
+  // Block names matching AI persona names (case-insensitive)
+  const lower = cleaned.toLowerCase()
+  const isReserved = PERSONAS.some((p) => p.name.toLowerCase() === lower)
+  if (isReserved) return undefined
+
+  // Block duplicates
+  for (const [, existing] of state.displayNames) {
+    if (existing.toLowerCase() === lower) return undefined
+  }
+
+  return cleaned
+}
 
 export default class GameRoom implements Party.Server {
   state: GameState = {
     currentPhase: 'lobby' as GamePhase,
+    hostId: null,
     positions: new Map(),
     zones: new Map(),
     connToPlayer: new Map(),
@@ -27,6 +53,11 @@ export default class GameRoom implements Party.Server {
     displayNames: new Map(),
     sessionTokens: new Map(),
     chatTimestamps: new Map(),
+    agentMovement: new Map(),
+    agentChatCooldowns: new Map(),
+    zoneAgentMsgCount: new Map(),
+    agentIntervalId: null,
+    agentRoundStartedAt: 0,
   }
 
   constructor(readonly room: Party.Room) {}
@@ -53,7 +84,9 @@ export default class GameRoom implements Party.Server {
           | { x?: unknown; y?: unknown }
           | undefined
         if (typeof pos?.x !== 'number' || typeof pos?.y !== 'number') return
-        this.handleMove(playerId, pos as Position)
+        applyMove(playerId, pos as Position, this.state, this.room, {
+          skipBroadcastToSender: true,
+        })
         break
       }
       case 'chat':
@@ -80,7 +113,7 @@ export default class GameRoom implements Party.Server {
           this.room.id,
           playerId,
           typeof msg.displayName === 'string'
-            ? msg.displayName.trim().slice(0, 16)
+            ? sanitizeDisplayName(msg.displayName, this.state)
             : undefined,
           typeof msg.playerType === 'string' ? msg.playerType : undefined,
           typeof msg.customPrompt === 'string'
@@ -105,14 +138,16 @@ export default class GameRoom implements Party.Server {
       this.state.zones.delete(playerId)
       this.room.broadcast(JSON.stringify({ type: 'player_left', playerId }))
     } else {
-      try {
-        const { roomStore } = await import('../../lib/game/room-store')
-        await roomStore.update(this.room.id, (r) => {
-          const player = r.players.get(playerId)
-          if (player) player.isConnected = false
-          return r
-        })
-      } catch {}
+      // Fire-and-forget — don't block onClose with Redis calls
+      import('../../lib/game/room-store')
+        .then(({ roomStore }) =>
+          roomStore.update(this.room.id, (r) => {
+            const player = r.players.get(playerId)
+            if (player) player.isConnected = false
+            return r
+          })
+        )
+        .catch(() => {})
     }
   }
 
@@ -129,69 +164,5 @@ export default class GameRoom implements Party.Server {
         (await this.room.storage.get<number>('nextRoundNumber')) ?? 1
       await startRound(this.room, this.room.id, nextRound, this.state)
     }
-  }
-
-  private handleMove(playerId: string, position: Position) {
-    if (
-      typeof position?.x !== 'number' ||
-      typeof position?.y !== 'number' ||
-      !Number.isFinite(position.x) ||
-      !Number.isFinite(position.y)
-    )
-      return
-
-    const clamped: Position = {
-      x: Math.max(0, Math.min(CANVAS_WIDTH, position.x)),
-      y: Math.max(0, Math.min(CANVAS_HEIGHT, position.y)),
-    }
-    this.state.positions.set(playerId, clamped)
-
-    let newZone = computeZone(clamped)
-    const prevZone = this.state.zones.get(playerId) ?? 'main'
-
-    if (newZone !== prevZone && newZone !== 'main') {
-      const zoneDef = ZONES.find((z) => z.id === newZone)
-      if (zoneDef) {
-        const occupants = getPlayersInZone(newZone, this.state.zones)
-        if (occupants.length >= zoneDef.capacity) {
-          newZone = prevZone
-        }
-      }
-    }
-    this.state.zones.set(playerId, newZone)
-
-    if (newZone !== prevZone) {
-      this.room.broadcast(
-        JSON.stringify({ type: 'zone_update', playerId, zone: newZone })
-      )
-
-      const existingTimer = this.state.zoneWriteDebounce.get(playerId)
-      if (existingTimer) clearTimeout(existingTimer)
-
-      this.state.zoneWriteDebounce.set(
-        playerId,
-        setTimeout(async () => {
-          this.state.zoneWriteDebounce.delete(playerId)
-          try {
-            const { roomStore } = await import('../../lib/game/room-store')
-            await roomStore.update(this.room.id, (r) => {
-              const player = r.players.get(playerId)
-              if (player) player.currentZone = newZone
-              return r
-            })
-          } catch {
-            // Room may not exist yet
-          }
-        }, ZONE_DEBOUNCE_MS)
-      )
-    }
-
-    this.room.broadcast(
-      JSON.stringify({
-        type: 'position_update',
-        updates: [{ playerId, position: clamped, zone: newZone }],
-      }),
-      [playerId]
-    )
   }
 }

@@ -1,5 +1,5 @@
-import type { Room } from '@/lib/game/types'
-import { isAgentType } from '@/lib/game/types'
+import type { Room } from './types'
+import { isAgentType } from './types'
 
 const CORRECT_VOTE_POINTS = 20
 const ROUND_SURVIVED_POINTS = 10
