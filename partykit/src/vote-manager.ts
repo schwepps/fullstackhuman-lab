@@ -45,13 +45,13 @@ export async function handleVote(
     }
   }
 
-  // Trigger agent votes
-  const room = await roomStore.get(roomId)
-  if (!room) return
+  // Trigger agent votes — re-read after human vote to get fresh vote state
+  const freshRoom = await roomStore.get(roomId)
+  if (!freshRoom) return
 
-  const activePlayers = getActivePlayers(room)
+  const activePlayers = getActivePlayers(freshRoom)
   const agents = activePlayers.filter(
-    (p) => isAgentType(p.type) && !room.votes.has(p.id)
+    (p) => isAgentType(p.type) && !freshRoom.votes.has(p.id)
   )
 
   if (agents.length > 0) {
@@ -59,7 +59,11 @@ export async function handleVote(
       const { generateAgentVote } = await import('./agent-manager')
       for (const agent of agents) {
         const candidates = activePlayers.filter((p) => p.id !== agent.id)
-        const voteTargetId = await generateAgentVote(agent, room, candidates)
+        const voteTargetId = await generateAgentVote(
+          agent,
+          freshRoom,
+          candidates
+        )
         if (voteTargetId) {
           await roomStore.update(roomId, (r) => {
             r.votes.set(agent.id, voteTargetId)

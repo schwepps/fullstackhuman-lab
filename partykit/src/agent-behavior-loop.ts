@@ -90,7 +90,9 @@ export function stopAgentLoop(state?: Pick<GameState, 'agentIntervalId'>) {
   }
 }
 
-// Fallback reference for stopAgentLoop calls without state (e.g., vote-manager)
+// Fallback reference for stopAgentLoop calls without state (e.g., vote-manager).
+// Safe in Partykit/Durable Objects: each instance gets its own module scope,
+// so this is effectively instance-scoped despite being module-level.
 let fallbackIntervalId: ReturnType<typeof setInterval> | null = null
 
 // ─── Movement tick ──────────────────────────────────────────────────────────

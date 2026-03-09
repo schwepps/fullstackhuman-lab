@@ -271,6 +271,8 @@ function PromptRevealCard({
   return (
     <div className="mb-3 border border-primary/20 bg-popover">
       <button
+        type="button"
+        aria-expanded={isOpen}
         className="flex h-11 w-full items-center justify-between px-4 font-mono text-sm text-foreground active:bg-primary/10"
         onClick={() => setIsOpen(!isOpen)}
       >

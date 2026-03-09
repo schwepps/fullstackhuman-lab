@@ -8,6 +8,7 @@ const mockRedis = {
   get: vi.fn(),
   del: vi.fn(),
   scan: vi.fn(),
+  eval: vi.fn(),
 }
 
 vi.mock('@/lib/upstash', () => ({
@@ -243,5 +244,60 @@ describe('roomStore CRUD', () => {
     await expect(roomStore.update('nonexistent', (r) => r)).rejects.toThrow(
       'Room nonexistent not found'
     )
+  })
+
+  it('update succeeds on first CAS attempt', async () => {
+    const { roomStore } = await import('@/lib/game/room-store')
+    const room = createTestRoom()
+    const serialised = _serialise(room)
+    mockRedis.get.mockResolvedValue(serialised)
+    mockRedis.eval.mockResolvedValue(1)
+
+    const result = await roomStore.update('test-room-1', (r) => {
+      r.round = 2
+      return r
+    })
+
+    expect(result.round).toBe(2)
+    expect(mockRedis.eval).toHaveBeenCalledTimes(1)
+  })
+
+  it('update retries on CAS conflict and succeeds', async () => {
+    const { roomStore } = await import('@/lib/game/room-store')
+    const room = createTestRoom()
+    const serialised = _serialise(room)
+    mockRedis.get.mockResolvedValue(serialised)
+    // First attempt: CAS conflict, second attempt: success
+    mockRedis.eval.mockResolvedValueOnce(0).mockResolvedValueOnce(1)
+
+    const result = await roomStore.update('test-room-1', (r) => {
+      r.round = 3
+      return r
+    })
+
+    expect(result.round).toBe(3)
+    expect(mockRedis.eval).toHaveBeenCalledTimes(2)
+    // Two get calls: initial + retry
+    expect(mockRedis.get).toHaveBeenCalledTimes(2)
+  })
+
+  it('update falls back to force write after all retries exhausted', async () => {
+    const { roomStore } = await import('@/lib/game/room-store')
+    const room = createTestRoom()
+    const serialised = _serialise(room)
+    mockRedis.get.mockResolvedValue(serialised)
+    // All CAS attempts fail
+    mockRedis.eval.mockResolvedValue(0)
+
+    const result = await roomStore.update('test-room-1', (r) => {
+      r.round = 5
+      return r
+    })
+
+    expect(result.round).toBe(5)
+    // 3 CAS attempts + 1 fallback get
+    expect(mockRedis.get).toHaveBeenCalledTimes(4)
+    // Fallback force write via set
+    expect(mockRedis.set).toHaveBeenCalledTimes(1)
   })
 })
