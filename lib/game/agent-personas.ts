@@ -32,7 +32,7 @@ export const PERSONAS: AgentPersona[] = [
     ],
     movement: {
       wanderRadius: 350,
-      idleChance: 0.25,
+      idleChance: 0.4,
       zoneExploreChance: 0.12,
       zoneDwellMs: [8_000, 20_000],
       speedFactor: 1.0,
@@ -58,7 +58,7 @@ export const PERSONAS: AgentPersona[] = [
     ],
     movement: {
       wanderRadius: 250,
-      idleChance: 0.35,
+      idleChance: 0.55,
       zoneExploreChance: 0.08,
       zoneDwellMs: [12_000, 30_000],
       speedFactor: 0.8,
@@ -84,7 +84,7 @@ export const PERSONAS: AgentPersona[] = [
     ],
     movement: {
       wanderRadius: 320,
-      idleChance: 0.25,
+      idleChance: 0.4,
       zoneExploreChance: 0.1,
       zoneDwellMs: [8_000, 25_000],
       speedFactor: 0.95,
@@ -110,7 +110,7 @@ export const PERSONAS: AgentPersona[] = [
     ],
     movement: {
       wanderRadius: 200,
-      idleChance: 0.4,
+      idleChance: 0.6,
       zoneExploreChance: 0.06,
       zoneDwellMs: [15_000, 35_000],
       speedFactor: 0.85,
@@ -136,7 +136,7 @@ export const PERSONAS: AgentPersona[] = [
     ],
     movement: {
       wanderRadius: 450,
-      idleChance: 0.15,
+      idleChance: 0.3,
       zoneExploreChance: 0.15,
       zoneDwellMs: [5_000, 12_000],
       speedFactor: 1.15,
@@ -162,7 +162,7 @@ export const PERSONAS: AgentPersona[] = [
     ],
     movement: {
       wanderRadius: 280,
-      idleChance: 0.3,
+      idleChance: 0.5,
       zoneExploreChance: 0.08,
       zoneDwellMs: [10_000, 28_000],
       speedFactor: 0.85,
@@ -188,7 +188,7 @@ export const PERSONAS: AgentPersona[] = [
     ],
     movement: {
       wanderRadius: 380,
-      idleChance: 0.2,
+      idleChance: 0.35,
       zoneExploreChance: 0.12,
       zoneDwellMs: [8_000, 20_000],
       speedFactor: 1.0,
@@ -214,7 +214,7 @@ export const PERSONAS: AgentPersona[] = [
     ],
     movement: {
       wanderRadius: 300,
-      idleChance: 0.3,
+      idleChance: 0.45,
       zoneExploreChance: 0.08,
       zoneDwellMs: [8_000, 25_000],
       speedFactor: 0.9,

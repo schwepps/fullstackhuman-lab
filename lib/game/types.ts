@@ -13,7 +13,7 @@ export type GamePhase =
   | 'reveal'
   | 'ended'
 export type RevealPreference = 'public' | 'private' | 'leaderboard'
-export type SupportedModel = 'claude-sonnet-4-6'
+export type SupportedModel = 'claude-sonnet-4-6' | 'claude-haiku-4-5'
 export type ZoneType =
   | 'main'
   | 'private-a'
@@ -142,6 +142,7 @@ export type ServerMessage =
   | {
       type: 'agent_typing'
       playerId: string
+      displayName: string
       zone: ZoneType
       isTyping: boolean
     }
@@ -151,6 +152,13 @@ export type ServerMessage =
       round?: number
       topic?: string
       sessionToken?: string
+      yourPlayerId?: string
+      yourDisplayName?: string
+      yourColor?: number
+      isHost?: boolean
+      isSpectator?: boolean
+      roundStartedAt?: number
+      roundDuration?: number
     }
   | { type: 'vote_progress'; count: number; total: number }
   | { type: 'elimination'; playerId: string; displayName: string }
@@ -195,6 +203,7 @@ export type TypingPlayer = {
 
 export type TypingState = TypingPlayer & {
   zone: ZoneType
+  startedAt: number
 }
 
 export type StoredSession = {

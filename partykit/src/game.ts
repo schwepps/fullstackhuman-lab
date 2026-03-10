@@ -61,6 +61,9 @@ export default class GameRoom implements Party.Server {
     alarmFallbackTimer: null,
     spectators: new Set(),
     eliminatedPlayers: new Set(),
+    agentMessageLog: new Map(),
+    agentEmotions: new Map(),
+    apiCallTimestamps: [],
   }
 
   // Party.id is inaccessible in onAlarm — cache it on first connection

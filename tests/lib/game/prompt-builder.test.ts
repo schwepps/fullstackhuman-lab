@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildChatPrompt, buildVotePrompt } from '@/lib/game/prompt-builder'
+import type { AgentMemoryContext } from '@/lib/game/prompt-builder'
 import type { Player, Room } from '@/lib/game/types'
 
 function createTestPlayer(overrides: Partial<Player> = {}): Player {
@@ -7,7 +8,7 @@ function createTestPlayer(overrides: Partial<Player> = {}): Player {
     id: 'maya',
     displayName: 'Maya',
     type: 'auto-agent',
-    model: 'claude-sonnet-4-6',
+    model: 'claude-haiku-4-5',
     revealPreference: 'public',
     position: { x: 100, y: 200 },
     currentZone: 'main',
@@ -101,6 +102,49 @@ describe('buildChatPrompt', () => {
     const prompt = buildChatPrompt(agent, room)
 
     expect(prompt).toContain('Describe your perfect weekend')
+  })
+
+  it('includes self-memory when provided', () => {
+    const agent = createTestPlayer({ id: 'maya', type: 'auto-agent' })
+    const room = createTestRoom()
+    const memory: AgentMemoryContext = {
+      selfMessages: ['i work at a bookshop lol', 'yeah im from lyon'],
+      crossZoneContext: [],
+    }
+    const prompt = buildChatPrompt(agent, room, memory)
+
+    expect(prompt).toContain("THINGS YOU'VE SAID")
+    expect(prompt).toContain('i work at a bookshop lol')
+    expect(prompt).toContain('yeah im from lyon')
+    expect(prompt).toContain('Stay consistent')
+  })
+
+  it('includes cross-zone context when provided', () => {
+    const agent = createTestPlayer({ id: 'thomas', type: 'auto-agent' })
+    const room = createTestRoom()
+    const memory: AgentMemoryContext = {
+      selfMessages: [],
+      crossZoneContext: [
+        { displayName: 'Maya', content: 'im a student in paris' },
+      ],
+    }
+    const prompt = buildChatPrompt(agent, room, memory)
+
+    expect(prompt).toContain('WHAT OTHERS SAID IN OTHER AREAS')
+    expect(prompt).toContain('Maya: "im a student in paris"')
+  })
+
+  it('omits memory sections when both are empty', () => {
+    const agent = createTestPlayer({ id: 'maya', type: 'auto-agent' })
+    const room = createTestRoom()
+    const memory: AgentMemoryContext = {
+      selfMessages: [],
+      crossZoneContext: [],
+    }
+    const prompt = buildChatPrompt(agent, room, memory)
+
+    expect(prompt).not.toContain("THINGS YOU'VE SAID")
+    expect(prompt).not.toContain('WHAT OTHERS SAID')
   })
 })
 

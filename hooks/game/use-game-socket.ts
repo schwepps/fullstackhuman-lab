@@ -16,6 +16,7 @@ import type {
 import {
   DEFAULT_AVATAR_COLOR,
   FALLBACK_NAME_LENGTH,
+  TYPING_INDICATOR_CLIENT_TIMEOUT_MS,
 } from '@/lib/game/constants'
 
 const PARTYKIT_HOST = process.env.NEXT_PUBLIC_PARTYKIT_HOST ?? '127.0.0.1:1999'
@@ -131,7 +132,10 @@ export function useGameSocket(roomId: string) {
             setIsSpectator(true)
           }
           if (msg.yourPlayerId) {
-            setMyPlayerId(msg.yourPlayerId)
+            // Spectators don't need a player ID — prevents canvas avatar creation
+            if (!msg.isSpectator) {
+              setMyPlayerId(msg.yourPlayerId)
+            }
             setIsHost(msg.isHost ?? false)
             if (msg.sessionToken) {
               saveSession(roomId, msg.yourPlayerId, msg.sessionToken)
@@ -144,10 +148,9 @@ export function useGameSocket(roomId: string) {
                   ...prev,
                   {
                     id: msg.yourPlayerId,
-                    displayName: msg.yourPlayerId.slice(
-                      0,
-                      FALLBACK_NAME_LENGTH
-                    ),
+                    displayName:
+                      msg.yourDisplayName ??
+                      msg.yourPlayerId.slice(0, FALLBACK_NAME_LENGTH),
                     avatarColor: msg.yourColor ?? DEFAULT_AVATAR_COLOR,
                   },
                 ]
@@ -172,16 +175,31 @@ export function useGameSocket(roomId: string) {
         }
 
         if (msg.type === 'player_joined' && msg.player) {
+          const newName =
+            msg.player.displayName ??
+            msg.player.id.slice(0, FALLBACK_NAME_LENGTH)
+          const newColor = msg.player.avatarColor ?? DEFAULT_AVATAR_COLOR
           setLobbyPlayers((prev) => {
-            if (prev.some((p) => p.id === msg.player.id)) return prev
+            const existing = prev.find((p) => p.id === msg.player.id)
+            if (existing) {
+              // Update displayName if it changed (e.g. was ID-based fallback)
+              if (
+                existing.displayName === newName &&
+                existing.avatarColor === newColor
+              )
+                return prev
+              return prev.map((p) =>
+                p.id === msg.player.id
+                  ? { ...p, displayName: newName, avatarColor: newColor }
+                  : p
+              )
+            }
             return [
               ...prev,
               {
                 id: msg.player.id,
-                displayName:
-                  msg.player.displayName ??
-                  msg.player.id.slice(0, FALLBACK_NAME_LENGTH),
-                avatarColor: msg.player.avatarColor ?? DEFAULT_AVATAR_COLOR,
+                displayName: newName,
+                avatarColor: newColor,
               },
             ]
           })
@@ -263,6 +281,7 @@ export function useGameSocket(roomId: string) {
                     msg.displayName ??
                     msg.playerId.slice(0, FALLBACK_NAME_LENGTH),
                   zone: msg.zone,
+                  startedAt: Date.now(),
                 },
               ]
             }
@@ -296,6 +315,20 @@ export function useGameSocket(roomId: string) {
       setSocket(null)
     }
   }, [roomId])
+
+  // Auto-clear stale typing indicators — safety net for missed typing OFF events
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTypingPlayers((prev) => {
+        const now = Date.now()
+        const fresh = prev.filter(
+          (t) => now - t.startedAt < TYPING_INDICATOR_CLIENT_TIMEOUT_MS
+        )
+        return fresh.length === prev.length ? prev : fresh
+      })
+    }, 2000)
+    return () => clearInterval(id)
+  }, [])
 
   const handleSetCurrentZone = useCallback((zone: ZoneType) => {
     setCurrentZone(zone)

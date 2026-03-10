@@ -168,18 +168,19 @@ export default function GameRoomPage() {
       <div className="mt-2 w-full max-w-300">
         <ChatBubble messages={zoneMessages} typingPlayers={zoneTyping} />
         <div className="mt-1 pb-safe">
-          <ChatInput
-            onSend={handleSendChat}
-            onFocusChange={setIsChatFocused}
-            disabled={phase !== 'round' || isSpectator}
-            placeholder={
-              isSpectator
-                ? 'SPECTATING...'
-                : phase === 'vote'
-                  ? 'VOTING...'
-                  : undefined
-            }
-          />
+          {isSpectator ? (
+            <div className="flex h-11 w-full items-center gap-1 border border-border px-3 font-mono text-base text-muted-foreground sm:text-sm">
+              <span>{'>'}</span>
+              <span>SPECTATING — watching the game</span>
+            </div>
+          ) : (
+            <ChatInput
+              onSend={handleSendChat}
+              onFocusChange={setIsChatFocused}
+              disabled={phase !== 'round'}
+              placeholder={phase === 'vote' ? 'VOTING...' : undefined}
+            />
+          )}
         </div>
       </div>
       {phase === 'vote' && myPlayerId && !isEliminated && !isSpectator && (

@@ -4,6 +4,7 @@ import { isAgentType } from '../../lib/game/types'
 import {
   MAX_MESSAGE_LENGTH,
   MAX_MESSAGES_PER_MINUTE,
+  MESSAGE_COOLDOWN_MS,
   MAX_CONSECUTIVE_AGENT_MSGS,
   AGENT_TO_AGENT_PROBABILITY,
   AGENT_TO_AGENT_STAGGER_BASE_MS,
@@ -13,6 +14,7 @@ import {
 import { getPlayersInZone } from './proximity-router'
 import { appendToChatHistory } from './chat-persistence'
 import type { GameState } from './game-state'
+import { updateEmotionOnMessage } from './agent-emotions'
 
 /** Encode HTML special chars for defense-in-depth XSS prevention */
 function escapeHtml(s: string): string {
@@ -39,6 +41,9 @@ export async function handleChat(
   const timestamps = state.chatTimestamps.get(playerId) ?? []
   const recent = timestamps.filter((t) => now - t < 60_000)
   if (recent.length >= MAX_MESSAGES_PER_MINUTE) return
+  // Per-message cooldown (slow mode) — levels human/bot timing
+  const lastMsg = recent[recent.length - 1]
+  if (lastMsg && now - lastMsg < MESSAGE_COOLDOWN_MS) return
   recent.push(now)
   state.chatTimestamps.set(playerId, recent)
 
@@ -88,6 +93,18 @@ export async function handleChat(
       return r
     })
 
+    // Update emotional state for agents in this zone
+    const senderName =
+      state.displayNames.get(playerId) ??
+      playerId.slice(0, FALLBACK_NAME_LENGTH)
+    for (const pId of playersInZone) {
+      if (pId !== playerId && state.agentEmotions.has(pId)) {
+        const agentName =
+          state.displayNames.get(pId) ?? pId.slice(0, FALLBACK_NAME_LENGTH)
+        updateEmotionOnMessage(state, pId, senderName, trimmed, agentName)
+      }
+    }
+
     // Trigger agent responses — both from human and agent senders
     const senderPlayer = updatedRoom.players.get(playerId)
     const senderIsAgent = senderPlayer ? isAgentType(senderPlayer.type) : false
@@ -107,9 +124,13 @@ export async function handleChat(
           partyRoom,
           state.connToPlayer,
           state.zones,
-          AGENT_TO_AGENT_PROBABILITY,
-          AGENT_TO_AGENT_STAGGER_BASE_MS,
-          AGENT_TO_AGENT_STAGGER_MAX_MS
+          {
+            responseProbability: AGENT_TO_AGENT_PROBABILITY,
+            staggerBase: AGENT_TO_AGENT_STAGGER_BASE_MS,
+            staggerMax: AGENT_TO_AGENT_STAGGER_MAX_MS,
+            gameState: state,
+            roomId,
+          }
         )
       }
     } else {
@@ -122,7 +143,8 @@ export async function handleChat(
         playersInZone,
         partyRoom,
         state.connToPlayer,
-        state.zones
+        state.zones,
+        { gameState: state, roomId }
       )
     }
   } catch (e) {

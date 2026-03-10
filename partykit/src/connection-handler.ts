@@ -132,6 +132,7 @@ export async function handleConnect(
       type: 'phase_change',
       phase: state.currentPhase,
       yourPlayerId: conn.id,
+      yourDisplayName: state.displayNames.get(conn.id),
       yourColor: color,
       sessionToken: newSessionToken,
       isHost: isFirstPlayer,

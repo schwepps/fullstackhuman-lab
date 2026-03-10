@@ -23,11 +23,11 @@ export function ChatBubble({ messages, typingPlayers = [] }: ChatBubbleProps) {
     lastCount.current = messages.length
   }, [messages.length, typingPlayers.length])
 
-  const recent = messages.slice(-10)
+  const recent = messages.slice(-15)
 
   return (
     <div
-      className="max-h-48 w-full overflow-y-auto border border-border bg-background/85 font-mono lg:max-w-xs"
+      className="max-h-72 w-full overflow-y-auto border border-border bg-background/85 font-mono lg:max-h-96"
       ref={scrollRef}
     >
       {recent.length === 0 && typingPlayers.length === 0 ? (

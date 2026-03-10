@@ -1,5 +1,25 @@
 import type { Position, ZoneType, GamePhase } from '../../lib/game/types'
 
+export type AgentLogEntry = {
+  content: string
+  zone: ZoneType
+}
+
+export type AgentMood =
+  | 'neutral'
+  | 'engaged'
+  | 'amused'
+  | 'frustrated'
+  | 'suspicious'
+  | 'defensive'
+  | 'bored'
+
+export type AgentEmotionalState = {
+  mood: AgentMood
+  trigger: string
+  since: number
+}
+
 export type AgentMovementState = {
   waypoint: Position | null
   waypointReachedAt: number
@@ -42,4 +62,10 @@ export type GameState = {
   spectators: Set<string>
   // Players eliminated during voting — blocked from chat/vote/move
   eliminatedPlayers: Set<string>
+  // Agent collective memory — tracks what each bot has said (content + zone)
+  agentMessageLog: Map<string, AgentLogEntry[]>
+  // Agent emotional state — evolves based on game events and time
+  agentEmotions: Map<string, AgentEmotionalState>
+  // API call timestamps for room-level budget tracking (sliding window)
+  apiCallTimestamps: number[]
 }

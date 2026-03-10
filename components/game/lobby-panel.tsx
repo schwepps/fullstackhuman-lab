@@ -148,9 +148,11 @@ export function LobbyPanel({
         />
       </div>
 
-      {/* Role selection */}
+      {/* Role selection — host cannot be spectator */}
       <div className="space-y-2">
-        {ROLE_OPTIONS.map((role) => (
+        {ROLE_OPTIONS.filter(
+          (role) => !(isHost && role.type === 'spectator')
+        ).map((role) => (
           <button
             key={role.type}
             type="button"
