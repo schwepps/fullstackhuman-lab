@@ -1,5 +1,5 @@
 packages:
-  - .
+  - 'projects/*'
 ignoredBuiltDependencies:
   - sharp
   - unrs-resolver

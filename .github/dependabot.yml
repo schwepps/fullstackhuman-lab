@@ -1,4 +1,5 @@
 version: 2
+# Add a new entry for each project added to projects/
 updates:
   - package-ecosystem: 'npm'
     directory: '/'
@@ -14,6 +15,22 @@ updates:
           - 'minor'
           - 'patch'
     ignore:
-      # Ignore major versions to review manually
+      - dependency-name: '*'
+        update-types: ['version-update:semver-major']
+
+  - package-ecosystem: 'npm'
+    directory: '/projects/turing-game'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 10
+    groups:
+      minor-and-patch:
+        patterns:
+          - '*'
+        update-types:
+          - 'minor'
+          - 'patch'
+    ignore:
       - dependency-name: '*'
         update-types: ['version-update:semver-major']

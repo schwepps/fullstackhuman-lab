@@ -16,7 +16,7 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 9
+          version: 10
 
       - uses: actions/setup-node@v4
         with:
@@ -38,5 +38,5 @@ jobs:
       - name: Build
         run: pnpm build
         env:
-          NEXT_PUBLIC_APP_URL: 'https://fullstackhuman.sh'
+          NEXT_PUBLIC_PARTYKIT_HOST: 'https://ci-placeholder.example'
           NODE_OPTIONS: '--max-old-space-size=4096'

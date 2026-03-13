@@ -1,6 +1,6 @@
-const config = {
-  '*.{ts,tsx,js,jsx,mjs,cjs}': ['eslint --fix', 'prettier --write'],
-  '*.{json,md,css}': ['prettier --write'],
+export default {
+  'projects/turing-game/**/*.{ts,tsx,mjs}': (files) => [
+    `pnpm --filter turing-game exec eslint --fix ${files.join(' ')}`,
+  ],
+  '*.{ts,tsx,mjs,json,md,css}': ['prettier --write'],
 }
-
-export default config

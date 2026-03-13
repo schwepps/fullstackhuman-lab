@@ -1,2 +1,0 @@
--- Seed file for local development
--- Add test data here as needed

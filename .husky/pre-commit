@@ -1,5 +1,1 @@
-# Run lint-staged for formatting/linting
 pnpm lint-staged
-
-# Run tests (fail fast, no watch mode)
-pnpm test:run
