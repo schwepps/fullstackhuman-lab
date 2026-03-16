@@ -46,8 +46,13 @@ const securityHeaders = [
     : []),
 ]
 
+const basePath = '/lab/will-ai-survive'
+
 const nextConfig: NextConfig = {
-  basePath: '/lab/will-ai-survive',
+  basePath,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   async headers() {
     return [
       {

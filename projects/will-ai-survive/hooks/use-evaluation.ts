@@ -88,7 +88,8 @@ export function useEvaluation() {
       startLoadingMessages()
 
       try {
-        const response = await fetch('/api/evaluate', {
+        const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+        const response = await fetch(`${basePath}/api/evaluate`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ situation }),
