@@ -3,12 +3,12 @@ import { getSiteUrl } from '@/lib/constants'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Will AI Survive This Job? | FullStackHuman',
+  title: 'Will AI Survive your job? | FullStackHuman',
   description:
     'Describe your workplace chaos. AI will try to survive it — and probably fail dramatically.',
   metadataBase: new URL(getSiteUrl()),
   openGraph: {
-    title: 'Will AI Survive This Job?',
+    title: 'Will AI Survive your job?',
     description:
       'Describe your workplace chaos. AI will try to survive it — and probably fail dramatically.',
     siteName: 'FullStackHuman',
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Will AI Survive This Job?',
+    title: 'Will AI Survive your job?',
     description:
       'Describe your workplace chaos. AI will try to survive it — and probably fail dramatically.',
   },

@@ -120,7 +120,7 @@ export function InputForm({
       >
         {isLoading
           ? (loadingMessage ?? 'Evaluating...')
-          : 'Deploy AI to This Job'}
+          : 'Deploy AI to your job'}
       </button>
     </form>
   )

@@ -41,7 +41,7 @@ export function sanitizeInput(input: string): string {
 
 // ── Unified safety check ────────────────────────────────────────
 
-const SAFETY_GATE_PROMPT = `You are a content classifier for a workplace humor app called "Will AI Survive This Job?".
+const SAFETY_GATE_PROMPT = `You are a content classifier for a workplace humor app called "Will AI Survive your job?".
 Users submit descriptions of their workplace chaos. Your job is to classify the input.
 
 Respond with EXACTLY one word — no punctuation, no explanation:

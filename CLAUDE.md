@@ -16,7 +16,7 @@ Current projects:
 ```
 projects/
   turing-game/       # Turing Game (Next.js + Partykit)
-  will-ai-survive/   # Will AI Survive This Job? (Next.js)
+  will-ai-survive/   # Will AI Survive your job? (Next.js)
 package.json         # Workspace root (delegates to projects)
 pnpm-workspace.yaml  # Workspace config
 ```
@@ -87,7 +87,7 @@ projects/turing-game/
 
 ---
 
-## Will AI Survive This Job?
+## Will AI Survive your job?
 
 Users describe workplace chaos. AI (Claude Sonnet) evaluates whether it could survive — generating a chaos rating, mental breakdown timeline, and dramatic resignation letter. Results are streamed progressively via SSE. Shareable via LinkedIn/X with dynamic OG images.
 

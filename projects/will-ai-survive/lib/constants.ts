@@ -54,7 +54,7 @@ export function getSiteUrl(): string {
   }
   return `http://localhost:${process.env.PORT ?? '3000'}`
 }
-export const APP_NAME = 'Will AI Survive This Job?'
+export const APP_NAME = 'Will AI Survive your job?'
 
 // ── Example Scenarios (for input form chips) ────────────────────
 

@@ -67,7 +67,7 @@ export default async function ResultPage({ params }: PageProps) {
           {APP_NAME}
         </h1>
         <p className="mt-2 text-sm text-muted">
-          AI tried this job. Here&apos;s what happened.
+          AI tried your job. Here&apos;s what happened.
         </p>
       </header>
 

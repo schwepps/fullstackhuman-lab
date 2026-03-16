@@ -1,4 +1,4 @@
-# Will AI Survive This Job?
+# Will AI Survive your job?
 
 Users describe their workplace chaos. AI evaluates whether it could survive — generating a chaos rating, mental breakdown timeline, and dramatic resignation letter. Screenshot-optimized results for LinkedIn/X sharing.
 
