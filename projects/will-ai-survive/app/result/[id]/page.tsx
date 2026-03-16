@@ -30,19 +30,23 @@ export async function generateMetadata({
     return { title: `Result Not Found | ${APP_NAME}` }
   }
 
+  const ogTitle = `AI would last ${result.survivalDuration} at my job`
+  const ogDescription = `Chaos: ${result.chaosRating}/10 — "${result.chaosLabel}" | ${APP_NAME}`
+
   return {
-    title: `AI Survived ${result.survivalDuration} | ${APP_NAME}`,
-    description: result.oneLineSummary,
+    title: `${ogTitle} | ${APP_NAME}`,
+    description: ogDescription,
     openGraph: {
-      title: `AI Survived ${result.survivalDuration} at My Job`,
-      description: result.oneLineSummary,
+      title: ogTitle,
+      description: ogDescription,
       images: [`${getSiteUrl()}/api/og?id=${id}`],
       type: 'website',
+      siteName: 'FullStackHuman',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `AI Survived ${result.survivalDuration} at My Job`,
-      description: result.oneLineSummary,
+      title: ogTitle,
+      description: ogDescription,
       images: [`${getSiteUrl()}/api/og?id=${id}`],
     },
   }

@@ -1,4 +1,4 @@
-import { getSiteUrl } from './constants'
+import { getSiteUrl, APP_NAME } from './constants'
 
 type ShareParams = {
   resultId: string
@@ -12,7 +12,7 @@ export function resultUrl(resultId: string): string {
   return `${getSiteUrl()}/result/${resultId}`
 }
 
-export function buildLinkedInShareText(params: ShareParams): string {
+export function buildLinkedInPostText(params: ShareParams): string {
   return [
     `I made AI try my job. It lasted ${params.survivalDuration} before rage-quitting.`,
     '',
@@ -25,23 +25,44 @@ export function buildLinkedInShareText(params: ShareParams): string {
 }
 
 export function buildXShareText(params: ShareParams): string {
-  const base = `AI tried my job and lasted ${params.survivalDuration}\nBreaking point: "${params.breakingPoint}"\nChaos rating: ${params.chaosRating}/10`
+  const full = [
+    `AI tried my job and lasted ${params.survivalDuration}`,
+    `Chaos rating: ${params.chaosRating}/10 — "${params.chaosLabel}"`,
+    `Breaking point: "${params.breakingPoint}"`,
+  ].join('\n')
 
   // X has a 280 char limit — URL is added separately via the intent
-  if (base.length > 250) {
+  if (full.length > 250) {
     return `AI tried my job and lasted ${params.survivalDuration}\nChaos rating: ${params.chaosRating}/10 — "${params.chaosLabel}"`
   }
 
-  return base
+  return full
 }
 
 export function buildLinkedInShareUrl(params: ShareParams): string {
-  const text = buildLinkedInShareText(params)
-  return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(resultUrl(params.resultId))}&summary=${encodeURIComponent(text)}`
+  return `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(resultUrl(params.resultId))}`
 }
 
 export function buildXShareUrl(params: ShareParams): string {
   const text = buildXShareText(params)
   const url = resultUrl(params.resultId)
   return `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`
+}
+
+export function buildWhatsAppShareUrl(params: ShareParams): string {
+  const text = [
+    `AI tried my job and lasted ${params.survivalDuration} before rage-quitting.`,
+    `Chaos: ${params.chaosRating}/10 — "${params.chaosLabel}"`,
+    `Try yours:`,
+    resultUrl(params.resultId),
+  ].join('\n')
+  return `https://wa.me/?text=${encodeURIComponent(text)}`
+}
+
+export function buildNativeShareData(params: ShareParams): ShareData {
+  return {
+    title: APP_NAME,
+    text: `AI tried my job and lasted ${params.survivalDuration}. Chaos: ${params.chaosRating}/10 — "${params.chaosLabel}"`,
+    url: resultUrl(params.resultId),
+  }
 }

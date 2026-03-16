@@ -2,9 +2,14 @@ import { ImageResponse } from '@vercel/og'
 import { NextRequest } from 'next/server'
 import { getResult } from '@/lib/result-store'
 import { RESULT_ID_PATTERN } from '@/lib/validation'
-import { getSiteUrl } from '@/lib/constants'
 
 export const runtime = 'edge'
+
+function ratingColor(rating: number): string {
+  if (rating <= 3) return '#16a34a'
+  if (rating <= 6) return '#d97706'
+  return '#dc2626'
+}
 
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get('id')
@@ -19,13 +24,8 @@ export async function GET(request: NextRequest) {
     return new Response('Result not found', { status: 404 })
   }
 
-  // Truncate breaking point for OG card
-  const breakingPointTruncated =
-    result.breakingPoint.length > 120
-      ? result.breakingPoint.slice(0, 117) + '...'
-      : result.breakingPoint
-
   const barWidth = Math.round((result.chaosRating / 10) * 100)
+  const color = ratingColor(result.chaosRating)
 
   return new ImageResponse(
     <div
@@ -40,17 +40,37 @@ export async function GET(request: NextRequest) {
         fontFamily: 'monospace',
       }}
     >
-      {/* Title */}
+      {/* Top label */}
       <div
         style={{
-          fontSize: 36,
+          fontSize: 13,
           fontWeight: 700,
-          letterSpacing: '-0.02em',
-          marginBottom: 32,
+          letterSpacing: '0.15em',
+          color: '#78716c',
+          marginBottom: 24,
           display: 'flex',
         }}
       >
-        <span>WILL AI SURVIVE THIS JOB?</span>
+        INCIDENT REPORT
+      </div>
+
+      {/* Hero: "AI would last [DURATION] at my job" */}
+      <div
+        style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'baseline',
+          marginBottom: 36,
+          lineHeight: 1.2,
+        }}
+      >
+        <span style={{ fontSize: 38, fontWeight: 400 }}>
+          AI would last&nbsp;
+        </span>
+        <span style={{ fontSize: 44, fontWeight: 800, color }}>
+          {result.survivalDuration}
+        </span>
+        <span style={{ fontSize: 38, fontWeight: 400 }}>&nbsp;at my job</span>
       </div>
 
       {/* Chaos rating bar */}
@@ -59,16 +79,25 @@ export async function GET(request: NextRequest) {
           display: 'flex',
           alignItems: 'center',
           gap: 16,
-          marginBottom: 16,
+          marginBottom: 12,
         }}
       >
-        <span style={{ fontSize: 14, color: '#a8a29e' }}>CHAOS RATING</span>
+        <span
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            color: '#a8a29e',
+          }}
+        >
+          CHAOS
+        </span>
         <div
           style={{
             flex: 1,
-            height: 20,
+            height: 24,
             backgroundColor: '#292524',
-            borderRadius: 10,
+            borderRadius: 12,
             overflow: 'hidden',
             display: 'flex',
           }}
@@ -79,96 +108,56 @@ export async function GET(request: NextRequest) {
               height: '100%',
               background:
                 'linear-gradient(to right, #16a34a, #d97706, #dc2626)',
-              borderRadius: 10,
+              borderRadius: 12,
             }}
           />
         </div>
         <span
           style={{
-            fontSize: 28,
-            fontWeight: 700,
-            color:
-              result.chaosRating <= 3
-                ? '#16a34a'
-                : result.chaosRating <= 6
-                  ? '#d97706'
-                  : '#dc2626',
+            fontSize: 36,
+            fontWeight: 800,
+            color,
+            minWidth: 90,
+            textAlign: 'right',
           }}
         >
           {result.chaosRating}/10
         </span>
       </div>
 
-      {/* Chaos label */}
+      {/* Chaos label punchline */}
       <div
         style={{
-          fontSize: 18,
+          fontSize: 22,
           fontStyle: 'italic',
-          color: '#a8a29e',
-          marginBottom: 32,
+          color: '#d6d3d1',
+          marginBottom: 'auto',
           display: 'flex',
+          lineHeight: 1.4,
         }}
       >
         &ldquo;{result.chaosLabel}&rdquo;
       </div>
 
-      {/* Survived */}
-      <div
-        style={{
-          fontSize: 14,
-          color: '#a8a29e',
-          marginBottom: 4,
-          display: 'flex',
-        }}
-      >
-        AI SURVIVED
-      </div>
-      <div
-        style={{
-          fontSize: 32,
-          fontWeight: 700,
-          marginBottom: 32,
-          display: 'flex',
-        }}
-      >
-        {result.survivalDuration}
-      </div>
-
-      {/* Breaking point */}
-      <div
-        style={{
-          fontSize: 14,
-          color: '#dc2626',
-          marginBottom: 8,
-          display: 'flex',
-        }}
-      >
-        BREAKING POINT
-      </div>
-      <div
-        style={{
-          fontSize: 18,
-          lineHeight: 1.4,
-          marginBottom: 32,
-          display: 'flex',
-        }}
-      >
-        &ldquo;{breakingPointTruncated}&rdquo;
-      </div>
-
       {/* Footer */}
       <div
         style={{
-          marginTop: 'auto',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           borderTop: '1px solid #292524',
-          paddingTop: 16,
+          paddingTop: 20,
         }}
       >
-        <span style={{ fontSize: 14, color: '#78716c' }}>
-          {getSiteUrl().replace(/^https?:\/\//, '')}
+        <span
+          style={{
+            fontSize: 16,
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            color: '#a8a29e',
+          }}
+        >
+          FullStackHuman
         </span>
         <span style={{ fontSize: 14, color: '#78716c' }}>
           How long would AI survive YOUR job?
