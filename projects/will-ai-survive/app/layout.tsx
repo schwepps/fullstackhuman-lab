@@ -49,9 +49,14 @@ export default function RootLayout({
               FullStackHuman
             </a>
             <span className="text-border">|</span>
-            <span className="font-mono text-[10px] uppercase tracking-[0.15em]">
+            <a
+              href="https://fullstackhuman.sh/lab"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-[10px] uppercase tracking-[0.15em] transition-colors hover:text-foreground"
+            >
               Lab
-            </span>
+            </a>
           </div>
         </header>
         {children}
