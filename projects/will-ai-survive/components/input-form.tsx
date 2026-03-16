@@ -116,7 +116,7 @@ export function InputForm({
       <button
         type="submit"
         disabled={!isValid || isOverLimit || isLoading}
-        className="min-h-12 w-full touch-manipulation rounded-lg bg-accent px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-red-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none disabled:hover:shadow-none"
+        className="min-h-12 w-full cursor-pointer touch-manipulation rounded-lg bg-accent px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-red-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none disabled:hover:shadow-none"
       >
         {isLoading
           ? (loadingMessage ?? 'Evaluating...')

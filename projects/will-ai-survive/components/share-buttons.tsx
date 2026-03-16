@@ -1,19 +1,17 @@
 'use client'
 
-import { useState, useSyncExternalStore } from 'react'
+import { useState } from 'react'
 import {
   buildLinkedInPostText,
   buildLinkedInShareUrl,
   buildXShareUrl,
   buildWhatsAppShareUrl,
-  buildNativeShareData,
   resultUrl as buildResultUrl,
 } from '@/lib/share-text'
 import {
   LinkedInIcon,
   XIcon,
   WhatsAppIcon,
-  ShareIcon,
   ClipboardIcon,
   CheckIcon,
 } from './icons'
@@ -26,29 +24,16 @@ type ShareButtonsProps = {
   breakingPoint: string
 }
 
-const subscribe = () => () => {}
-
-const outlineBtnClass =
-  'flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-foreground shadow-sm transition-all hover:border-muted hover:bg-surface-dim hover:shadow-md active:scale-[0.98]'
-
 export function ShareButtons(props: ShareButtonsProps) {
   const [copied, setCopied] = useState(false)
   const [linkedInCopied, setLinkedInCopied] = useState(false)
-
-  const canNativeShare = useSyncExternalStore(
-    subscribe,
-    () => !!navigator.share,
-    () => false
-  )
 
   const url = buildResultUrl(props.resultId)
   const xUrl = buildXShareUrl(props)
   const whatsAppUrl = buildWhatsAppShareUrl(props)
 
   async function handleLinkedIn() {
-    // Open share dialog synchronously to avoid popup blockers
     window.open(buildLinkedInShareUrl(props), '_blank', 'noopener,noreferrer')
-    // Then copy pre-written post text to clipboard
     try {
       await navigator.clipboard.writeText(buildLinkedInPostText(props))
     } catch {
@@ -56,14 +41,6 @@ export function ShareButtons(props: ShareButtonsProps) {
     }
     setLinkedInCopied(true)
     setTimeout(() => setLinkedInCopied(false), 3000)
-  }
-
-  async function handleNativeShare() {
-    try {
-      await navigator.share(buildNativeShareData(props))
-    } catch {
-      // User cancelled or API unavailable — no-op
-    }
   }
 
   async function handleCopy() {
@@ -123,35 +100,24 @@ export function ShareButtons(props: ShareButtonsProps) {
           WhatsApp
         </a>
 
-        {/* Native Share (mobile) or Copy Link (desktop) */}
-        {canNativeShare ? (
-          <button
-            onClick={handleNativeShare}
-            aria-label="Share via system share sheet"
-            className={outlineBtnClass}
-          >
-            <ShareIcon className="size-4" />
-            Share
-          </button>
-        ) : (
-          <button
-            onClick={handleCopy}
-            aria-live="polite"
-            className={outlineBtnClass}
-          >
-            {copied ? (
-              <>
-                <CheckIcon className="size-4 text-safe" />
-                Copied!
-              </>
-            ) : (
-              <>
-                <ClipboardIcon className="size-4" />
-                Copy Link
-              </>
-            )}
-          </button>
-        )}
+        {/* Copy Link */}
+        <button
+          onClick={handleCopy}
+          aria-live="polite"
+          className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-foreground shadow-sm transition-all hover:border-muted hover:bg-surface-dim hover:shadow-md active:scale-[0.98]"
+        >
+          {copied ? (
+            <>
+              <CheckIcon className="size-4 text-safe" />
+              Copied!
+            </>
+          ) : (
+            <>
+              <ClipboardIcon className="size-4" />
+              Copy Link
+            </>
+          )}
+        </button>
       </div>
 
       {/* LinkedIn clipboard feedback */}

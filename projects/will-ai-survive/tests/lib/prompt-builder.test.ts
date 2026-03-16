@@ -58,8 +58,8 @@ describe('buildEvaluationParams', () => {
   it('system prompt explains real_talk section purpose', () => {
     const params = buildEvaluationParams(situation)
     expect(params.system).toContain('real_talk')
-    expect(params.system).toContain('comedic persona')
-    expect(params.system).toContain('jokes aside')
+    expect(params.system).toContain('direct, experienced friend')
+    expect(params.system).toContain('Warm but sharp')
   })
 
   it('timeline entry format includes thought field', () => {
@@ -78,9 +78,9 @@ describe('buildEvaluationParams', () => {
     expect(params.system).toContain('Last known sanity')
   })
 
-  it('instructs markdown formatting for real_talk', () => {
+  it('instructs formatting for real_talk', () => {
     const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('markdown')
+    expect(params.system).toContain('Bold')
     expect(params.system).toContain('bullet points')
   })
 

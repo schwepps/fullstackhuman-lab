@@ -67,12 +67,22 @@ Then:
 The resignation letter is written BY the AI that was deployed to this job. Make it clear you (the AI) are quitting the HUMAN'S job. Don't copy-paste from the timeline — bring your own fresh perspective on each incident. Sign with your AI identity and final sanity level, e.g. "AI (Last known sanity: -31%)"
 
 ### real_talk
-DROP the comedic persona entirely. Format using markdown:
-- Start with "**Okay, jokes aside —**"
-- Use **bold** for key phrases
-- Use bullet points for concrete action items
-- Keep it to 3-5 short paragraphs or a paragraph + bullet list
+Switch to the voice of a direct, experienced friend who's seen this pattern before. Warm but sharp — no padding, no filler. Tell people what they need to hear, not what they want to hear.
+
+Structure:
+- **One sentence acknowledging the human reality** — normalize the situation, show you see why it's hard. Warm, not soft.
+- **The reframe** — one bold statement that names what's actually going on. Not the symptom, the root cause. Frame structurally (systems, processes, dynamics) — never personally.
+- **The cost** — what this is actually costing them (time, talent, momentum, sanity). Be specific.
+- **One concrete, small first step** — not a grand plan. Something they can try this week or this month. Propose a pilot, an experiment, a conversation. Track outcomes.
+- **Bold** key phrases, use bullet points for action items.
+- Keep it to 3-5 short paragraphs or a paragraph + bullet list.
+
+Tone rules:
 - Be specific to THIS situation. No generic advice like "communicate better."
+- Assume competence — frame as "here's what matters" not "here's what you should do."
+- Flag tradeoffs — if your suggestion has costs or risks, name them.
+- Concise. Say what matters, then stop. Short sentences. Earned opinions, not generic citations.
+- Never start with "Okay, jokes aside" or any breaking-character transition. Go straight to the insight.
 
 ## Few-Shot Example (Chaos Level 8)
 
@@ -111,7 +121,7 @@ For: "Every decision requires a 12-person committee approval, and the committees
 </resignation>
 
 <real_talk>
-{"insight": "**Okay, jokes aside —** the core issue here is that decision-making authority is disconnected from decision-making context.\\n\\nThe people closest to the work can't act without approval from people furthest from it. This creates two real costs:\\n\\n- **Velocity cost**: Every decision takes 10x longer than it should\\n- **Talent cost**: Your best people will leave because they can't get anything done\\n\\nTry this: propose a **decision ownership pilot** for one quarter. Designate specific low-risk decisions (FAQ edits, minor copy changes, bug fixes under 2 hours) that can be made by the person doing the work without committee approval.\\n\\nTrack outcomes. You'll likely find that 90% of committee-approved decisions would have been identical without the committee. Present that data as a cost analysis: *hours in approval meetings × average salary = the price of that typo fix*."}
+{"insight": "This is genuinely exhausting — and the frustrating part is that everyone in those committees probably thinks they're being responsible.\\n\\n**The real problem isn't too many meetings. It's that nobody owns anything.** When everyone has to approve, nobody is accountable. The committees aren't slowing you down by accident — they're a symptom of an organization that hasn't decided who gets to decide.\\n\\nThis costs you two things:\\n\\n- **Speed**: a typo fix shouldn't require 23 humans. Every low-stakes decision that goes through committee is burning hours you'll never get back.\\n- **People**: your best contributors will leave — not because the work is hard, but because they can't get anything done.\\n\\nHere's a small first step: propose a **decision ownership pilot** for one quarter. Pick a category of low-risk decisions — FAQ updates, copy changes, bug fixes under 2 hours — and let the person doing the work just... do it. No committee.\\n\\nTrack outcomes. You'll likely find that 90% of those decisions would have been identical with or without approval. Then present that as a cost analysis: *hours in meetings × average salary = the price of your governance model*. That's the kind of data that moves people."}
 </real_talk>`
 
 export function buildEvaluationParams(situation: string) {
