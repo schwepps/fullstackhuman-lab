@@ -7,6 +7,7 @@ Public lab monorepo for FullStackHuman standalone projects. Each project lives i
 Current projects:
 
 - **turing-game** — Real-time multiplayer Turing test game
+- **will-ai-survive** — Satirical app where AI evaluates workplace chaos survival
 
 ---
 
@@ -15,6 +16,7 @@ Current projects:
 ```
 projects/
   turing-game/       # Turing Game (Next.js + Partykit)
+  will-ai-survive/   # Will AI Survive This Job? (Next.js)
 package.json         # Workspace root (delegates to projects)
 pnpm-workspace.yaml  # Workspace config
 ```
@@ -82,3 +84,61 @@ projects/turing-game/
 - **Prettier**: no semicolons, single quotes, trailing commas (es5)
 - **English-only** — no i18n, no locale routing
 - **No auth** — game is public, no Supabase
+
+---
+
+## Will AI Survive This Job?
+
+Users describe workplace chaos. AI (Claude Sonnet) evaluates whether it could survive — generating a chaos rating, mental breakdown timeline, and dramatic resignation letter. Results are streamed progressively via SSE. Shareable via LinkedIn/X with dynamic OG images.
+
+### Tech Stack
+
+| Layer     | Technology                  |
+| --------- | --------------------------- |
+| Framework | Next.js 16                  |
+| Language  | TypeScript                  |
+| Styling   | Tailwind CSS v4             |
+| AI        | Claude API (Sonnet + Haiku) |
+| Testing   | Vitest                      |
+| Cache     | Upstash Redis               |
+| OG Images | @vercel/og                  |
+
+### Route Architecture
+
+```
+projects/will-ai-survive/
+  app/
+    layout.tsx              # Root layout (corporate dystopia theme)
+    page.tsx                # Home — input form + streaming results
+    not-found.tsx           # 404 page
+    result/[id]/page.tsx    # Shareable result (SSR from Redis)
+    api/evaluate/route.ts   # POST: stream evaluation via SSE
+    api/og/route.tsx        # GET: dynamic OG image (1200x630)
+    globals.css             # Corporate dystopia theme
+  components/               # UI: input-form, result-card, chaos-meter, timeline, etc.
+  hooks/                    # useEvaluation SSE client hook
+  lib/                      # Types, constants, security, rate-limiter, evaluator, etc.
+  tests/                    # Unit tests
+```
+
+### Deployment
+
+- **Next.js** — Vercel
+- Env vars: `ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+
+### Key Scripts (from projects/will-ai-survive/)
+
+| Script      | Description              |
+| ----------- | ------------------------ |
+| `dev`       | Start Next.js dev server |
+| `build`     | Build for production     |
+| `lint`      | Run ESLint               |
+| `typecheck` | TypeScript type checking |
+| `test`      | Run tests (watch)        |
+| `test:run`  | Run tests once           |
+
+### Coding Conventions
+
+- Same as turing-game: Prettier (no semis, single quotes, trailing commas)
+- **English-only**, no auth
+- Redis keys prefixed `fsh:wais:` (lab namespace `fsh:`, project `wais:`)

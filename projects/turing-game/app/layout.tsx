@@ -1,10 +1,23 @@
 import type { Metadata, Viewport } from 'next'
 import { LandscapeHint } from '@/components/game/landscape-hint'
+import { getSiteUrl } from '@/lib/constants'
 import './globals.css'
 
 export const metadata: Metadata = {
   title: 'Turing Game | FullStackHuman',
   description: 'A multiplayer Turing test game — spot the AI imposters',
+  metadataBase: new URL(getSiteUrl()),
+  openGraph: {
+    title: 'Turing Game',
+    description: 'A multiplayer Turing test game — spot the AI imposters',
+    siteName: 'FullStackHuman',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'Turing Game',
+    description: 'A multiplayer Turing test game — spot the AI imposters',
+  },
 }
 
 export const viewport: Viewport = {
