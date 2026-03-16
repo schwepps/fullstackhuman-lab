@@ -16,7 +16,12 @@ export async function getResult(id: string): Promise<EvaluationResult | null> {
 
   // Redis may return already-parsed object or string depending on client
   if (typeof raw === 'object') return raw as unknown as EvaluationResult
-  return JSON.parse(raw) as EvaluationResult
+
+  try {
+    return JSON.parse(raw) as EvaluationResult
+  } catch {
+    return null
+  }
 }
 
 export async function incrementStats(): Promise<void> {

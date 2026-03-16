@@ -1,5 +1,7 @@
 import type { NextConfig } from 'next'
 
+const isDev = process.env.NODE_ENV === 'development'
+
 const securityHeaders = [
   {
     key: 'X-DNS-Prefetch-Control',
@@ -25,19 +27,23 @@ const securityHeaders = [
     key: 'Permissions-Policy',
     value: 'camera=(), microphone=(), geolocation=()',
   },
-  {
-    key: 'Content-Security-Policy',
-    value:
-      [
-        "default-src 'self'",
-        "script-src 'self' 'unsafe-inline'",
-        "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' https: data:",
-        "connect-src 'self'",
-        "font-src 'self'",
-        "frame-ancestors 'self'",
-      ].join('; ') + ';',
-  },
+  ...(!isDev
+    ? [
+        {
+          key: 'Content-Security-Policy',
+          value:
+            [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline'",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' https: data:",
+              "connect-src 'self'",
+              "font-src 'self'",
+              "frame-ancestors 'self'",
+            ].join('; ') + ';',
+        },
+      ]
+    : []),
 ]
 
 const nextConfig: NextConfig = {

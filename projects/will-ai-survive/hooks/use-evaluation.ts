@@ -230,6 +230,9 @@ function handleEvent(
             time: data.time as string,
             event: data.event as string,
             sanityLevel: data.sanityLevel as string,
+            ...(typeof data.thought === 'string' && {
+              thought: data.thought as string,
+            }),
           },
         ],
       }))

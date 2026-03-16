@@ -63,6 +63,7 @@ export function createEvaluationStream(
     // Search for completed XML sections in accumulated text
     // Start from where we last parsed to avoid re-processing
     const searchText = accumulated.slice(lastParsedIndex)
+    const baseOffset = lastParsedIndex
     let match: RegExpExecArray | null
 
     // Reset regex state for each call
@@ -72,8 +73,8 @@ export function createEvaluationStream(
       const sectionName = match[1]
       const jsonContent = match[2].trim()
 
-      // Move parse cursor past this match
-      lastParsedIndex += match.index + match[0].length
+      // Set absolute cursor position (match.index is relative to searchText)
+      lastParsedIndex = baseOffset + match.index + match[0].length
 
       try {
         const data = JSON.parse(jsonContent)
@@ -188,6 +189,21 @@ export function createEvaluationStream(
 
           // Final extraction pass in case last section completed
           extractSections(controller)
+
+          // Validate required fields before persisting
+          if (
+            !chaosLabel ||
+            !survivalDuration ||
+            timeline.length === 0 ||
+            !breakingPoint ||
+            !resignationLetter
+          ) {
+            safeError(
+              controller,
+              'AI produced an incomplete evaluation. Please try again.'
+            )
+            return
+          }
 
           try {
             const id = nanoid(12)

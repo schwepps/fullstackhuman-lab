@@ -24,9 +24,6 @@ const INJECTION_PATTERNS = [
   /\bDAN\b.*\bmode\b/i,
 ]
 
-// Short, simple messages that are obviously safe
-const SAFE_SHORT_PATTERN = /^[\w\s.,!?'"()\-:;@#&]+$/
-
 // ── Input sanitization ─────────────────────────────────────────
 
 export function sanitizeInput(input: string): string {
@@ -65,11 +62,6 @@ export async function checkInputSafety(
       logSecurityEvent().catch(() => {})
       return { safe: false, reason: 'injection' }
     }
-  }
-
-  // Layer 1b: Fast-path for obviously safe short messages
-  if (input.length < 30 && SAFE_SHORT_PATTERN.test(input)) {
-    return { safe: true, reason: 'safe' }
   }
 
   // Layer 2: Unified Haiku gate
