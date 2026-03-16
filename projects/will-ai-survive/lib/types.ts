@@ -4,7 +4,6 @@ export type TimelineEntry = {
   time: string // "Day 1, 9:00 AM" or "Hour 3"
   event: string // What happened (2-3 sentences max)
   thought?: string // AI's internal monologue (parenthetical aside)
-  emoji?: string // Single emoji capturing the moment
   sanityLevel: string // "73%" → "2%" → "-41%"
 }
 

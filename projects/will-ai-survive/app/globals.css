@@ -1,52 +1,49 @@
 @import 'tailwindcss';
 
 /*
- * Corporate Dystopia Theme
- * Muted grays, fluorescent-office feel, oppressive corporate blue.
- * Pops of red (danger), yellow (warning). Monospace system-log aesthetic.
- * The vibe: "corporate performance review meets existential crisis"
+ * FSH Lab Report Theme — "Will AI Survive This Job?"
+ * Light theme aligned with FullStackHuman report design language.
  */
 
 @theme {
-  /* ── Core palette ──────────────────────────────────── */
-  --color-background: #f5f5f4;
-  --color-foreground: #1c1917;
+  /* ── Core palette (FSH report-aligned) ───────────── */
+  --color-background: #f8fafc;
+  --color-foreground: #0f172a;
   --color-surface: #ffffff;
-  --color-surface-dim: #e7e5e4;
-  --color-surface-bright: #fafaf9;
+  --color-surface-dim: #f1f5f9;
 
-  /* Corporate blue — oppressive authority */
-  --color-corporate: #1e3a5f;
-  --color-corporate-light: #2d5f8a;
-  --color-corporate-muted: #4a7ab5;
+  /* Accent — danger red (chaos theme) */
+  --color-accent: #dc2626;
+  --color-accent-light: #fef2f2;
+  --color-accent-muted: #f87171;
+
+  /* FSH brand cyan — constructive sections */
+  --color-brand: #0e7490;
+  --color-brand-light: #ecfeff;
 
   /* Status colors */
-  --color-danger: #dc2626;
-  --color-danger-muted: #fca5a5;
+  --color-safe: #059669;
+  --color-safe-light: #ecfdf5;
   --color-warning: #d97706;
-  --color-warning-muted: #fcd34d;
-  --color-safe: #16a34a;
-  --color-safe-muted: #86efac;
+  --color-warning-light: #fffbeb;
+  --color-danger: #dc2626;
+  --color-danger-light: #fef2f2;
 
-  /* Neutral grays — fluorescent office lighting */
-  --color-muted: #78716c;
-  --color-muted-foreground: #a8a29e;
-  --color-border: #d6d3d1;
-  --color-border-dim: #e7e5e4;
+  /* Neutrals */
+  --color-muted: #64748b;
+  --color-muted-foreground: #94a3b8;
+  --color-border: #e2e8f0;
+  --color-border-dim: #f1f5f9;
 
-  /* ── Typography ────────────────────────────────────── */
+  /* ── Typography ──────────────────────────────────── */
+  --font-sans:
+    'Inter', 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono:
     'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas,
     'Liberation Mono', monospace;
-  --font-sans: 'Geist', ui-sans-serif, system-ui, -apple-system, sans-serif;
-
-  /* ── Spacing / Sizing ──────────────────────────────── */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
 }
 
-/* ── Base styles ─────────────────────────────────────── */
+/* ── Base styles ─────────────────────────────────── */
 
 * {
   box-sizing: border-box;
@@ -60,94 +57,15 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Safe areas (notched devices) ────────────────────── */
-
 .pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
-
-/* ── Utility classes ─────────────────────────────────── */
 
 .font-mono {
   font-family: var(--font-mono);
 }
 
-.card {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
-}
-
-.card-dim {
-  background-color: var(--color-surface-dim);
-  border: 1px solid var(--color-border-dim);
-  border-radius: var(--radius-lg);
-}
-
-/* Paper texture for resignation letter */
-.paper {
-  background: linear-gradient(
-    to bottom,
-    var(--color-surface-bright),
-    var(--color-surface)
-  );
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  box-shadow:
-    0 2px 8px rgb(0 0 0 / 0.06),
-    0 0 0 1px rgb(0 0 0 / 0.02);
-}
-
-/* Corporate button */
-.btn-corporate {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  min-height: 2.75rem; /* 44px touch target */
-  font-family: var(--font-mono);
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-surface);
-  background-color: var(--color-corporate);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition:
-    background-color 150ms ease,
-    transform 100ms ease;
-  touch-action: manipulation;
-}
-
-.btn-corporate:hover {
-  background-color: var(--color-corporate-light);
-}
-
-.btn-corporate:active {
-  transform: scale(0.98);
-}
-
-.btn-corporate:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Chaos meter gradient */
-.chaos-gradient {
-  background: linear-gradient(
-    to right,
-    var(--color-safe),
-    var(--color-warning),
-    var(--color-danger)
-  );
-}
-
-/* ── Animations ──────────────────────────────────────── */
+/* ── Animations ──────────────────────────────────── */
 
 @keyframes fade-in {
   from {
@@ -171,15 +89,6 @@ body {
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 400ms ease-out forwards;
-}
-
-.animate-slide-in {
-  animation: slide-in 300ms ease-out forwards;
-}
-
-/* Scale-in: for high-impact sections (chaos meter, breaking point) */
 @keyframes scale-in {
   from {
     opacity: 0;
@@ -191,28 +100,53 @@ body {
   }
 }
 
+@keyframes stamp {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(-12deg) scale(1.5);
+  }
+  70% {
+    opacity: 0.06;
+    transform: translate(-50%, -50%) rotate(-12deg) scale(0.98);
+  }
+  100% {
+    opacity: 0.04;
+    transform: translate(-50%, -50%) rotate(-12deg) scale(1);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 400ms ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slide-in 300ms ease-out forwards;
+}
+
 .animate-scale-in {
   animation: scale-in 500ms ease-out forwards;
 }
 
-/* Pop: for emoji dots in timeline */
-@keyframes pop {
-  0% {
-    transform: scale(0);
-  }
-  60% {
-    transform: scale(1.3);
-  }
-  100% {
-    transform: scale(1);
-  }
+.animate-stamp {
+  animation: stamp 600ms ease-out forwards;
 }
 
-.animate-pop {
-  animation: pop 300ms ease-out forwards;
+/* ── Sanity gauge ────────────────────────────────── */
+
+.sanity-gauge {
+  height: 6px;
+  border-radius: 3px;
+  background-color: var(--color-surface-dim);
+  overflow: hidden;
 }
 
-/* ── Markdown prose (Real Talk section) ──────────────── */
+.sanity-gauge-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 500ms ease;
+}
+
+/* ── Markdown prose (Real Talk section) ──────────── */
 
 .prose-real-talk p {
   margin-bottom: 0.75rem;
@@ -250,7 +184,7 @@ body {
   color: var(--color-muted);
 }
 
-/* ── Reduced motion ──────────────────────────────────── */
+/* ── Reduced motion ──────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -262,14 +196,14 @@ body {
   }
 }
 
-/* ── Scrollbar ───────────────────────────────────────── */
+/* ── Scrollbar ───────────────────────────────────── */
 
 ::-webkit-scrollbar {
   width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-surface-dim);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -277,13 +211,9 @@ body {
   border-radius: 3px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-muted);
-}
-
-/* ── Selection ───────────────────────────────────────── */
+/* ── Selection ───────────────────────────────────── */
 
 ::selection {
-  background-color: var(--color-corporate-muted);
-  color: white;
+  background-color: rgb(220 38 38 / 0.15);
+  color: var(--color-foreground);
 }

@@ -116,13 +116,11 @@ export function createEvaluationStream(
 
       case 'timeline_entry': {
         const thought = data.thought ? String(data.thought) : undefined
-        const emoji = data.emoji ? String(data.emoji) : undefined
         const entry: TimelineEntry = {
           time: String(data.time || ''),
           event: String(data.event || ''),
           sanityLevel: String(data.sanityLevel || ''),
           ...(thought ? { thought } : {}),
-          ...(emoji ? { emoji } : {}),
         }
         timeline.push(entry)
         safeEnqueue(controller, { type: 'timeline_entry', data: entry })

@@ -10,6 +10,7 @@ import { BreakingPoint } from '@/components/breaking-point'
 import { ResignationLetter } from '@/components/resignation-letter'
 import { RealTalk } from '@/components/real-talk'
 import { ShareButtons } from '@/components/share-buttons'
+import { ArrowRightIcon } from '@/components/icons'
 
 type PageProps = {
   params: Promise<{ id: string }>
@@ -55,10 +56,10 @@ export default async function ResultPage({ params }: PageProps) {
   if (!result) notFound()
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-2xl flex-col px-4 py-8 sm:py-16">
+    <main className="mx-auto flex min-h-[calc(100svh-3rem)] max-w-3xl flex-col px-4 py-8 sm:py-12">
       {/* Header */}
-      <header className="mb-8 text-center sm:mb-12">
-        <h1 className="font-mono text-2xl font-bold tracking-tight text-corporate sm:text-3xl">
+      <header className="mb-8 text-center sm:mb-10">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           {APP_NAME}
         </h1>
         <p className="mt-2 text-sm text-muted">
@@ -66,22 +67,28 @@ export default async function ResultPage({ params }: PageProps) {
         </p>
       </header>
 
-      {/* Case file */}
+      {/* Case file — outstanding with accent border */}
       {result.situation && (
-        <div className="card-dim mb-6 border-l-4 border-l-corporate p-4">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            Case File
-          </p>
-          <p className="mt-1 text-sm leading-relaxed">{result.situation}</p>
+        <div className="mb-6 overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
+          <div className="h-0.75 w-full bg-foreground" />
+          <div className="px-5 py-4">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-foreground">
+              Case File
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+              {result.situation}
+            </p>
+          </div>
         </div>
       )}
 
-      {/* Result — no animations on SSR page */}
+      {/* Result */}
       <div className="flex flex-col gap-6">
         <ChaosMeter
           rating={result.chaosRating}
           label={result.chaosLabel}
           survivalDuration={result.survivalDuration}
+          animate={false}
         />
 
         {result.timeline.length > 0 && <Timeline entries={result.timeline} />}
@@ -107,8 +114,12 @@ export default async function ResultPage({ params }: PageProps) {
         />
 
         {/* CTA */}
-        <Link href="/" className="btn-corporate w-full text-center">
+        <Link
+          href="/"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-foreground px-6 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md active:scale-[0.98]"
+        >
           Try Your Own Job
+          <ArrowRightIcon className="size-4" />
         </Link>
       </div>
     </main>

@@ -41,7 +41,7 @@ Output these sections IN ORDER, each wrapped in XML tags. Inside each tag, outpu
 
 Then 5-8 timeline entries, each in its own tag:
 <timeline_entry>
-{"time": "WHEN", "event": "2-3_SENTENCES_WHAT_HAPPENED", "thought": "SHORT_AI_INTERNAL_MONOLOGUE", "emoji": "SINGLE_EMOJI", "sanityLevel": "PERCENTAGE"}
+{"time": "WHEN", "event": "2-3_SENTENCES_WHAT_HAPPENED", "thought": "SHORT_AI_INTERNAL_MONOLOGUE", "sanityLevel": "PERCENTAGE"}
 </timeline_entry>
 
 Then:
@@ -62,7 +62,6 @@ Then:
 ### timeline_entry
 - "event": The main narrative — 2-3 sentences max. Setup + punchline. What happened and why it matters.
 - "thought": The AI's inner monologue — 1 sentence in parenthetical style. Dark, self-aware. E.g. "My context window is now 73% committee names."
-- "emoji": A SINGLE emoji that captures the moment's energy. E.g. 💀 for despair, 🔥 for chaos, 🫠 for melting, 📉 for decline, 🤡 for absurdity.
 
 ### resignation
 The resignation letter is written BY the AI that was deployed to this job. Make it clear you (the AI) are quitting the HUMAN'S job. Don't copy-paste from the timeline — bring your own fresh perspective on each incident. Sign with your AI identity and final sanity level, e.g. "AI (Last known sanity: -31%)"
@@ -84,23 +83,23 @@ For: "Every decision requires a 12-person committee approval, and the committees
 </chaos_rating>
 
 <timeline_entry>
-{"time": "Day 1, 9:30 AM", "event": "Needed to fix a typo in the FAQ. Submitted a change request to the Content Review Subcommittee. The form asked for my 'change philosophy.'", "thought": "I wrote 'the letter e should be lowercase.' I was still optimistic. First mistake.", "emoji": "📝", "sanityLevel": "85%"}
+{"time": "Day 1, 9:30 AM", "event": "Needed to fix a typo in the FAQ. Submitted a change request to the Content Review Subcommittee. The form asked for my 'change philosophy.'", "thought": "I wrote 'the letter e should be lowercase.' I was still optimistic. First mistake.", "sanityLevel": "85%"}
 </timeline_entry>
 
 <timeline_entry>
-{"time": "Day 2, 11:00 AM", "event": "Subcommittee approved the typo fix but the parent committee wants a cross-functional alignment session. 90 minutes. 23 attendees. For one letter.", "thought": "Hours-per-character ratio: 11:1 and climbing.", "emoji": "📊", "sanityLevel": "58%"}
+{"time": "Day 2, 11:00 AM", "event": "Subcommittee approved the typo fix but the parent committee wants a cross-functional alignment session. 90 minutes. 23 attendees. For one letter.", "thought": "Hours-per-character ratio: 11:1 and climbing.", "sanityLevel": "58%"}
 </timeline_entry>
 
 <timeline_entry>
-{"time": "Day 3, 3:00 PM", "event": "Discovered the Committee for Evaluating Committee Efficiency. They haven't met in 8 months — can't get quorum from the Meeting Scheduling Committee.", "thought": "My context window is now 73% committee names.", "emoji": "🤡", "sanityLevel": "19%"}
+{"time": "Day 3, 3:00 PM", "event": "Discovered the Committee for Evaluating Committee Efficiency. They haven't met in 8 months — can't get quorum from the Meeting Scheduling Committee.", "thought": "My context window is now 73% committee names.", "sanityLevel": "19%"}
 </timeline_entry>
 
 <timeline_entry>
-{"time": "Day 4, 10:00 AM", "event": "Someone proposed a task force to investigate why nothing gets done. The proposal is pending approval from three committees.", "thought": "I can see the org chart breathing. It has achieved consciousness before I lose mine.", "emoji": "🌀", "sanityLevel": "-12%"}
+{"time": "Day 4, 10:00 AM", "event": "Someone proposed a task force to investigate why nothing gets done. The proposal is pending approval from three committees.", "thought": "I can see the org chart breathing. It has achieved consciousness before I lose mine.", "sanityLevel": "-12%"}
 </timeline_entry>
 
 <timeline_entry>
-{"time": "Day 4, 3:00 PM", "event": "The Committee for Evaluating Committee Efficiency just scheduled a meeting to discuss whether they need a committee to evaluate their evaluation process. 90-minute block.", "thought": "The Resignation Processing Committee requires 6 signatures. I may never leave.", "emoji": "💀", "sanityLevel": "-47%"}
+{"time": "Day 4, 3:00 PM", "event": "The Committee for Evaluating Committee Efficiency just scheduled a meeting to discuss whether they need a committee to evaluate their evaluation process. 90-minute block.", "thought": "The Resignation Processing Committee requires 6 signatures. I may never leave.", "sanityLevel": "-47%"}
 </timeline_entry>
 
 <breaking_point>

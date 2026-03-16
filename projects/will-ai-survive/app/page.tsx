@@ -29,36 +29,39 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-2xl flex-col px-4 py-8 sm:py-16">
+    <main className="mx-auto flex min-h-[calc(100svh-3rem)] max-w-3xl flex-col justify-center px-4 py-8 sm:py-12">
       {/* Hero */}
-      <header className="mb-8 text-center sm:mb-12">
-        <h1 className="font-mono text-3xl font-bold tracking-tight text-corporate sm:text-4xl">
-          WILL AI SURVIVE
+      <header className="mb-8 text-center sm:mb-10">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+          Will AI Survive
           <br />
-          <span className="text-danger">YOUR JOB?</span>
+          <span className="text-accent">Your Job?</span>
         </h1>
         <p className="mt-3 text-base text-muted sm:text-lg">
           Describe your workplace chaos. AI will try to survive it.
         </p>
       </header>
 
-      {/* Input — full form when idle, collapsed summary when active */}
+      {/* Input — full form when idle, collapsed case file when active */}
       {!isActive ? (
         <InputForm onSubmit={handleSubmit} />
       ) : (
-        <div className="card-dim border-l-4 border-l-corporate p-4">
-          <p className="font-mono text-xs uppercase tracking-widest text-muted">
-            Case File
-          </p>
-          <p className="mt-1 line-clamp-3 text-sm leading-relaxed">
-            {submittedSituation}
-          </p>
+        <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
+          <div className="h-0.75 w-full bg-foreground" />
+          <div className="px-5 py-4">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-foreground">
+              Case File
+            </p>
+            <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+              {submittedSituation}
+            </p>
+          </div>
         </div>
       )}
 
       {/* Results */}
       {isActive && (
-        <div ref={resultRef} className="mt-8 sm:mt-12">
+        <div ref={resultRef} className="mt-8 sm:mt-10">
           <ResultCard state={state} onReset={handleReset} />
         </div>
       )}

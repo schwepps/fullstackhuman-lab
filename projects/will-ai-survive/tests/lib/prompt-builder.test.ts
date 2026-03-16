@@ -62,10 +62,9 @@ describe('buildEvaluationParams', () => {
     expect(params.system).toContain('jokes aside')
   })
 
-  it('timeline entry format includes thought and emoji fields', () => {
+  it('timeline entry format includes thought field', () => {
     const params = buildEvaluationParams(situation)
     expect(params.system).toContain('"thought"')
-    expect(params.system).toContain('"emoji"')
   })
 
   it('instructs compact timeline entries (2-3 sentences)', () => {

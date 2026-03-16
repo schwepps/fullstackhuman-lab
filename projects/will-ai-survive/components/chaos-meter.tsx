@@ -6,34 +6,49 @@ type ChaosMeterProps = {
   rating: number
   label: string
   survivalDuration: string
+  /** Set to false on SSR pages to show the final value immediately */
+  animate?: boolean
 }
 
-const CHAOS_COLORS = {
-  low: { bg: 'bg-safe/8', border: 'border-safe/20', text: 'text-safe' },
-  mid: {
-    bg: 'bg-warning/8',
-    border: 'border-warning/20',
-    text: 'text-warning',
+const CHAOS_STYLES = {
+  low: {
+    text: 'text-safe',
+    accentBg: 'bg-safe',
+    cardBorder: 'border-safe/20',
+    glow: 'shadow-[0_0_30px_rgb(5_150_105/0.12)]',
   },
-  high: { bg: 'bg-danger/8', border: 'border-danger/20', text: 'text-danger' },
+  mid: {
+    text: 'text-warning',
+    accentBg: 'bg-warning',
+    cardBorder: 'border-warning/20',
+    glow: 'shadow-[0_0_30px_rgb(217_119_6/0.12)]',
+  },
+  high: {
+    text: 'text-danger',
+    accentBg: 'bg-danger',
+    cardBorder: 'border-danger/20',
+    glow: 'shadow-[0_0_30px_rgb(220_38_38/0.15)]',
+  },
 } as const
 
 function getChaosLevel(rating: number) {
-  if (rating <= 3) return CHAOS_COLORS.low
-  if (rating <= 6) return CHAOS_COLORS.mid
-  return CHAOS_COLORS.high
+  if (rating <= 3) return CHAOS_STYLES.low
+  if (rating <= 6) return CHAOS_STYLES.mid
+  return CHAOS_STYLES.high
 }
 
 export function ChaosMeter({
   rating,
   label,
   survivalDuration,
+  animate = true,
 }: ChaosMeterProps) {
-  const [displayRating, setDisplayRating] = useState(0)
-  const colors = getChaosLevel(rating)
+  const [displayRating, setDisplayRating] = useState(animate ? 0 : rating)
+  const styles = getChaosLevel(rating)
 
-  // Animated count-up from 0 to rating
   useEffect(() => {
+    if (!animate) return
+
     const duration = 1000
     const steps = rating
     const stepTime = duration / steps
@@ -46,31 +61,44 @@ export function ChaosMeter({
     }, stepTime)
 
     return () => clearInterval(timer)
-  }, [rating])
+  }, [rating, animate])
 
   return (
     <div
-      className={`animate-scale-in rounded-xl border p-6 ${colors.bg} ${colors.border}`}
+      className={`animate-scale-in overflow-hidden rounded-lg border bg-surface ${styles.cardBorder} ${styles.glow}`}
     >
-      {/* Rating number — hero element */}
-      <div className="mb-4 text-center">
-        <div className={`font-mono text-7xl font-black ${colors.text}`}>
-          {displayRating}
-          <span className="text-2xl text-muted">/10</span>
-        </div>
-      </div>
+      <div className={`h-0.75 w-full ${styles.accentBg}`} />
 
-      {/* Chaos label — the quotable punchline */}
-      <p className="mb-6 text-center text-lg font-medium leading-snug">
-        &ldquo;{label}&rdquo;
-      </p>
-
-      {/* Survival duration */}
-      <div className="border-t border-border-dim pt-4 text-center">
-        <p className="font-mono text-xs uppercase tracking-widest text-muted">
-          AI Survived
+      <div className="px-6 py-8 sm:px-8 sm:py-10">
+        <p className="mb-6 text-center font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+          Chaos Assessment
         </p>
-        <p className="mt-1 font-mono text-xl font-bold">{survivalDuration}</p>
+
+        <div className="mb-2 text-center">
+          <span
+            className={`font-mono text-8xl font-black leading-none tracking-tighter ${styles.text} sm:text-9xl`}
+          >
+            {displayRating}
+          </span>
+          <span className="ml-1 font-mono text-3xl font-light text-muted-foreground">
+            /10
+          </span>
+        </div>
+
+        <p className="mx-auto max-w-md text-center text-lg leading-snug font-medium text-foreground/80 italic sm:text-xl">
+          &ldquo;{label}&rdquo;
+        </p>
+
+        <div className="mx-auto my-6 h-px max-w-xs bg-border" />
+
+        <div className="text-center">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
+            AI Survived
+          </p>
+          <p className="mt-2 font-mono text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+            {survivalDuration}
+          </p>
+        </div>
       </div>
     </div>
   )

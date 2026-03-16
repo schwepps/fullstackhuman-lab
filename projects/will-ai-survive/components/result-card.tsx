@@ -9,6 +9,7 @@ import { ResignationLetter } from './resignation-letter'
 import { RealTalk } from './real-talk'
 import { ShareButtons } from './share-buttons'
 import { StreamingIndicator } from './streaming-indicator'
+import { ArrowRightIcon } from './icons'
 
 type ResultCardProps = {
   state: EvaluationState
@@ -35,9 +36,12 @@ export function ResultCard({ state, onReset }: ResultCardProps) {
 
   if (state.status === 'error') {
     return (
-      <div className="card animate-scale-in p-6 text-center">
-        <p className="mb-4 text-danger">{state.error}</p>
-        <button onClick={onReset} className="btn-corporate">
+      <div className="animate-scale-in rounded-lg border border-border bg-surface p-6 text-center shadow-sm">
+        <p className="mb-4 text-accent">{state.error}</p>
+        <button
+          onClick={onReset}
+          className="min-h-11 rounded-lg bg-foreground px-6 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md active:scale-[0.98]"
+        >
           Try Again
         </button>
       </div>
@@ -46,8 +50,8 @@ export function ResultCard({ state, onReset }: ResultCardProps) {
 
   if (state.status === 'loading') {
     return (
-      <div className="card animate-scale-in p-6 text-center">
-        <p className="animate-pulse font-mono text-base text-muted sm:text-sm">
+      <div className="animate-scale-in rounded-lg border border-border bg-surface p-6 text-center shadow-sm">
+        <p className="animate-pulse text-sm text-muted">
           {state.loadingMessage}
         </p>
       </div>
@@ -60,7 +64,7 @@ export function ResultCard({ state, onReset }: ResultCardProps) {
     <div className="flex flex-col gap-6">
       {/* Empathy note */}
       {state.chaosData?.empathyNote && (
-        <div className="animate-fade-in rounded-xl border border-warning/20 bg-warning/5 p-4">
+        <div className="animate-fade-in rounded-lg border border-warning/20 bg-warning-light p-4">
           <p className="text-sm leading-relaxed text-foreground/80">
             {state.chaosData.empathyNote}
           </p>
@@ -76,35 +80,28 @@ export function ResultCard({ state, onReset }: ResultCardProps) {
         />
       )}
 
-      {/* Streaming indicator: after chaos, before timeline */}
       {isStreaming && state.chaosData && state.timelineEntries.length === 0 && (
         <StreamingIndicator />
       )}
 
-      {/* Timeline */}
       {state.timelineEntries.length > 0 && (
         <Timeline entries={state.timelineEntries} />
       )}
 
-      {/* Streaming indicator: after timeline, before breaking point */}
       {isStreaming &&
         state.timelineEntries.length > 0 &&
         !state.breakingPoint && <StreamingIndicator />}
 
-      {/* Breaking point */}
       {state.breakingPoint && <BreakingPoint content={state.breakingPoint} />}
 
-      {/* Streaming indicator: after breaking point, before resignation */}
       {isStreaming && state.breakingPoint && !state.resignationLetter && (
         <StreamingIndicator />
       )}
 
-      {/* Resignation letter */}
       {state.resignationLetter && (
         <ResignationLetter content={state.resignationLetter} />
       )}
 
-      {/* Real talk */}
       {state.realTalkInsight && <RealTalk insight={state.realTalkInsight} />}
 
       {/* Share + reset */}
@@ -119,9 +116,10 @@ export function ResultCard({ state, onReset }: ResultCardProps) {
           />
           <button
             onClick={onReset}
-            className="min-h-11 w-full touch-manipulation border border-border px-4 py-3 font-mono text-sm transition-colors hover:bg-surface-dim active:scale-[0.98]"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-foreground shadow-sm transition-all hover:border-muted hover:bg-surface-dim hover:shadow-md active:scale-[0.98]"
           >
             Try Another Job
+            <ArrowRightIcon className="size-4" />
           </button>
         </div>
       )}

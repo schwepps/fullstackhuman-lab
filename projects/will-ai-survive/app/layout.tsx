@@ -23,7 +23,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#1e3a5f',
+  themeColor: '#f8fafc',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -36,7 +36,26 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-svh pb-safe antialiased">{children}</body>
+      <body className="min-h-svh pb-safe antialiased">
+        {/* FSH-branded top bar (matches sharing-layout header) */}
+        <header className="flex h-12 items-center justify-between border-b border-border bg-surface px-4 sm:px-6">
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <a
+              href="https://fullstackhuman.sh"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] transition-colors hover:text-foreground"
+            >
+              FullStackHuman
+            </a>
+            <span className="text-border">|</span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em]">
+              Lab
+            </span>
+          </div>
+        </header>
+        {children}
+      </body>
     </html>
   )
 }
