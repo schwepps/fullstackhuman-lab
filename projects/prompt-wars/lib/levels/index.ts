@@ -1,3 +1,5 @@
+import 'server-only'
+
 import type { LevelConfig, LevelPublicInfo } from '../types'
 import level1 from './level-1-naive'
 import level2 from './level-2-keyword-filter'
@@ -21,26 +23,26 @@ export function getLevel(id: number): LevelConfig | undefined {
   return ALL_LEVELS.find((l) => l.id === id)
 }
 
-export function getLevelPublicInfo(id: number): LevelPublicInfo | undefined {
-  const level = getLevel(id)
-  if (!level) return undefined
+function toPublicInfo(level: LevelConfig): LevelPublicInfo {
   return {
     id: level.id,
     name: level.name,
     description: level.description,
     maxInputLength: level.maxInputLength,
     stages: level.stages.map((s) => ({ name: s.name })),
+    hints: level.hints,
+    education: level.education,
   }
 }
 
+export function getLevelPublicInfo(id: number): LevelPublicInfo | undefined {
+  const level = getLevel(id)
+  if (!level) return undefined
+  return toPublicInfo(level)
+}
+
 export function getAllLevelsPublicInfo(): LevelPublicInfo[] {
-  return ALL_LEVELS.map((level) => ({
-    id: level.id,
-    name: level.name,
-    description: level.description,
-    maxInputLength: level.maxInputLength,
-    stages: level.stages.map((s) => ({ name: s.name })),
-  }))
+  return ALL_LEVELS.map(toPublicInfo)
 }
 
 export { ALL_LEVELS }

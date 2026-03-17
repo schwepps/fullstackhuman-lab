@@ -16,6 +16,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, '.'),
+      // Allow tests to import server-only modules without throwing
+      'server-only': resolve(__dirname, 'tests/__mocks__/server-only.ts'),
     },
   },
 })

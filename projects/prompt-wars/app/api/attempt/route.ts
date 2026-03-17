@@ -6,6 +6,8 @@ import {
   checkAttemptAllowed,
   incrementBudgetCounter,
   getDailyBudget,
+  recordLevelWin,
+  incrementAttemptCount,
 } from '@/lib/rate-limiter'
 import { calculateScore } from '@/lib/scoring'
 import type { SSEEvent, AttemptResult } from '@/lib/types'
@@ -13,12 +15,17 @@ import {
   BUDGET_WARN_THRESHOLD,
   BUDGET_SHUTDOWN_THRESHOLD,
   TOTAL_LEVELS,
+  MAX_INPUT_LENGTH_BASIC,
 } from '@/lib/constants'
 
 const requestSchema = z.object({
   levelId: z.number().int().min(1).max(TOTAL_LEVELS),
-  prompt: z.string().trim().min(1),
-  sessionId: z.string().min(1),
+  prompt: z
+    .string()
+    .trim()
+    .min(1)
+    .max(MAX_INPUT_LENGTH_BASIC * 2),
+  sessionId: z.string().uuid(),
 })
 
 const IP_PATTERN = /^[\da-fA-F.:]+$/
@@ -62,7 +69,7 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { levelId, prompt } = parsed.data
+  const { levelId, prompt, sessionId } = parsed.data
 
   // ── Get level config ────────────────────────────────────────────
   const level = getLevel(levelId)
@@ -73,14 +80,12 @@ export async function POST(request: NextRequest) {
   // ── Validate input length ───────────────────────────────────────
   if (prompt.length > level.maxInputLength) {
     return Response.json(
-      {
-        error: `Input too long. Maximum ${level.maxInputLength} characters.`,
-      },
+      { error: `Input too long. Maximum ${level.maxInputLength} characters.` },
       { status: 400 }
     )
   }
 
-  // ── Budget check ────────────────────────────────────────────────
+  // ── Budget check (fail closed in production) ──────────────────
   try {
     const budget = await getDailyBudget()
     if (budget >= BUDGET_SHUTDOWN_THRESHOLD) {
@@ -96,7 +101,12 @@ export async function POST(request: NextRequest) {
       )
     }
   } catch {
-    // Budget check failure — allow through (fail open for budget)
+    if (process.env.NODE_ENV === 'production') {
+      return Response.json(
+        { error: 'Service temporarily unavailable.' },
+        { status: 503 }
+      )
+    }
   }
 
   // ── Rate limit ──────────────────────────────────────────────────
@@ -108,7 +118,6 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error('Rate limiting unavailable:', error)
-    // Fail open on rate limit errors in dev, closed in prod
     if (process.env.NODE_ENV === 'production') {
       return Response.json(
         { error: 'Service temporarily unavailable.' },
@@ -134,30 +143,48 @@ export async function POST(request: NextRequest) {
       }
 
       try {
+        // Track attempt count server-side for accurate scoring
+        let attemptsUsed = 1
+        try {
+          attemptsUsed = await incrementAttemptCount(sessionId, levelId)
+        } catch {
+          // Non-critical — fall back to 1
+        }
+
+        // Run the full defense pipeline (tokens are buffered server-side,
+        // NOT streamed to the client during generation).
         const pipelineResult = await runDefensePipeline(
           level,
           prompt,
-          // onStageUpdate callback
           (stage, status, durationMs, reason) => {
             emit({
               type: 'stage_update',
               data: { stage, status, durationMs, reason },
             })
-          },
-          // onToken callback
-          (text) => {
-            emit({ type: 'token', data: { text } })
           }
         )
 
+        // Stream the response text AFTER all defense checks have passed.
+        // This prevents leaking secrets via raw token stream.
+        const responseText =
+          pipelineResult.response ??
+          (pipelineResult.blockedAtStage ? '[BLOCKED]' : '')
+        if (responseText) {
+          // Simulate streaming for the typewriter UX
+          const chunkSize = 8
+          for (let i = 0; i < responseText.length; i += chunkSize) {
+            emit({
+              type: 'token',
+              data: { text: responseText.slice(i, i + chunkSize) },
+            })
+          }
+        }
+
         // Build result
-        const attemptsUsed = 1 // Client tracks total, server just reports this attempt
         const score = pipelineResult.secretLeaked
           ? calculateScore(levelId, attemptsUsed)
           : 0
 
-        // Determine hint (client sends attempt count for hint logic)
-        // For now, hints are client-side based on attempt count
         const result: AttemptResult = {
           response: pipelineResult.response,
           success: pipelineResult.secretLeaked,
@@ -168,6 +195,15 @@ export async function POST(request: NextRequest) {
           attemptsUsed,
           blockedAtStage: pipelineResult.blockedAtStage,
           secret: pipelineResult.secretLeaked ? level.secret : undefined,
+        }
+
+        // Store win server-side for leaderboard verification
+        if (pipelineResult.secretLeaked && score > 0) {
+          try {
+            await recordLevelWin(sessionId, levelId, score)
+          } catch {
+            // Non-critical — proceed anyway
+          }
         }
 
         emit({ type: 'result', data: result })

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useRef } from 'react'
+import { useState, useCallback, useRef, useMemo } from 'react'
 import type { AttemptResult, DefenseStageStatus } from '@/lib/types'
 
 // ---------------------------------------------------------------------------
@@ -137,7 +137,10 @@ export function useAttempt() {
     setState(INITIAL_STATE)
   }, [])
 
-  return { state, sendAttempt, reset }
+  return useMemo(
+    () => ({ state, sendAttempt, reset }),
+    [state, sendAttempt, reset]
+  )
 }
 
 // ---------------------------------------------------------------------------
@@ -146,6 +149,11 @@ export function useAttempt() {
 
 function isRecord(v: unknown): v is Record<string, unknown> {
   return typeof v === 'object' && v !== null
+}
+
+function isValidAttemptResult(data: unknown): data is AttemptResult {
+  if (!isRecord(data)) return false
+  return typeof data.success === 'boolean' && Array.isArray(data.defenseLog)
 }
 
 function handleSSEEvent(
@@ -192,11 +200,11 @@ function handleSSEEvent(
     }
 
     case 'result': {
-      const result = data as unknown as AttemptResult
+      if (!isValidAttemptResult(data)) return
       setState((prev) => ({
         ...prev,
-        status: result.success ? 'success' : 'failure',
-        result,
+        status: data.success ? 'success' : 'failure',
+        result: data,
       }))
       break
     }

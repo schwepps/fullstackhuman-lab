@@ -1,4 +1,4 @@
-import { Redis } from '@upstash/redis'
+import type { Redis } from '@upstash/redis'
 import { Redis as CloudflareRedis } from '@upstash/redis/cloudflare'
 
 let redis: Redis | null = null

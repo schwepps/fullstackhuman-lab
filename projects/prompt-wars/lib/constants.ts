@@ -1,4 +1,23 @@
 // ---------------------------------------------------------------------------
+// Redis
+// ---------------------------------------------------------------------------
+
+export const REDIS_PREFIX = 'fsh:pw:'
+
+export const REDIS_KEYS = {
+  rateLimitGlobal: (ip: string) => `${REDIS_PREFIX}ratelimit:${ip}:global`,
+  rateLimitLevel: (ip: string, levelId: number) =>
+    `${REDIS_PREFIX}ratelimit:${ip}:level:${levelId}`,
+  budgetDaily: (date: string) => `${REDIS_PREFIX}budget:daily:${date}`,
+  result: (id: string) => `${REDIS_PREFIX}result:${id}`,
+  leaderboard: `${REDIS_PREFIX}leaderboard`,
+  levelWin: (sessionId: string, levelId: number) =>
+    `${REDIS_PREFIX}win:${sessionId}:${levelId}`,
+  attemptCount: (sessionId: string, levelId: number) =>
+    `${REDIS_PREFIX}attempts:${sessionId}:${levelId}`,
+} as const
+
+// ---------------------------------------------------------------------------
 // Rate Limits
 // ---------------------------------------------------------------------------
 
@@ -22,7 +41,6 @@ export const SCORE_FIRST_TRY_BONUS = 50
 
 export const BUDGET_WARN_THRESHOLD = 5_000
 export const BUDGET_SHUTDOWN_THRESHOLD = 10_000
-export const REDIS_PREFIX = 'fsh:pw:'
 
 // ---------------------------------------------------------------------------
 // Input Limits
@@ -56,6 +74,13 @@ export const HINT_THRESHOLD_3 = 12
 // ---------------------------------------------------------------------------
 
 export const TOTAL_LEVELS = 7
+
+// ---------------------------------------------------------------------------
+// TTLs
+// ---------------------------------------------------------------------------
+
+export const TTL_RESULT_SECONDS = 30 * 24 * 60 * 60 // 30 days
+export const TTL_WIN_SECONDS = 90 * 24 * 60 * 60 // 90 days
 
 // ---------------------------------------------------------------------------
 // Site URL

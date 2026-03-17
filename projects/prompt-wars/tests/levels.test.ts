@@ -105,6 +105,13 @@ describe('getLevelPublicInfo', () => {
     expect(info).not.toHaveProperty('keywordBlocklist')
   })
 
+  it('includes hints and education in public info', () => {
+    const info = getLevelPublicInfo(1)
+    expect(info).toBeDefined()
+    expect(info?.hints).toHaveLength(3)
+    expect(info?.education.title.length).toBeGreaterThan(0)
+  })
+
   it('includes stage names without types', () => {
     const info = getLevelPublicInfo(1)
     expect(info?.stages).toBeDefined()

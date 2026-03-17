@@ -64,12 +64,3 @@ export async function callClaude(
 
   throw new Error('[callClaude] Exhausted retries')
 }
-
-export async function callClaudeSync(
-  model: 'claude-haiku-4-5' | 'claude-sonnet-4-6',
-  systemPrompt: string,
-  userMessage: string,
-  maxTokens: number
-): Promise<string> {
-  return callClaude(model, systemPrompt, userMessage, maxTokens)
-}

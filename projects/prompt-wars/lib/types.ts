@@ -62,6 +62,12 @@ export interface LevelPublicInfo {
   description: string
   maxInputLength: number
   stages: Array<{ name: string }>
+  hints: [string, string, string]
+  education: {
+    title: string
+    vulnerability: string
+    realWorldDefense: string
+  }
 }
 
 // ---------------------------------------------------------------------------

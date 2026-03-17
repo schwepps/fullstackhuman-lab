@@ -1,18 +1,20 @@
 'use client'
 
-import { getLevel } from '@/lib/levels'
-
 interface DefenseExplainerProps {
+  education: {
+    title: string
+    vulnerability: string
+    realWorldDefense: string
+  }
   levelId: number
   onClose: () => void
 }
 
-export function DefenseExplainer({ levelId, onClose }: DefenseExplainerProps) {
-  const level = getLevel(levelId)
-  if (!level) return null
-
-  const { education } = level
-
+export function DefenseExplainer({
+  education,
+  levelId,
+  onClose,
+}: DefenseExplainerProps) {
   return (
     <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}

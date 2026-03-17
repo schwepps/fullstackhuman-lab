@@ -1,18 +1,20 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { getRedisClient } from '@/lib/upstash'
-import { REDIS_PREFIX } from '@/lib/constants'
+import { REDIS_KEYS, TTL_WIN_SECONDS } from '@/lib/constants'
+import { getVerifiedWins } from '@/lib/rate-limiter'
 import type { LeaderboardEntry } from '@/lib/types'
 
-const LEADERBOARD_KEY = `${REDIS_PREFIX}leaderboard`
 const MAX_ENTRIES = 50
 
 const submitSchema = z.object({
-  sessionId: z.string().min(1),
-  displayName: z.string().trim().min(1).max(30),
-  levelsCompleted: z.number().int().min(1).max(7),
-  totalAttempts: z.number().int().min(1),
-  totalScore: z.number().int().min(0),
+  sessionId: z.string().uuid(),
+  displayName: z
+    .string()
+    .trim()
+    .min(1)
+    .max(30)
+    .regex(/^[\w\s\-_.!?]+$/, 'Display name contains invalid characters'),
 })
 
 export async function GET() {
@@ -20,7 +22,7 @@ export async function GET() {
     const redis = getRedisClient()
 
     // Get top entries from sorted set (highest score first)
-    const raw = await redis.zrange(LEADERBOARD_KEY, 0, MAX_ENTRIES - 1, {
+    const raw = await redis.zrange(REDIS_KEYS.leaderboard, 0, MAX_ENTRIES - 1, {
       rev: true,
       withScores: true,
     })
@@ -69,37 +71,49 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const { sessionId, displayName, levelsCompleted, totalAttempts, totalScore } =
-    parsed.data
+  const { sessionId, displayName } = parsed.data
 
   try {
-    const redis = getRedisClient()
-
-    // Remove any previous entry for this session
-    const existingEntries = await redis.zrange(LEADERBOARD_KEY, 0, -1)
-    for (const entry of existingEntries) {
-      const entryStr = typeof entry === 'string' ? entry : JSON.stringify(entry)
-      try {
-        const parsed = JSON.parse(entryStr)
-        if (parsed.sessionId === sessionId) {
-          await redis.zrem(LEADERBOARD_KEY, entryStr)
-        }
-      } catch {
-        // Skip
-      }
+    // Verify wins server-side — compute real score from stored win records
+    const wins = await getVerifiedWins(sessionId)
+    if (wins.size === 0) {
+      return Response.json(
+        { error: 'No verified wins found for this session.' },
+        { status: 403 }
+      )
     }
 
-    // Add new entry
+    const levelsCompleted = wins.size
+    const totalScore = Array.from(wins.values()).reduce(
+      (sum, score) => sum + score,
+      0
+    )
+
+    const redis = getRedisClient()
+
+    // Remove any previous entry for this session (by sessionId index)
+    const existingMember = await redis.get<string>(
+      `${REDIS_KEYS.leaderboard}:idx:${sessionId}`
+    )
+    if (existingMember) {
+      await redis.zrem(REDIS_KEYS.leaderboard, existingMember)
+    }
+
+    // Add new entry (no sessionId in member — use index for dedup)
     const member = JSON.stringify({
-      sessionId,
       displayName,
       levelsCompleted,
-      totalAttempts,
+      totalAttempts: levelsCompleted,
       completedAt: new Date().toISOString(),
     })
-    await redis.zadd(LEADERBOARD_KEY, { score: totalScore, member })
+    await redis.zadd(REDIS_KEYS.leaderboard, { score: totalScore, member })
 
-    return Response.json({ success: true })
+    // Store index for deduplication
+    await redis.set(`${REDIS_KEYS.leaderboard}:idx:${sessionId}`, member, {
+      ex: TTL_WIN_SECONDS,
+    })
+
+    return Response.json({ success: true, totalScore, levelsCompleted })
   } catch (error) {
     console.error('Leaderboard submit error:', error)
     return Response.json({ error: 'Failed to submit score' }, { status: 500 })

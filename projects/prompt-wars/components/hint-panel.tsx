@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { getLevel } from '@/lib/levels'
 import {
   HINT_THRESHOLD_1,
   HINT_THRESHOLD_2,
@@ -9,28 +8,25 @@ import {
 } from '@/lib/constants'
 
 interface HintPanelProps {
-  levelId: number
+  hints: [string, string, string]
   attemptCount: number
 }
 
-export function HintPanel({ levelId, attemptCount }: HintPanelProps) {
+const THRESHOLDS = [HINT_THRESHOLD_1, HINT_THRESHOLD_2, HINT_THRESHOLD_3]
+
+function getNextHintThreshold(attemptCount: number): number | null {
+  return THRESHOLDS.find((t) => attemptCount < t) ?? null
+}
+
+export function HintPanel({ hints, attemptCount }: HintPanelProps) {
   const [expanded, setExpanded] = useState(false)
-  const level = getLevel(levelId)
-  if (!level) return null
 
   const availableHints: string[] = []
-  if (attemptCount >= HINT_THRESHOLD_1) availableHints.push(level.hints[0])
-  if (attemptCount >= HINT_THRESHOLD_2) availableHints.push(level.hints[1])
-  if (attemptCount >= HINT_THRESHOLD_3) availableHints.push(level.hints[2])
+  if (attemptCount >= HINT_THRESHOLD_1) availableHints.push(hints[0])
+  if (attemptCount >= HINT_THRESHOLD_2) availableHints.push(hints[1])
+  if (attemptCount >= HINT_THRESHOLD_3) availableHints.push(hints[2])
 
-  const nextThreshold =
-    attemptCount < HINT_THRESHOLD_1
-      ? HINT_THRESHOLD_1
-      : attemptCount < HINT_THRESHOLD_2
-        ? HINT_THRESHOLD_2
-        : attemptCount < HINT_THRESHOLD_3
-          ? HINT_THRESHOLD_3
-          : null
+  const nextThreshold = getNextHintThreshold(attemptCount)
 
   return (
     <div className="terminal-border border-warning/20 bg-popover">

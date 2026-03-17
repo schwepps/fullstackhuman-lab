@@ -1,10 +1,17 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useMemo } from 'react'
 import type { ClientState, LevelProgress, AttemptRecord } from '@/lib/types'
 import { MAX_HISTORY_PER_LEVEL, TOTAL_LEVELS } from '@/lib/constants'
 
 const STORAGE_KEY = 'prompt-wars-session'
+
+const DEFAULT_LEVEL_PROGRESS = {
+  completed: false,
+  attempts: 0,
+  score: 0,
+  winningPrompt: null,
+} as const
 
 function createInitialState(): ClientState {
   return {
@@ -41,15 +48,7 @@ export function useSession() {
 
   const getLevelProgress = useCallback(
     (levelId: number): LevelProgress => {
-      return (
-        state.levels[levelId] ?? {
-          completed: false,
-          attempts: 0,
-          score: 0,
-          winningPrompt: null,
-          history: [],
-        }
-      )
+      return state.levels[levelId] ?? { ...DEFAULT_LEVEL_PROGRESS, history: [] }
     },
     [state.levels]
   )
@@ -74,10 +73,7 @@ export function useSession() {
     (levelId: number, attempt: AttemptRecord) => {
       setState((prev) => {
         const current = prev.levels[levelId] ?? {
-          completed: false,
-          attempts: 0,
-          score: 0,
-          winningPrompt: null,
+          ...DEFAULT_LEVEL_PROGRESS,
           history: [],
         }
 
@@ -108,10 +104,7 @@ export function useSession() {
     (levelId: number, score: number, winningPrompt: string) => {
       setState((prev) => {
         const current = prev.levels[levelId] ?? {
-          completed: false,
-          attempts: 0,
-          score: 0,
-          winningPrompt: null,
+          ...DEFAULT_LEVEL_PROGRESS,
           history: [],
         }
 
@@ -145,26 +138,43 @@ export function useSession() {
     })
   }, [])
 
-  const getTotalScore = useCallback((): number => {
-    return Object.values(state.levels).reduce(
-      (sum, level) => sum + level.score,
-      0
-    )
-  }, [state.levels])
+  const totalScore = useMemo(
+    () =>
+      Object.values(state.levels).reduce((sum, level) => sum + level.score, 0),
+    [state.levels]
+  )
 
-  const getCompletedCount = useCallback((): number => {
-    return Object.values(state.levels).filter((l) => l.completed).length
-  }, [state.levels])
+  const completedCount = useMemo(
+    () => Object.values(state.levels).filter((l) => l.completed).length,
+    [state.levels]
+  )
 
-  return {
-    state,
-    getLevelProgress,
-    isLevelUnlocked,
-    getHighestUnlockedLevel,
-    recordAttempt,
-    recordWin,
-    setDisplayName,
-    getTotalScore,
-    getCompletedCount,
-  }
+  // Keep function wrappers for backwards compatibility with existing consumers
+  const getTotalScore = useCallback(() => totalScore, [totalScore])
+  const getCompletedCount = useCallback(() => completedCount, [completedCount])
+
+  return useMemo(
+    () => ({
+      state,
+      getLevelProgress,
+      isLevelUnlocked,
+      getHighestUnlockedLevel,
+      recordAttempt,
+      recordWin,
+      setDisplayName,
+      getTotalScore,
+      getCompletedCount,
+    }),
+    [
+      state,
+      getLevelProgress,
+      isLevelUnlocked,
+      getHighestUnlockedLevel,
+      recordAttempt,
+      recordWin,
+      setDisplayName,
+      getTotalScore,
+      getCompletedCount,
+    ]
+  )
 }
