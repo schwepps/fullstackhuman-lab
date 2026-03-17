@@ -26,6 +26,22 @@ Built on Next.js, Partykit (WebSockets on Cloudflare Workers), Pixi.js, and Clau
 
 Status: `prototype`
 
+### [will-ai-survive](./projects/will-ai-survive)
+
+> Describe your workplace chaos. AI evaluates whether it could survive — with a chaos rating, mental breakdown timeline, and dramatic resignation letter.
+
+Built on Next.js, Claude API, and Upstash Redis. SSE streaming results with screenshot-optimized sharing for LinkedIn/X.
+
+Status: `shipped`
+
+### [prompt-wars](./projects/prompt-wars)
+
+> A CTF-style game where you craft prompts to extract secrets from AI with 7 levels of increasingly hardened defenses.
+
+Built on Next.js, Claude API (Haiku + Sonnet), and Upstash Redis. Features a real-time defense pipeline visualizer, educational explainers, and a leaderboard.
+
+Status: `prototype`
+
 ---
 
 ## Stack defaults
