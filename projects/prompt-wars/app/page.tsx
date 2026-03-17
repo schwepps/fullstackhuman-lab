@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useSession } from '@/hooks/use-session'
 import { getAllLevelsPublicInfo } from '@/lib/levels'
 import { LevelCard } from '@/components/level-card'
@@ -62,6 +63,16 @@ export default function HomePage() {
             />
           )
         })}
+      </div>
+
+      {/* Leaderboard link */}
+      <div className="max-w-2xl mx-auto mt-6">
+        <Link
+          href="/leaderboard"
+          className="block terminal-border p-3 text-center text-sm text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors touch-manipulation"
+        >
+          {'>'} VIEW LEADERBOARD
+        </Link>
       </div>
 
       {/* Footer */}

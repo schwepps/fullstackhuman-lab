@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import type { AttemptResult } from '@/lib/types'
 import { TOTAL_LEVELS } from '@/lib/constants'
+import { ShareButtons } from '@/components/share-buttons'
 
 interface VictoryScreenProps {
   result: AttemptResult
@@ -98,6 +99,14 @@ export function VictoryScreen({
                 <span className="text-warning">{result.secret}</span>
               </div>
             </div>
+
+            {/* Share */}
+            <ShareButtons
+              levelId={levelId}
+              levelName={levelName}
+              score={result.score ?? 0}
+              attemptsUsed={totalAttempts}
+            />
 
             {/* Actions */}
             <div className="space-y-2">

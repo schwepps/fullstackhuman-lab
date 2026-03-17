@@ -8,6 +8,7 @@ Current projects:
 
 - **turing-game** — Real-time multiplayer Turing test game
 - **will-ai-survive** — Satirical app where AI evaluates workplace chaos survival
+- **prompt-wars** — CTF-style game where players craft prompts to extract secrets from AI with 7 levels of defenses
 
 ---
 
@@ -17,6 +18,7 @@ Current projects:
 projects/
   turing-game/       # Turing Game (Next.js + Partykit)
   will-ai-survive/   # Will AI Survive your job? (Next.js)
+  prompt-wars/       # Prompt Wars — AI Security CTF (Next.js)
 package.json         # Workspace root (delegates to projects)
 pnpm-workspace.yaml  # Workspace config
 ```
@@ -142,3 +144,65 @@ projects/will-ai-survive/
 - Same as turing-game: Prettier (no semis, single quotes, trailing commas)
 - **English-only**, no auth
 - Redis keys prefixed `fsh:wais:` (lab namespace `fsh:`, project `wais:`)
+
+---
+
+## Prompt Wars
+
+CTF-style web app where players craft prompts to extract secrets from AI with 7 levels of increasingly hardened defenses (keyword filter → output validation → constitutional AI check → multi-model pipeline). Educational explainers after each win.
+
+### Tech Stack
+
+| Layer     | Technology                  |
+| --------- | --------------------------- |
+| Framework | Next.js 16                  |
+| Language  | TypeScript                  |
+| Styling   | Tailwind CSS v4             |
+| AI        | Claude API (Haiku + Sonnet) |
+| Testing   | Vitest                      |
+| Cache     | Upstash Redis               |
+| OG Images | @vercel/og                  |
+
+### Route Architecture
+
+```
+projects/prompt-wars/
+  app/
+    layout.tsx              # Root layout (green terminal theme)
+    page.tsx                # Landing — level select grid
+    play/[levelId]/page.tsx # Play a level (core game loop)
+    result/[id]/page.tsx    # Shareable result (SSR from Redis)
+    leaderboard/page.tsx    # Anonymous leaderboard
+    api/
+      attempt/route.ts      # POST: SSE stream defense pipeline
+      leaderboard/route.ts  # GET/POST: leaderboard
+      og/route.tsx          # GET: dynamic OG image
+    not-found.tsx
+    globals.css             # Green terminal CRT theme
+  components/               # UI: prompt, response, defense visualizer, victory/failure
+  hooks/                    # useAttempt (SSE), useSession (localStorage)
+  lib/                      # Types, constants, defense engine, levels, scoring
+  tests/                    # Unit tests
+```
+
+### Deployment
+
+- **Next.js** — Vercel
+- Env vars: `ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+
+### Key Scripts (from projects/prompt-wars/)
+
+| Script      | Description              |
+| ----------- | ------------------------ |
+| `dev`       | Start Next.js dev server |
+| `build`     | Build for production     |
+| `lint`      | Run ESLint               |
+| `typecheck` | TypeScript type checking |
+| `test`      | Run tests (watch)        |
+| `test:run`  | Run tests once           |
+
+### Coding Conventions
+
+- Same as turing-game: Prettier (no semis, single quotes, trailing commas)
+- **English-only**, no auth
+- Redis keys prefixed `fsh:pw:` (lab namespace `fsh:`, project `pw:`)
