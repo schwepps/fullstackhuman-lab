@@ -299,11 +299,6 @@
            disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-primary disabled:hover:shadow-none;
   }
 
-  .btn-terminal-danger {
-    @apply btn-terminal border-destructive text-destructive
-           hover:bg-destructive hover:text-foreground hover:shadow-[0_0_20px_rgba(239,68,68,0.4)];
-  }
-
   .terminal-scrollbar::-webkit-scrollbar {
     width: 6px;
   }
