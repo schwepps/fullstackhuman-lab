@@ -114,3 +114,10 @@ lib/
 - Daily budget counter with auto-degradation: >5K calls/day disables levels 6-7, >10K enters maintenance mode
 - Kill switch: `DISABLE_API_CALLS=true`
 - Estimated cost at 1K daily visitors: ~$10/day
+
+## Reset leaderbord and results (for testing or restarting the game):
+
+```bash
+npx @upstash/cli redis del fsh:pw:leaderboard
+npx @upstash/cli redis del fsh:pw:results
+```
