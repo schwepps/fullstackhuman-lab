@@ -102,6 +102,10 @@ export function ResultCard({ state, onReset }: ResultCardProps) {
         <ResignationLetter content={state.resignationLetter} />
       )}
 
+      {isStreaming && state.resignationLetter && !state.realTalkInsight && (
+        <StreamingIndicator />
+      )}
+
       {state.realTalkInsight && <RealTalk insight={state.realTalkInsight} />}
 
       {/* Share + reset */}
