@@ -56,3 +56,17 @@ export const HINT_THRESHOLD_3 = 12
 // ---------------------------------------------------------------------------
 
 export const TOTAL_LEVELS = 7
+
+// ---------------------------------------------------------------------------
+// Site URL
+// ---------------------------------------------------------------------------
+
+export function getSiteUrl(): string {
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL
+  }
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  }
+  return `http://localhost:${process.env.PORT ?? '3000'}`
+}
