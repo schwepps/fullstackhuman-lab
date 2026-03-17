@@ -1,0 +1,338 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  /* Terminal Hacker Theme — green-on-black */
+  --color-background: #0a0a0c;
+  --color-foreground: #e2e8f0;
+  --color-primary: #00ff41; /* Matrix Green */
+  --color-accent: #22d3ee; /* Electric Cyan */
+  --color-warning: #f59e0b;
+  --color-destructive: #ef4444;
+  --color-card: #0a0a0c;
+  --color-card-foreground: #e2e8f0;
+  --color-popover: #12121a;
+  --color-popover-foreground: #e2e8f0;
+  --color-muted: #1e293b;
+  --color-muted-foreground: #94a3b8;
+  --color-secondary: #1e293b;
+  --color-secondary-foreground: #e2e8f0;
+  --color-success: #00ff41;
+  --color-border: #1e293b;
+  --color-ring: #00ff41;
+
+  --z-index-110: 110;
+
+  @keyframes scanline {
+    0% {
+      transform: translateY(-100%);
+    }
+    100% {
+      transform: translateY(100%);
+    }
+  }
+  @keyframes flicker {
+    0% {
+      opacity: 0.97;
+    }
+    5% {
+      opacity: 0.9;
+    }
+    10% {
+      opacity: 0.97;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  @keyframes glitch {
+    0% {
+      transform: translate(0);
+    }
+    20% {
+      transform: translate(-2px, 2px);
+    }
+    40% {
+      transform: translate(-2px, -2px);
+    }
+    60% {
+      transform: translate(2px, 2px);
+    }
+    80% {
+      transform: translate(2px, -2px);
+    }
+    100% {
+      transform: translate(0);
+    }
+  }
+  @keyframes cursor-blink {
+    0%,
+    49% {
+      opacity: 1;
+    }
+    50%,
+    100% {
+      opacity: 0;
+    }
+  }
+  @keyframes glitch-intermittent {
+    0%,
+    2% {
+      transform: translate(0);
+    }
+    2.5% {
+      transform: translate(-2px, 2px);
+    }
+    3% {
+      transform: translate(2px, -2px);
+    }
+    3.5% {
+      transform: translate(-1px, -1px);
+    }
+    4%,
+    100% {
+      transform: translate(0);
+    }
+  }
+  @keyframes pulse-border {
+    0%,
+    100% {
+      box-shadow: 0 0 8px rgba(0, 255, 65, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+    }
+  }
+  @keyframes shake {
+    0%,
+    100% {
+      transform: translate(0);
+    }
+    10% {
+      transform: translate(-4px, 0);
+    }
+    20% {
+      transform: translate(4px, 0);
+    }
+    30% {
+      transform: translate(-4px, 0);
+    }
+    40% {
+      transform: translate(4px, 0);
+    }
+    50% {
+      transform: translate(-2px, 0);
+    }
+    60% {
+      transform: translate(2px, 0);
+    }
+    70% {
+      transform: translate(-1px, 0);
+    }
+    80% {
+      transform: translate(1px, 0);
+    }
+  }
+  @keyframes breach-flash {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    50% {
+      opacity: 0.2;
+    }
+  }
+  @keyframes counter {
+    from {
+      --counter-value: 0;
+    }
+  }
+  @keyframes dotPulse {
+    0%,
+    100% {
+      opacity: 0.2;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  --animate-scanline: scanline 8s linear infinite;
+  --animate-flicker: flicker 0.15s infinite;
+  --animate-glitch: glitch 0.2s ease-in-out infinite;
+  --animate-cursor-blink: cursor-blink 1.06s step-end infinite;
+  --animate-glitch-intermittent: glitch-intermittent 5s ease-in-out infinite;
+  --animate-pulse-border: pulse-border 2s ease-in-out infinite;
+  --animate-shake: shake 0.3s ease-in-out;
+  --animate-breach-flash: breach-flash 0.2s ease-in-out 3;
+  --animate-dotPulse: dotPulse 600ms infinite;
+  --animate-slide-up: slide-up 0.4s ease-out forwards;
+  --animate-scale-in: scale-in 0.3s ease-out forwards;
+}
+
+:root {
+  --background: #0a0a0c;
+  --foreground: #e2e8f0;
+  --primary: #00ff41;
+  --accent: #22d3ee;
+  --radius: 0px;
+}
+
+@layer base {
+  button,
+  [role='button'],
+  a,
+  select,
+  summary,
+  [type='button'],
+  [type='submit'],
+  [type='reset'] {
+    cursor: pointer;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground font-mono antialiased selection:bg-primary selection:text-background overflow-x-hidden;
+    background-image: radial-gradient(
+      circle at 50% 50%,
+      #16161a 0%,
+      #0a0a0c 100%
+    );
+  }
+
+  /* CRT Scanlines + RGB shift */
+  body::before {
+    content: ' ';
+    display: block;
+    position: fixed;
+    inset: 0;
+    background:
+      linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+      linear-gradient(
+        90deg,
+        rgba(255, 0, 0, 0.03),
+        rgba(0, 255, 0, 0.01),
+        rgba(0, 0, 255, 0.03)
+      );
+    z-index: 100;
+    background-size:
+      100% 3px,
+      2px 100%;
+    pointer-events: none;
+    @apply animate-flicker;
+  }
+
+  /* Moving scanline beam */
+  body::after {
+    content: ' ';
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(
+      0deg,
+      transparent 0%,
+      rgba(0, 255, 65, 0.05) 50%,
+      transparent 100%
+    );
+    z-index: 101;
+    pointer-events: none;
+    @apply animate-scanline;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    body::before,
+    body::after {
+      animation: none;
+    }
+  }
+}
+
+@layer components {
+  .terminal-text-glow {
+    text-shadow: 0 0 8px rgba(0, 255, 65, 0.5);
+  }
+
+  .terminal-cyan-glow {
+    text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+    @apply text-accent;
+  }
+
+  .terminal-border {
+    @apply border border-primary/30 shadow-[0_0_15px_rgba(0,255,65,0.1)];
+  }
+
+  .btn-terminal {
+    @apply relative overflow-hidden border border-primary px-6 py-3 text-primary font-mono uppercase tracking-wider
+           transition-all touch-manipulation
+           hover:bg-primary hover:text-background hover:shadow-[0_0_20px_rgba(0,255,65,0.4)]
+           active:translate-y-0.5 active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-primary disabled:hover:shadow-none;
+  }
+
+  .btn-terminal-danger {
+    @apply btn-terminal border-destructive text-destructive
+           hover:bg-destructive hover:text-foreground hover:shadow-[0_0_20px_rgba(239,68,68,0.4)];
+  }
+
+  .terminal-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .terminal-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .terminal-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 65, 0.2);
+    border-radius: 3px;
+  }
+
+  /* Typing indicator */
+  .typing-dots {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+  }
+  .typing-dots .dot {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    animation: dotPulse 600ms infinite;
+  }
+  .typing-dots .dot:nth-child(2) {
+    animation-delay: 200ms;
+  }
+  .typing-dots .dot:nth-child(3) {
+    animation-delay: 400ms;
+  }
+}
