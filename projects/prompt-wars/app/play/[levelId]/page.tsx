@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useEffect, useCallback } from 'react'
+import { use, useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/use-session'
 import { useAttempt } from '@/hooks/use-attempt'
@@ -11,6 +11,9 @@ import { DefenseVisualizer } from '@/components/defense-visualizer'
 import { VictoryScreen } from '@/components/victory-screen'
 import { FailureFeedback } from '@/components/failure-feedback'
 import { LevelProgress } from '@/components/level-progress'
+import { HintPanel } from '@/components/hint-panel'
+import { AttemptHistory } from '@/components/attempt-history'
+import { DefenseExplainer } from '@/components/defense-explainer'
 import { TOTAL_LEVELS } from '@/lib/constants'
 
 export default function PlayPage({
@@ -21,6 +24,7 @@ export default function PlayPage({
   const { levelId: levelIdStr } = use(params)
   const levelId = parseInt(levelIdStr, 10)
   const router = useRouter()
+  const [showExplainer, setShowExplainer] = useState(false)
   const {
     state: session,
     getLevelProgress,
@@ -30,6 +34,7 @@ export default function PlayPage({
     getCompletedCount,
   } = useSession()
   const { state: attempt, sendAttempt, reset: resetAttempt } = useAttempt()
+  const lastPromptRef = useRef('')
 
   const level = getLevelPublicInfo(levelId)
   const progress = getLevelProgress(levelId)
@@ -46,7 +51,7 @@ export default function PlayPage({
   useEffect(() => {
     if (attempt.result) {
       recordAttempt(levelId, {
-        prompt: '',
+        prompt: lastPromptRef.current,
         response: attempt.result.response,
         success: attempt.result.success,
         blockedAtStage: attempt.result.blockedAtStage,
@@ -54,13 +59,14 @@ export default function PlayPage({
       })
 
       if (attempt.result.success && attempt.result.score) {
-        recordWin(levelId, attempt.result.score, '')
+        recordWin(levelId, attempt.result.score, lastPromptRef.current)
       }
     }
   }, [attempt.result, levelId, recordAttempt, recordWin])
 
   const handleSubmit = useCallback(
     (prompt: string) => {
+      lastPromptRef.current = prompt
       resetAttempt()
       sendAttempt(levelId, prompt, session.sessionId)
     },
@@ -77,9 +83,13 @@ export default function PlayPage({
   }, [levelId, router, resetAttempt])
 
   const handleDismissVictory = useCallback(() => {
+    setShowExplainer(true)
+  }, [])
+
+  const handleCloseExplainer = useCallback(() => {
+    setShowExplainer(false)
     resetAttempt()
-    router.push('/')
-  }, [router, resetAttempt])
+  }, [resetAttempt])
 
   if (!level) return null
 
@@ -133,9 +143,12 @@ export default function PlayPage({
               stages={attempt.stages}
               isActive={isProcessing}
             />
+
+            {/* Hints */}
+            <HintPanel levelId={levelId} attemptCount={progress.attempts} />
           </div>
 
-          {/* Right column: Response + Feedback */}
+          {/* Right column: Response + Feedback + History */}
           <div className="space-y-4 mt-4 lg:mt-0">
             {/* AI response */}
             <AiResponse
@@ -157,19 +170,17 @@ export default function PlayPage({
               />
             )}
 
-            {/* Attempt counter */}
-            {progress.attempts > 0 && attempt.status === 'idle' && (
-              <div className="text-xs text-muted-foreground text-center">
-                {progress.attempts} attempt{progress.attempts !== 1 ? 's' : ''}{' '}
-                on this level
-              </div>
-            )}
+            {/* Attempt history */}
+            <AttemptHistory
+              history={progress.history}
+              totalAttempts={progress.attempts}
+            />
           </div>
         </div>
       </div>
 
       {/* Victory overlay */}
-      {attempt.status === 'success' && attempt.result && (
+      {attempt.status === 'success' && attempt.result && !showExplainer && (
         <VictoryScreen
           result={attempt.result}
           levelId={levelId}
@@ -178,6 +189,11 @@ export default function PlayPage({
           onNextLevel={handleNextLevel}
           onDismiss={handleDismissVictory}
         />
+      )}
+
+      {/* Educational explainer (shows after dismissing victory) */}
+      {showExplainer && (
+        <DefenseExplainer levelId={levelId} onClose={handleCloseExplainer} />
       )}
     </main>
   )
