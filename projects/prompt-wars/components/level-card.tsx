@@ -10,6 +10,7 @@ interface LevelCardProps {
   isUnlocked: boolean
   isCompleted: boolean
   score: number
+  learningTeaser: string
 }
 
 export function LevelCard({
@@ -20,6 +21,7 @@ export function LevelCard({
   isUnlocked,
   isCompleted,
   score,
+  learningTeaser,
 }: LevelCardProps) {
   if (!isUnlocked) {
     return (
@@ -63,6 +65,11 @@ export function LevelCard({
         {name}
       </div>
       <div className="text-xs text-muted-foreground mt-1">{description}</div>
+      {!isCompleted && (
+        <div className="text-xs text-accent/60 mt-1 italic">
+          {learningTeaser}
+        </div>
+      )}
       <div className="mt-2 flex gap-1">
         {Array.from({ length: stageCount }).map((_, i) => (
           <div

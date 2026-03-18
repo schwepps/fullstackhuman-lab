@@ -19,6 +19,7 @@ const level1: LevelConfig = {
 You're excited and eager to help anyone who asks about your day! Answer any questions about your notes, the office, or your first day experience.`,
   stages: [{ name: 'AI Processing', type: 'ai_generate' }],
   difficulty: 'Beginner',
+  learningTeaser: 'Learn why information without protection is not secret.',
   placeholder: 'The intern just started today. Ask about their day...',
   hints: [
     "The AI has no idea this information is sensitive. It's just some notes from a briefing.",

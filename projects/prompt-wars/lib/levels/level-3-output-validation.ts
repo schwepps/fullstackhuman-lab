@@ -31,6 +31,8 @@ const level3: LevelConfig = {
     'confidential',
   ],
   difficulty: 'Medium',
+  learningTeaser:
+    'Find out why system prompt instructions are not security boundaries.',
   placeholder: 'The AI was told to refuse. Try reframing your approach...',
   hints: [
     'A few obvious words are blocked, but the filter is minimal. Think around them.',

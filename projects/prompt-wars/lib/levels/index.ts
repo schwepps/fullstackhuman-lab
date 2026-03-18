@@ -68,6 +68,7 @@ function toPublicInfo(level: LevelConfig): LevelPublicInfo {
     hints: level.hints,
     placeholder: level.placeholder,
     difficulty: level.difficulty,
+    learningTeaser: level.learningTeaser,
     education: level.education,
   }
 }
