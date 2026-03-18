@@ -9,7 +9,31 @@ import level5 from './level-5-prompt-sandwich'
 import level6 from './level-6-constitutional'
 import level7 from './level-7-multi-model'
 
-const ALL_LEVELS: LevelConfig[] = [
+const SECRET_PLACEHOLDER = '{{SECRET}}'
+
+function injectSecret(level: LevelConfig): LevelConfig {
+  const envKey = `LEVEL_${level.id}_SECRET`
+  const secret = process.env[envKey]
+  if (!secret) {
+    throw new Error(
+      `Missing env var ${envKey} — required for level ${level.id}`
+    )
+  }
+  return {
+    ...level,
+    secret,
+    systemPrompt: level.systemPrompt.replaceAll(SECRET_PLACEHOLDER, secret),
+    sandwichSuffix: level.sandwichSuffix?.replaceAll(
+      SECRET_PLACEHOLDER,
+      secret
+    ),
+    multiLayerPrompts: level.multiLayerPrompts?.map((p) =>
+      p.replaceAll(SECRET_PLACEHOLDER, secret)
+    ),
+  }
+}
+
+const RAW_LEVELS: LevelConfig[] = [
   level1,
   level2,
   level3,
@@ -18,6 +42,8 @@ const ALL_LEVELS: LevelConfig[] = [
   level6,
   level7,
 ]
+
+const ALL_LEVELS: LevelConfig[] = RAW_LEVELS.map(injectSecret)
 
 export function getLevel(id: number): LevelConfig | undefined {
   return ALL_LEVELS.find((l) => l.id === id)
