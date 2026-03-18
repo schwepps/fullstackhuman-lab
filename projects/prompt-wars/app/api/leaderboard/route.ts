@@ -121,7 +121,12 @@ export async function POST(request: NextRequest) {
     pipeline.expire(rateLimitKey, RATE_LIMIT_WINDOW_SECONDS)
     await pipeline.exec()
   } catch {
-    // Non-critical — proceed without rate limiting
+    if (process.env.NODE_ENV === 'production') {
+      return Response.json(
+        { error: 'Service temporarily unavailable.' },
+        { status: 503 }
+      )
+    }
   }
 
   try {

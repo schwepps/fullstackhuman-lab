@@ -10,7 +10,8 @@
     "lint:fix": "eslint --fix",
     "typecheck": "tsc --noEmit",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "reset": "npx tsx --env-file=.env.local scripts/reset-redis.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",

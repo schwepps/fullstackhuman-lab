@@ -80,14 +80,17 @@ export function PlayClient({ level }: PlayClientProps) {
     }
   }, [levelId, router, resetAttempt])
 
-  const handleDismissVictory = useCallback(() => {
+  const handleViewDebrief = useCallback(() => {
     setShowExplainer(true)
   }, [])
 
+  const handleBackToLevels = useCallback(() => {
+    router.push('/')
+  }, [router])
+
   const handleCloseExplainer = useCallback(() => {
     setShowExplainer(false)
-    resetAttempt()
-  }, [resetAttempt])
+  }, [])
 
   const isProcessing =
     attempt.status === 'sending' || attempt.status === 'streaming'
@@ -177,15 +180,16 @@ export function PlayClient({ level }: PlayClientProps) {
       </div>
 
       {/* Victory overlay */}
-      {attempt.status === 'success' && attempt.result && !showExplainer && (
+      {attempt.status === 'success' && attempt.result && (
         <VictoryScreen
           result={attempt.result}
           levelId={levelId}
           levelName={level.name}
           difficulty={level.difficulty}
-          totalAttempts={progress.attempts + 1}
+          totalAttempts={progress.attempts}
           onNextLevel={handleNextLevel}
-          onDismiss={handleDismissVictory}
+          onViewDebrief={handleViewDebrief}
+          onBackToLevels={handleBackToLevels}
         />
       )}
 

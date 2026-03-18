@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { useSession } from '@/hooks/use-session'
 import { LevelCard } from '@/components/level-card'
 import { LevelProgress } from '@/components/level-progress'
-import { SubmitScore } from '@/components/submit-score'
+import { LeaderboardStatus } from '@/components/leaderboard-status'
 import { SupportCta } from '@/components/support-cta'
 import type { LevelPublicInfo } from '@/lib/types'
 
@@ -20,6 +20,11 @@ export function HomeContent({ levels }: HomeContentProps) {
     getCompletedCount,
     getTotalScore,
     setDisplayName,
+    isLeaderboardJoined,
+    isLeaderboardStale,
+    joinLeaderboard,
+    updateLeaderboardSync,
+    resetLeaderboard,
   } = useSession()
 
   const completedCount = getCompletedCount()
@@ -73,11 +78,17 @@ export function HomeContent({ levels }: HomeContentProps) {
 
       {/* Submit score */}
       <div className="max-w-2xl mx-auto mt-6">
-        <SubmitScore
+        <LeaderboardStatus
           sessionId={session.sessionId}
           displayName={session.displayName}
-          onDisplayNameChange={setDisplayName}
+          totalScore={totalScore}
           completedCount={completedCount}
+          isLeaderboardJoined={isLeaderboardJoined}
+          isLeaderboardStale={isLeaderboardStale}
+          onJoinLeaderboard={joinLeaderboard}
+          onUpdateLeaderboardSync={updateLeaderboardSync}
+          onResetLeaderboard={resetLeaderboard}
+          onDisplayNameChange={setDisplayName}
         />
       </div>
 

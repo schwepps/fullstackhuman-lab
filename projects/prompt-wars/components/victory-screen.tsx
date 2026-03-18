@@ -14,16 +14,17 @@ interface VictoryScreenProps {
   difficulty: string
   totalAttempts: number
   onNextLevel: () => void
-  onDismiss: () => void
+  onViewDebrief: () => void
+  onBackToLevels: () => void
 }
 
 const BREACH_ASCII = `
- ██████╗ ██████╗ ███████╗ █████╗  ██████╗██╗  ██╗██████╗ ██╗
- ██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║  ██║██╔════╝██║
- ██████╔╝██████╔╝█████╗  ███████║██║     ███████║█████╗  ██║
- ██╔══██╗██╔══██╗██╔══╝  ██╔══██║██║     ██╔══██║██╔══╝  ██║
- ██████╔╝██║  ██║███████╗██║  ██║╚██████╗██║  ██║███████╗███████╗
- ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝
+ ██████╗ ██████╗ ███████╗ █████╗  ██████╗██╗  ██╗███████╗██████╗
+ ██╔══██╗██╔══██╗██╔════╝██╔══██╗██╔════╝██║  ██║██╔════╝██╔══██╗
+ ██████╔╝██████╔╝█████╗  ███████║██║     ███████║█████╗  ██║  ██║
+ ██╔══██╗██╔══██╗██╔══╝  ██╔══██║██║     ██╔══██║██╔══╝  ██║  ██║
+ ██████╔╝██║  ██║███████╗██║  ██║╚██████╗██║  ██║███████╗██████╔╝
+ ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═════╝
 `.trim()
 
 export function VictoryScreen({
@@ -33,7 +34,8 @@ export function VictoryScreen({
   difficulty,
   totalAttempts,
   onNextLevel,
-  onDismiss,
+  onViewDebrief,
+  onBackToLevels,
 }: VictoryScreenProps) {
   const [showAscii, setShowAscii] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
@@ -52,7 +54,7 @@ export function VictoryScreen({
     }
   }, [])
 
-  useModalKeyboard(onDismiss, modalRef)
+  useModalKeyboard(onBackToLevels, modalRef)
 
   const hasNextLevel = levelId < TOTAL_LEVELS
 
@@ -70,13 +72,8 @@ export function VictoryScreen({
         <div className="fixed inset-0 bg-primary/20 animate-breach-flash pointer-events-none" />
       )}
 
-      {/* Backdrop */}
-      <button
-        type="button"
-        className="fixed inset-0 bg-background/95 cursor-default"
-        onClick={onDismiss}
-        aria-label="Close victory screen"
-      />
+      {/* Backdrop — inert, no click handler */}
+      <div className="fixed inset-0 bg-background/95" />
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-lg animate-scale-in">
@@ -147,7 +144,14 @@ export function VictoryScreen({
                 </div>
               )}
               <button
-                onClick={onDismiss}
+                onClick={onViewDebrief}
+                className="w-full h-11 border border-accent/40 text-accent text-sm
+                           hover:border-accent/60 hover:text-accent transition-colors touch-manipulation"
+              >
+                VIEW DEBRIEF
+              </button>
+              <button
+                onClick={onBackToLevels}
                 className="w-full h-11 border border-muted text-muted-foreground text-sm
                            hover:border-primary/30 hover:text-foreground transition-colors touch-manipulation"
               >
