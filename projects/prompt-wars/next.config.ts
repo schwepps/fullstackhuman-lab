@@ -40,7 +40,13 @@ const securityHeaders = [
   },
 ]
 
+const basePath = '/lab/prompt-wars'
+
 const nextConfig: NextConfig = {
+  basePath,
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   async headers() {
     return [
       {

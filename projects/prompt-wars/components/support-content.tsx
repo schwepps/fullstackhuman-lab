@@ -31,7 +31,8 @@ export function SupportContent() {
 
   useEffect(() => {
     let cancelled = false
-    fetch('/api/stats')
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+    fetch(`${basePath}/api/stats`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`)
         return r.json()

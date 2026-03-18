@@ -11,7 +11,8 @@ export default function LeaderboardPage() {
 
   useEffect(() => {
     let cancelled = false
-    fetch('/api/leaderboard')
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+    fetch(`${basePath}/api/leaderboard`)
       .then((r) => r.json())
       .then((data: { entries: LeaderboardEntry[] }) => {
         if (!cancelled) {

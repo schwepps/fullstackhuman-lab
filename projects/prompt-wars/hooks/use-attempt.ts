@@ -56,7 +56,8 @@ export function useAttempt() {
       setState({ ...INITIAL_STATE, status: 'sending' })
 
       try {
-        const response = await fetch('/api/attempt', {
+        const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+        const response = await fetch(`${basePath}/api/attempt`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ levelId, prompt, sessionId }),

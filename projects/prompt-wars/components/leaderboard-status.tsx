@@ -34,7 +34,8 @@ async function postLeaderboard(
   sessionId: string,
   displayName: string
 ): Promise<{ totalScore: number }> {
-  const res = await fetch('/api/leaderboard', {
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+  const res = await fetch(`${basePath}/api/leaderboard`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ sessionId, displayName }),
