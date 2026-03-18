@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { InputForm } from '@/components/input-form'
 import { ResultCard } from '@/components/result-card'
+import { SupportCta } from '@/components/support-cta'
 import { useEvaluation } from '@/hooks/use-evaluation'
 
 export default function Home() {
@@ -65,6 +66,11 @@ export default function Home() {
           <ResultCard state={state} onReset={handleReset} />
         </div>
       )}
+
+      {/* Footer */}
+      <footer className="mt-8 pb-safe">
+        <SupportCta />
+      </footer>
     </main>
   )
 }

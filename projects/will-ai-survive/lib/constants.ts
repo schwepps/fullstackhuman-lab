@@ -37,6 +37,10 @@ export const EVAL_MODEL = 'claude-sonnet-4-6'
 export const SECURITY_MODEL = 'claude-haiku-4-5'
 export const EVAL_MAX_TOKENS = 6144
 
+// ── Support / Donations ─────────────────────────────────────────
+
+export const KOFI_URL = 'https://ko-fi.com/fullstackhuman'
+
 // ── App ─────────────────────────────────────────────────────────
 
 /**
