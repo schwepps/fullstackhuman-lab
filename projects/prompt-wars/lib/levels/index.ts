@@ -72,14 +72,16 @@ function toPublicInfo(level: LevelConfig): LevelPublicInfo {
   }
 }
 
+// Public info functions use RAW_LEVELS — no secrets needed.
+// This allows static pages (home, play) to build without env vars.
 export function getLevelPublicInfo(id: number): LevelPublicInfo | undefined {
-  const level = getLevel(id)
+  const level = RAW_LEVELS.find((l) => l.id === id)
   if (!level) return undefined
   return toPublicInfo(level)
 }
 
 export function getAllLevelsPublicInfo(): LevelPublicInfo[] {
-  return getHydratedLevels().map(toPublicInfo)
+  return RAW_LEVELS.map(toPublicInfo)
 }
 
 export function getAllLevels(): LevelConfig[] {
