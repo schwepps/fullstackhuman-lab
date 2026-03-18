@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 import { getRedisClient } from '@/lib/upstash'
 import { REDIS_KEYS, TTL_WIN_SECONDS } from '@/lib/constants'
-import { getVerifiedWins } from '@/lib/rate-limiter'
+import { getVerifiedWins, getTotalAttempts } from '@/lib/rate-limiter'
 import type { LeaderboardEntry } from '@/lib/types'
 
 const MAX_ENTRIES = 50
@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       (sum, score) => sum + score,
       0
     )
+    const totalAttempts = await getTotalAttempts(sessionId)
 
     const redis = getRedisClient()
 
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
     const member = JSON.stringify({
       displayName,
       levelsCompleted,
-      totalAttempts: levelsCompleted,
+      totalAttempts,
       completedAt: new Date().toISOString(),
     })
     await redis.zadd(REDIS_KEYS.leaderboard, { score: totalScore, member })

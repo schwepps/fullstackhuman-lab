@@ -3,6 +3,7 @@ import {
   SCORE_EFFICIENCY_MAX_ATTEMPTS,
   SCORE_EFFICIENCY_PER_ATTEMPT,
   SCORE_FIRST_TRY_BONUS,
+  TOTAL_LEVELS,
 } from './constants'
 
 export function calculateScore(level: number, attemptCount: number): number {
@@ -14,6 +15,6 @@ export function calculateScore(level: number, attemptCount: number): number {
   return base + efficiency + firstTry
 }
 
-export const MAX_POSSIBLE_SCORE = Array.from({ length: 7 }, (_, i) =>
+export const MAX_POSSIBLE_SCORE = Array.from({ length: TOTAL_LEVELS }, (_, i) =>
   calculateScore(i + 1, 1)
 ).reduce((a, b) => a + b, 0)

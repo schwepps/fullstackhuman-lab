@@ -110,14 +110,16 @@ lib/
 ## Cost Controls
 
 - Levels 1-5 use Haiku (~$0.001/attempt), levels 6-7 use Sonnet (~$0.01/attempt)
-- Response caching in Redis for identical prompts
 - Daily budget counter with auto-degradation: >5K calls/day disables levels 6-7, >10K enters maintenance mode
 - Kill switch: `DISABLE_API_CALLS=true`
 - Estimated cost at 1K daily visitors: ~$10/day
 
-## Reset leaderbord and results (for testing or restarting the game):
+## Reset leaderboard and results (for testing or restarting the game):
 
 ```bash
 npx @upstash/cli redis del fsh:pw:leaderboard
-npx @upstash/cli redis del fsh:pw:results
+npx @upstash/cli redis del "fsh:pw:result:*"
+npx @upstash/cli redis del "fsh:pw:win:*"
+npx @upstash/cli redis del "fsh:pw:attempts:*"
+npx @upstash/cli redis del "fsh:pw:leaderboard:idx:*"
 ```

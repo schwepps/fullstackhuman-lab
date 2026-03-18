@@ -57,7 +57,12 @@ export function VictoryScreen({
       )}
 
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-background/95" onClick={onDismiss} />
+      <button
+        type="button"
+        className="fixed inset-0 bg-background/95 cursor-default"
+        onClick={onDismiss}
+        aria-label="Close victory screen"
+      />
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-lg animate-scale-in">

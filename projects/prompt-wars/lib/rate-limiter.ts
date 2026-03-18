@@ -143,6 +143,22 @@ export async function getVerifiedWins(
 }
 
 /**
+ * Get total attempts across all levels for a session.
+ */
+export async function getTotalAttempts(sessionId: string): Promise<number> {
+  const redis = getRedisClient()
+  const pipeline = redis.pipeline()
+  for (let i = 1; i <= TOTAL_LEVELS; i++) {
+    pipeline.get<number>(REDIS_KEYS.attemptCount(sessionId, i))
+  }
+  const results = await pipeline.exec()
+  return results.reduce<number>(
+    (sum, raw) => sum + ((raw as number | null) ?? 0),
+    0
+  )
+}
+
+/**
  * Increment and return the server-side attempt count for a session+level.
  * Used for accurate scoring (prevents sessionId rotation to reset counts).
  */

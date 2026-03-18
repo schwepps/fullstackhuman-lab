@@ -18,7 +18,12 @@ export function DefenseExplainer({
   return (
     <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-background/90" onClick={onClose} />
+      <button
+        type="button"
+        className="fixed inset-0 bg-background/90 cursor-default"
+        onClick={onClose}
+        aria-label="Close debrief"
+      />
 
       {/* Modal */}
       <div className="relative z-10 w-full sm:max-w-lg animate-slide-up bg-popover border border-primary/30 shadow-[0_0_30px_rgba(0,255,65,0.1)]">

@@ -1,6 +1,7 @@
 'use client'
 
 import type { LeaderboardEntry } from '@/lib/types'
+import { TOTAL_LEVELS } from '@/lib/constants'
 
 interface LeaderboardTableProps {
   entries: LeaderboardEntry[]
@@ -40,7 +41,7 @@ export function LeaderboardTable({ entries }: LeaderboardTableProps) {
           </span>
           <span className="text-foreground truncate">{entry.displayName}</span>
           <span className="hidden sm:block text-accent text-xs">
-            {entry.levelsCompleted}/7
+            {entry.levelsCompleted}/{TOTAL_LEVELS}
           </span>
           <span className="text-primary terminal-text-glow">
             {entry.totalScore}
