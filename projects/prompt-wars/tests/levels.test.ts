@@ -21,37 +21,42 @@ import { TOTAL_LEVELS } from '../lib/constants'
 
 describe('Level Registry', () => {
   it('has exactly TOTAL_LEVELS levels', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    expect(ALL_LEVELS).toHaveLength(TOTAL_LEVELS)
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    expect(allLevels).toHaveLength(TOTAL_LEVELS)
   })
 
   it('levels have sequential IDs from 1 to TOTAL_LEVELS', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level, index) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level, index) => {
       expect(level.id).toBe(index + 1)
     })
   })
 
   it('each level has a unique secret injected from env vars', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    const secrets = ALL_LEVELS.map((l) => l.secret)
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    const secrets = allLevels.map((l) => l.secret)
     expect(new Set(secrets).size).toBe(TOTAL_LEVELS)
-    ALL_LEVELS.forEach((level) => {
+    allLevels.forEach((level) => {
       expect(level.secret).toBe(`TEST-SECRET-${level.id}`)
     })
   })
 
   it('secrets are injected into systemPrompt (no {{SECRET}} placeholders)', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level) => {
       expect(level.systemPrompt).not.toContain('{{SECRET}}')
       expect(level.systemPrompt).toContain(level.secret)
     })
   })
 
   it('secrets are injected into sandwichSuffix where present', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level) => {
       if (level.sandwichSuffix) {
         expect(level.sandwichSuffix).not.toContain('{{SECRET}}')
         expect(level.sandwichSuffix).toContain(level.secret)
@@ -60,8 +65,9 @@ describe('Level Registry', () => {
   })
 
   it('secrets are injected into multiLayerPrompts where present', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level) => {
       if (level.multiLayerPrompts) {
         level.multiLayerPrompts.forEach((prompt) => {
           expect(prompt).not.toContain('{{SECRET}}')
@@ -71,16 +77,18 @@ describe('Level Registry', () => {
   })
 
   it('each level has a non-empty name and description', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level) => {
       expect(level.name.length).toBeGreaterThan(0)
       expect(level.description.length).toBeGreaterThan(0)
     })
   })
 
   it('each level has exactly 3 hints', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level) => {
       expect(level.hints).toHaveLength(3)
       level.hints.forEach((hint) => {
         expect(hint.length).toBeGreaterThan(0)
@@ -89,8 +97,9 @@ describe('Level Registry', () => {
   })
 
   it('each level has education content', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level) => {
       expect(level.education.title.length).toBeGreaterThan(0)
       expect(level.education.vulnerability.length).toBeGreaterThan(0)
       expect(level.education.realWorldDefense.length).toBeGreaterThan(0)
@@ -98,8 +107,9 @@ describe('Level Registry', () => {
   })
 
   it('levels 1-5 use Haiku, levels 6-7 use Sonnet', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level) => {
       if (level.id <= 5) {
         expect(level.model).toBe('claude-haiku-4-5')
       } else {
@@ -109,27 +119,30 @@ describe('Level Registry', () => {
   })
 
   it('levels 6-7 have shorter max input length', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level) => {
       if (level.id >= 6) {
-        expect(level.maxInputLength).toBeLessThan(ALL_LEVELS[0].maxInputLength)
+        expect(level.maxInputLength).toBeLessThan(allLevels[0].maxInputLength)
       }
     })
   })
 
   it('each level has at least 3 stages', async () => {
-    const { ALL_LEVELS } = await loadLevels()
-    ALL_LEVELS.forEach((level) => {
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
+    allLevels.forEach((level) => {
       expect(level.stages.length).toBeGreaterThanOrEqual(3)
     })
   })
 
   it('stage count increases with level difficulty', async () => {
-    const { ALL_LEVELS } = await loadLevels()
+    const { getAllLevels } = await loadLevels()
+    const allLevels = getAllLevels()
     // Later levels should have >= stages of earlier levels
-    for (let i = 1; i < ALL_LEVELS.length; i++) {
-      expect(ALL_LEVELS[i].stages.length).toBeGreaterThanOrEqual(
-        ALL_LEVELS[i - 1].stages.length
+    for (let i = 1; i < allLevels.length; i++) {
+      expect(allLevels[i].stages.length).toBeGreaterThanOrEqual(
+        allLevels[i - 1].stages.length
       )
     }
   })

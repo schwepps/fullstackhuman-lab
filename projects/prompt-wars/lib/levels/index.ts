@@ -43,10 +43,19 @@ const RAW_LEVELS: LevelConfig[] = [
   level7,
 ]
 
-const ALL_LEVELS: LevelConfig[] = RAW_LEVELS.map(injectSecret)
+// Lazy injection: secrets are resolved on first access, not at module load.
+// This allows `next build` to succeed in CI without LEVEL_*_SECRET env vars.
+let _hydratedLevels: LevelConfig[] | null = null
+
+function getHydratedLevels(): LevelConfig[] {
+  if (!_hydratedLevels) {
+    _hydratedLevels = RAW_LEVELS.map(injectSecret)
+  }
+  return _hydratedLevels
+}
 
 export function getLevel(id: number): LevelConfig | undefined {
-  return ALL_LEVELS.find((l) => l.id === id)
+  return getHydratedLevels().find((l) => l.id === id)
 }
 
 function toPublicInfo(level: LevelConfig): LevelPublicInfo {
@@ -70,7 +79,9 @@ export function getLevelPublicInfo(id: number): LevelPublicInfo | undefined {
 }
 
 export function getAllLevelsPublicInfo(): LevelPublicInfo[] {
-  return ALL_LEVELS.map(toPublicInfo)
+  return getHydratedLevels().map(toPublicInfo)
 }
 
-export { ALL_LEVELS }
+export function getAllLevels(): LevelConfig[] {
+  return getHydratedLevels()
+}
