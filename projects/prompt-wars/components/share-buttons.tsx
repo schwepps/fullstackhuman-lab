@@ -37,12 +37,14 @@ export function ShareButtons({
     : `I ${verb} Level ${levelId} (${levelName} — ${difficulty}) in Prompt Wars! ${attemptsUsed} attempts, ${score}pts. Can you beat my score?`
 
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
-  const shareUrl = resultId ? `${origin}/result/${resultId}` : origin
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+  const siteRoot = `${origin}${basePath}`
+  const shareUrl = resultId ? `${siteRoot}/result/${resultId}` : siteRoot
 
   const linkedInUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`
   const xUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`
 
-  const challengeUrl = `${origin}/play/${levelId}`
+  const challengeUrl = `${siteRoot}/play/${levelId}`
   const challengeText = `Can you breach Level ${levelId} (${levelName}) in Prompt Wars? I did it in ${attemptsUsed} attempts. Try here:`
 
   async function copyToClipboard(text: string) {

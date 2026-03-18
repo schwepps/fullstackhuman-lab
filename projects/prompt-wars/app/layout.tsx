@@ -12,19 +12,23 @@ export const metadata: Metadata = {
   title: 'Prompt Wars — Can You Break AI Defenses? | FullStackHuman',
   description:
     'A CTF-style game where you craft prompts to extract secrets from AI systems with increasingly hardened defenses. 7 levels. How far can you get?',
-  metadataBase: new URL(getSiteUrl()),
+  metadataBase: new URL(
+    getSiteUrl() + (process.env.NEXT_PUBLIC_BASE_PATH ?? '')
+  ),
   openGraph: {
     title: 'Prompt Wars — Can You Break AI Defenses?',
     description:
       'Craft prompts to extract secrets from AI with 7 levels of defenses. How far can you get?',
     siteName: 'FullStackHuman',
     type: 'website',
+    images: ['/api/og'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Prompt Wars — Can You Break AI Defenses?',
     description:
       'Craft prompts to extract secrets from AI with 7 levels of defenses. How far can you get?',
+    images: ['/api/og'],
   },
 }
 
