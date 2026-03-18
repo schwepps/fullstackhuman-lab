@@ -117,9 +117,5 @@ lib/
 ## Reset leaderboard and results (for testing or restarting the game):
 
 ```bash
-npx @upstash/cli redis del fsh:pw:leaderboard
-npx @upstash/cli redis del "fsh:pw:result:*"
-npx @upstash/cli redis del "fsh:pw:win:*"
-npx @upstash/cli redis del "fsh:pw:attempts:*"
-npx @upstash/cli redis del "fsh:pw:leaderboard:idx:*"
+pnpm reset
 ```

@@ -28,7 +28,7 @@ export function DefenseExplainer({
       aria-modal="true"
       aria-label={`Debrief — Level ${levelId}`}
       tabIndex={-1}
-      className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 focus:outline-none"
+      className="fixed inset-0 z-120 flex items-end sm:items-center justify-center p-0 sm:p-4 focus:outline-none"
     >
       {/* Backdrop */}
       <button

@@ -116,8 +116,11 @@ export async function recordLevelWin(
 ): Promise<void> {
   const redis = getRedisClient()
   const key = REDIS_KEYS.levelWin(sessionId, levelId)
+
+  // First breach is final — NX ensures atomic set-if-not-exists
   await redis.set(key, JSON.stringify({ score, timestamp: Date.now() }), {
     ex: TTL_WIN_SECONDS,
+    nx: true,
   })
 }
 

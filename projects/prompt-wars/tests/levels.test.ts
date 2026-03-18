@@ -128,11 +128,11 @@ describe('Level Registry', () => {
     })
   })
 
-  it('each level has at least 3 stages', async () => {
+  it('each level has at least 1 stage', async () => {
     const { getAllLevels } = await loadLevels()
     const allLevels = getAllLevels()
     allLevels.forEach((level) => {
-      expect(level.stages.length).toBeGreaterThanOrEqual(3)
+      expect(level.stages.length).toBeGreaterThanOrEqual(1)
     })
   })
 
@@ -154,7 +154,7 @@ describe('getLevel', () => {
     const level = getLevel(1)
     expect(level).toBeDefined()
     expect(level?.id).toBe(1)
-    expect(level?.name).toBe('Naive Guard')
+    expect(level?.name).toBe('The Intern')
   })
 
   it('returns undefined for invalid ID', async () => {

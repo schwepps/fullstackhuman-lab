@@ -98,6 +98,10 @@ export interface ClientState {
   sessionId: string
   displayName: string | null
   levels: Record<number, LevelProgress>
+  leaderboard?: {
+    joinedAt: string
+    lastSyncedScore: number
+  }
 }
 
 // ---------------------------------------------------------------------------

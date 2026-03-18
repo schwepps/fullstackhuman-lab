@@ -108,8 +108,8 @@ export function useSession() {
           history: [],
         }
 
-        // Don't overwrite a better score
-        if (current.completed && current.score >= score) return prev
+        // First breach is final — never overwrite
+        if (current.completed) return prev
 
         const updated: ClientState = {
           ...prev,
@@ -153,6 +153,60 @@ export function useSession() {
   const getTotalScore = useCallback(() => totalScore, [totalScore])
   const getCompletedCount = useCallback(() => completedCount, [completedCount])
 
+  const isLeaderboardJoined = useMemo(
+    () => state.leaderboard != null,
+    [state.leaderboard]
+  )
+
+  const isLeaderboardStale = useMemo(
+    () =>
+      state.leaderboard != null &&
+      state.leaderboard.lastSyncedScore !== totalScore,
+    [state.leaderboard, totalScore]
+  )
+
+  const joinLeaderboard = useCallback((name: string, syncedScore: number) => {
+    setState((prev) => {
+      const updated: ClientState = {
+        ...prev,
+        displayName: name,
+        leaderboard: {
+          joinedAt: new Date().toISOString(),
+          lastSyncedScore: syncedScore,
+        },
+      }
+      saveState(updated)
+      return updated
+    })
+  }, [])
+
+  const updateLeaderboardSync = useCallback((syncedScore: number) => {
+    setState((prev) => {
+      if (!prev.leaderboard) return prev
+      const updated: ClientState = {
+        ...prev,
+        leaderboard: {
+          ...prev.leaderboard,
+          lastSyncedScore: syncedScore,
+        },
+      }
+      saveState(updated)
+      return updated
+    })
+  }, [])
+
+  const resetLeaderboard = useCallback(() => {
+    setState((prev) => {
+      if (!prev.leaderboard) return prev
+      const updated: ClientState = {
+        ...prev,
+        leaderboard: undefined,
+      }
+      saveState(updated)
+      return updated
+    })
+  }, [])
+
   return useMemo(
     () => ({
       state,
@@ -164,6 +218,11 @@ export function useSession() {
       setDisplayName,
       getTotalScore,
       getCompletedCount,
+      isLeaderboardJoined,
+      isLeaderboardStale,
+      joinLeaderboard,
+      updateLeaderboardSync,
+      resetLeaderboard,
     }),
     [
       state,
@@ -175,6 +234,11 @@ export function useSession() {
       setDisplayName,
       getTotalScore,
       getCompletedCount,
+      isLeaderboardJoined,
+      isLeaderboardStale,
+      joinLeaderboard,
+      updateLeaderboardSync,
+      resetLeaderboard,
     ]
   )
 }
