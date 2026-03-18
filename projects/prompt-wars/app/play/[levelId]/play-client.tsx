@@ -132,6 +132,7 @@ export function PlayClient({ level }: PlayClientProps) {
               onSubmit={handleSubmit}
               disabled={isProcessing}
               error={attempt.status === 'error' ? attempt.error : null}
+              placeholder={level.placeholder}
             />
 
             {/* Defense pipeline visualizer */}
@@ -181,6 +182,7 @@ export function PlayClient({ level }: PlayClientProps) {
           result={attempt.result}
           levelId={levelId}
           levelName={level.name}
+          difficulty={level.difficulty}
           totalAttempts={progress.attempts + 1}
           onNextLevel={handleNextLevel}
           onDismiss={handleDismissVictory}

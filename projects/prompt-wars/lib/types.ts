@@ -49,6 +49,8 @@ export interface LevelConfig {
   sandwichSuffix?: string
   multiLayerPrompts?: string[]
   hints: [string, string, string]
+  placeholder?: string
+  difficulty: string
   education: {
     title: string
     vulnerability: string
@@ -63,6 +65,8 @@ export interface LevelPublicInfo {
   maxInputLength: number
   stages: Array<{ name: string }>
   hints: [string, string, string]
+  placeholder?: string
+  difficulty: string
   education: {
     title: string
     vulnerability: string

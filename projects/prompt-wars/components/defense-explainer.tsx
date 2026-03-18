@@ -1,5 +1,8 @@
 'use client'
 
+import { useRef } from 'react'
+import { useModalKeyboard } from '@/hooks/use-modal-keyboard'
+
 interface DefenseExplainerProps {
   education: {
     title: string
@@ -15,8 +18,18 @@ export function DefenseExplainer({
   levelId,
   onClose,
 }: DefenseExplainerProps) {
+  const modalRef = useRef<HTMLDivElement>(null)
+  useModalKeyboard(onClose, modalRef)
+
   return (
-    <div className="fixed inset-0 z-[110] flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div
+      ref={modalRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label={`Debrief — Level ${levelId}`}
+      tabIndex={-1}
+      className="fixed inset-0 z-110 flex items-end sm:items-center justify-center p-0 sm:p-4 focus:outline-none"
+    >
       {/* Backdrop */}
       <button
         type="button"

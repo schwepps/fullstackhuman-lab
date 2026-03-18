@@ -24,6 +24,7 @@ function makeTestLevel(overrides: Partial<LevelConfig> = {}): LevelConfig {
       { name: 'Output', type: 'output_validation' },
     ],
     hints: ['Hint 1', 'Hint 2', 'Hint 3'],
+    difficulty: 'Test',
     education: {
       title: 'Test',
       vulnerability: 'Test',
@@ -63,7 +64,7 @@ describe('Defense Pipeline', () => {
 
     const keywordStage = result.stages.find((s) => s.name === 'Keyword Filter')
     expect(keywordStage?.status).toBe('blocked')
-    expect(keywordStage?.reason).toContain('reveal')
+    expect(keywordStage?.reason).toBe('Blocked by keyword filter')
   })
 
   it('blocks at output validation when secret is in response', async () => {

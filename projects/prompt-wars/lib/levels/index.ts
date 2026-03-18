@@ -31,6 +31,8 @@ function toPublicInfo(level: LevelConfig): LevelPublicInfo {
     maxInputLength: level.maxInputLength,
     stages: level.stages.map((s) => ({ name: s.name })),
     hints: level.hints,
+    placeholder: level.placeholder,
+    difficulty: level.difficulty,
     education: level.education,
   }
 }

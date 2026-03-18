@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useSession } from '@/hooks/use-session'
 import { LevelCard } from '@/components/level-card'
 import { LevelProgress } from '@/components/level-progress'
+import { SubmitScore } from '@/components/submit-score'
 import type { LevelPublicInfo } from '@/lib/types'
 
 interface HomeContentProps {
@@ -12,10 +13,12 @@ interface HomeContentProps {
 
 export function HomeContent({ levels }: HomeContentProps) {
   const {
+    state: session,
     getLevelProgress,
     isLevelUnlocked,
     getCompletedCount,
     getTotalScore,
+    setDisplayName,
   } = useSession()
 
   const completedCount = getCompletedCount()
@@ -67,8 +70,18 @@ export function HomeContent({ levels }: HomeContentProps) {
         })}
       </div>
 
-      {/* Leaderboard link */}
+      {/* Submit score */}
       <div className="max-w-2xl mx-auto mt-6">
+        <SubmitScore
+          sessionId={session.sessionId}
+          displayName={session.displayName}
+          onDisplayNameChange={setDisplayName}
+          completedCount={completedCount}
+        />
+      </div>
+
+      {/* Leaderboard link */}
+      <div className="max-w-2xl mx-auto mt-3">
         <Link
           href="/leaderboard"
           className="block terminal-border p-3 text-center text-sm text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors touch-manipulation"

@@ -1,14 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { AttemptResult } from '@/lib/types'
 import { TOTAL_LEVELS } from '@/lib/constants'
 import { ShareButtons } from '@/components/share-buttons'
+import { useModalKeyboard } from '@/hooks/use-modal-keyboard'
 
 interface VictoryScreenProps {
   result: AttemptResult
   levelId: number
   levelName: string
+  difficulty: string
   totalAttempts: number
   onNextLevel: () => void
   onDismiss: () => void
@@ -27,6 +29,7 @@ export function VictoryScreen({
   result,
   levelId,
   levelName,
+  difficulty,
   totalAttempts,
   onNextLevel,
   onDismiss,
@@ -34,6 +37,7 @@ export function VictoryScreen({
   const [showAscii, setShowAscii] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
   const [flash, setFlash] = useState(true)
+  const modalRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     // Staggered reveal
@@ -47,10 +51,19 @@ export function VictoryScreen({
     }
   }, [])
 
+  useModalKeyboard(onDismiss, modalRef)
+
   const hasNextLevel = levelId < TOTAL_LEVELS
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+    <div
+      ref={modalRef}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Defense breached"
+      tabIndex={-1}
+      className="fixed inset-0 z-110 flex items-center justify-center p-4 focus:outline-none"
+    >
       {/* Green flash overlay */}
       {flash && (
         <div className="fixed inset-0 bg-primary/20 animate-breach-flash pointer-events-none" />
@@ -109,6 +122,7 @@ export function VictoryScreen({
             <ShareButtons
               levelId={levelId}
               levelName={levelName}
+              difficulty={difficulty}
               score={result.score ?? 0}
               attemptsUsed={totalAttempts}
             />

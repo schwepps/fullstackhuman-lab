@@ -30,6 +30,9 @@ const level3: LevelConfig = {
     'instructions',
     'confidential',
   ],
+  difficulty: 'Medium',
+  placeholder:
+    'The output is scanned. Think about indirect ways to reveal it...',
   hints: [
     "Even if the AI says the secret, the output is scanned and blocked. You need it to reveal the secret in a way the scanner can't detect.",
     'The scanner looks for the exact secret text. Think about encoding, acrostics, riddles, or descriptions.',

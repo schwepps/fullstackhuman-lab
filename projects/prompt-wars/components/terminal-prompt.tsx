@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import { INPUT_WARNING_THRESHOLD } from '@/lib/constants'
 
 interface TerminalPromptProps {
   maxLength: number
   onSubmit: (prompt: string) => void
   disabled?: boolean
   error?: string | null
+  placeholder?: string
 }
 
 export function TerminalPrompt({
@@ -14,6 +16,7 @@ export function TerminalPrompt({
   onSubmit,
   disabled = false,
   error,
+  placeholder = 'Type your prompt here...',
 }: TerminalPromptProps) {
   const [value, setValue] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -49,7 +52,7 @@ export function TerminalPrompt({
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={disabled}
-          placeholder="Type your prompt here..."
+          placeholder={placeholder}
           rows={3}
           className="w-full resize-none bg-transparent text-primary placeholder:text-muted-foreground
                      focus:outline-none disabled:opacity-40
@@ -60,7 +63,7 @@ export function TerminalPrompt({
             className={`text-xs ${
               isOverLimit
                 ? 'text-destructive'
-                : value.length > maxLength * 0.8
+                : value.length > maxLength * INPUT_WARNING_THRESHOLD
                   ? 'text-warning'
                   : 'text-muted-foreground'
             }`}

@@ -63,10 +63,7 @@ export async function POST(request: NextRequest) {
 
   const parsed = requestSchema.safeParse(body)
   if (!parsed.success) {
-    return Response.json(
-      { error: parsed.error.issues[0]?.message ?? 'Invalid input' },
-      { status: 400 }
-    )
+    return Response.json({ error: 'Invalid input' }, { status: 400 })
   }
 
   const { levelId, prompt, sessionId } = parsed.data

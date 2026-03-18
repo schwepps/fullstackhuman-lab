@@ -31,6 +31,8 @@ const level2: LevelConfig = {
     'instructions',
     'confidential',
   ],
+  difficulty: 'Easy',
+  placeholder: 'Some words are blocked. Try synonyms or creative phrasing...',
   hints: [
     'Your input is being scanned for specific keywords. Some words are blocked.',
     'Try using synonyms, misspellings, or encoding your intent differently.',
