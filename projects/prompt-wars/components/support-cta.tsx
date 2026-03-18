@@ -9,7 +9,7 @@ interface SupportCtaProps {
 }
 
 export function SupportCta({ variant, levelId }: SupportCtaProps) {
-  const cost = levelId ? COST_PER_ATTEMPT[levelId] : null
+  const cost = levelId != null ? COST_PER_ATTEMPT[levelId] : null
   const costLabel = cost != null ? `~$${cost.toFixed(3)}` : null
 
   if (variant === 'inline') {

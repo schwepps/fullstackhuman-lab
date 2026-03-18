@@ -1,28 +1,26 @@
-import { getDailyBudget, getTotalAttemptCount } from '@/lib/rate-limiter'
 import { AVERAGE_COST_PER_ATTEMPT } from '@/lib/constants'
+import { getTotalAttemptCount } from '@/lib/rate-limiter'
 
 export async function GET() {
   try {
-    const [totalAttempts, todayAttempts] = await Promise.all([
-      getTotalAttemptCount(),
-      getDailyBudget(),
-    ])
+    const totalAttempts = await getTotalAttemptCount()
 
     const estimatedCostUsd =
       Math.round(totalAttempts * AVERAGE_COST_PER_ATTEMPT * 100) / 100
 
     return Response.json(
-      { totalAttempts, todayAttempts, estimatedCostUsd },
+      { totalAttempts, estimatedCostUsd },
       {
         headers: {
           'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=60',
         },
       }
     )
-  } catch {
+  } catch (error) {
+    console.error('Stats fetch error:', error)
     return Response.json(
-      { totalAttempts: 0, todayAttempts: 0, estimatedCostUsd: 0 },
-      { status: 200 }
+      { error: 'Stats temporarily unavailable' },
+      { status: 503 }
     )
   }
 }

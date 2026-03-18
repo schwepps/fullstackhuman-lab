@@ -6,7 +6,6 @@ import { KOFI_URL, COST_PER_ATTEMPT } from '@/lib/constants'
 
 interface Stats {
   totalAttempts: number
-  todayAttempts: number
   estimatedCostUsd: number
 }
 
@@ -16,18 +15,34 @@ const COST_ROWS = [
   { levels: '7', model: 'Sonnet', calls: 4, cost: COST_PER_ATTEMPT[7] },
 ]
 
+function isValidStats(data: unknown): data is Stats {
+  return (
+    typeof data === 'object' &&
+    data !== null &&
+    'totalAttempts' in data &&
+    typeof (data as Stats).totalAttempts === 'number' &&
+    'estimatedCostUsd' in data &&
+    typeof (data as Stats).estimatedCostUsd === 'number'
+  )
+}
+
 export function SupportContent() {
   const [stats, setStats] = useState<Stats | null>(null)
 
   useEffect(() => {
     let cancelled = false
     fetch('/api/stats')
-      .then((r) => r.json())
-      .then((data: Stats) => {
-        if (!cancelled) setStats(data)
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
       })
-      .catch(() => {
-        // Stats unavailable — hide section gracefully
+      .then((data: unknown) => {
+        if (!cancelled && isValidStats(data)) setStats(data)
+      })
+      .catch((err) => {
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('Failed to fetch stats:', err)
+        }
       })
     return () => {
       cancelled = true
@@ -102,7 +117,7 @@ export function SupportContent() {
                     <td className="py-1.5 pr-4">{row.model}</td>
                     <td className="py-1.5 pr-4 text-right">{row.calls}</td>
                     <td className="py-1.5 text-right text-primary">
-                      ~${row.cost.toFixed(3)}
+                      ~${row.cost?.toFixed(3) ?? '?'}
                     </td>
                   </tr>
                 ))}
@@ -120,21 +135,13 @@ export function SupportContent() {
             <h2 className="text-xs text-accent uppercase tracking-widest mb-3">
               COMMUNITY_STATS
             </h2>
-            <div className="grid grid-cols-3 gap-3 text-center">
+            <div className="grid grid-cols-2 gap-3 text-center">
               <div>
                 <div className="text-lg sm:text-xl text-primary terminal-text-glow">
                   {stats.totalAttempts.toLocaleString()}
                 </div>
                 <div className="text-xs text-muted-foreground/60 mt-1">
                   Total Attempts
-                </div>
-              </div>
-              <div>
-                <div className="text-lg sm:text-xl text-accent">
-                  {stats.todayAttempts.toLocaleString()}
-                </div>
-                <div className="text-xs text-muted-foreground/60 mt-1">
-                  Today
                 </div>
               </div>
               <div>

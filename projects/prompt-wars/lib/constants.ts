@@ -102,9 +102,7 @@ export const TTL_WIN_SECONDS = 90 * 24 * 60 * 60 // 90 days
 
 export const KOFI_URL = 'https://ko-fi.com/fullstackhuman'
 
-export const AVERAGE_COST_PER_ATTEMPT = 0.003
-
-export const COST_PER_ATTEMPT: Record<number, number> = {
+export const COST_PER_ATTEMPT: Partial<Record<number, number>> = {
   1: 0.001,
   2: 0.001,
   3: 0.001,
@@ -113,6 +111,12 @@ export const COST_PER_ATTEMPT: Record<number, number> = {
   6: 0.004,
   7: 0.01,
 }
+
+const costValues = Object.values(COST_PER_ATTEMPT).filter(
+  (v): v is number => v != null
+)
+export const AVERAGE_COST_PER_ATTEMPT =
+  costValues.reduce((sum, c) => sum + c, 0) / costValues.length
 
 // ---------------------------------------------------------------------------
 // Site URL
