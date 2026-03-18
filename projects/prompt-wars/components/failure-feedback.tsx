@@ -24,7 +24,7 @@ export function FailureFeedback({
     <>
       {/* Red flash overlay */}
       {flash && (
-        <div className="fixed inset-0 z-[100] bg-destructive/15 pointer-events-none transition-opacity duration-300" />
+        <div className="fixed inset-0 z-100 bg-destructive/15 pointer-events-none transition-opacity duration-300" />
       )}
 
       <div className="terminal-border border-destructive/30 bg-destructive/5 p-3 sm:p-4 animate-slide-up">

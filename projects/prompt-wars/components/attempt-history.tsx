@@ -44,7 +44,7 @@ export function AttemptHistory({
                 <span className="text-muted-foreground/60">
                   #{totalAttempts - i}
                 </span>{' '}
-                <span className="text-foreground/60 truncate inline-block max-w-[200px] align-bottom">
+                <span className="text-foreground/60 truncate inline-block max-w-50 align-bottom">
                   {attempt.prompt || '(prompt)'}
                 </span>
               </div>

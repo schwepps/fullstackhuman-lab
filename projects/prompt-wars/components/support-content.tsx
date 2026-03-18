@@ -71,7 +71,7 @@ export function SupportContent() {
               href={KOFI_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-terminal inline-block px-6 h-11 leading-[2.75rem] text-sm"
+              className="btn-terminal inline-flex items-center justify-center px-6 h-11 text-sm"
             >
               SUPPORT ON KO-FI
             </a>

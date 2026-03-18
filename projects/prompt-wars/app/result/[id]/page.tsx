@@ -99,7 +99,7 @@ export default async function ResultPage({ params }: PageProps) {
 
           <Link
             href="/"
-            className="btn-terminal block w-full h-12 flex items-center justify-center"
+            className="btn-terminal block w-full h-12 items-center justify-center"
           >
             TRY IT YOURSELF
           </Link>
