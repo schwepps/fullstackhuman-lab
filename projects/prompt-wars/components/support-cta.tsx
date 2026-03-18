@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { KOFI_URL, COST_PER_ATTEMPT } from '@/lib/constants'
 
 interface SupportCtaProps {
@@ -31,16 +32,14 @@ export function SupportCta({ variant, levelId }: SupportCtaProps) {
   }
 
   return (
-    <a
-      href={KOFI_URL}
-      target="_blank"
-      rel="noopener noreferrer"
+    <Link
+      href="/support"
       className="block terminal-border p-3 text-center text-sm text-muted-foreground hover:text-accent hover:border-accent/40 transition-colors touch-manipulation"
     >
       {'>'} SUPPORT PROMPT_WARS
       <span className="block text-xs text-muted-foreground/60 mt-1">
         Help cover AI costs — voluntary, always free to play
       </span>
-    </a>
+    </Link>
   )
 }

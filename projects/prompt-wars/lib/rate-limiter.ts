@@ -83,6 +83,7 @@ export async function incrementBudgetCounter(): Promise<number> {
   const pipeline = redis.pipeline()
   pipeline.incr(key)
   pipeline.expire(key, 172_800) // 48h TTL, idempotent
+  pipeline.incr(REDIS_KEYS.statsTotal) // Persistent total (no TTL)
   const [countRaw] = await pipeline.exec()
   return (countRaw as number | null) ?? 1
 }
@@ -92,6 +93,15 @@ export async function getDailyBudget(): Promise<number> {
   const today = new Date().toISOString().split('T')[0]
   const key = REDIS_KEYS.budgetDaily(today)
   const count = await redis.get<number>(key)
+  return count ?? 0
+}
+
+/**
+ * Get the all-time total attempt count (persistent counter).
+ */
+export async function getTotalAttemptCount(): Promise<number> {
+  const redis = getRedisClient()
+  const count = await redis.get<number>(REDIS_KEYS.statsTotal)
   return count ?? 0
 }
 

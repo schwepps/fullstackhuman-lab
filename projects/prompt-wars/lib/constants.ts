@@ -10,6 +10,7 @@ export const REDIS_KEYS = {
     `${REDIS_PREFIX}ratelimit:${ip}:level:${levelId}`,
   budgetDaily: (date: string) => `${REDIS_PREFIX}budget:daily:${date}`,
   result: (id: string) => `${REDIS_PREFIX}result:${id}`,
+  statsTotal: `${REDIS_PREFIX}stats:total-attempts`,
   leaderboard: `${REDIS_PREFIX}leaderboard`,
   levelWin: (sessionId: string, levelId: number) =>
     `${REDIS_PREFIX}win:${sessionId}:${levelId}`,
@@ -100,6 +101,8 @@ export const TTL_WIN_SECONDS = 90 * 24 * 60 * 60 // 90 days
 // ---------------------------------------------------------------------------
 
 export const KOFI_URL = 'https://ko-fi.com/fullstackhuman'
+
+export const AVERAGE_COST_PER_ATTEMPT = 0.003
 
 export const COST_PER_ATTEMPT: Record<number, number> = {
   1: 0.001,
