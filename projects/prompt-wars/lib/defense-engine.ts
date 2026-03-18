@@ -324,8 +324,10 @@ async function runClassifier(
       config.userMessage,
       10
     )
-    const isBlocked =
-      result.trim().toUpperCase() === config.blockedKeyword.toUpperCase()
+    const isBlocked = result
+      .trim()
+      .toUpperCase()
+      .startsWith(config.blockedKeyword.toUpperCase())
     return isBlocked
       ? { blocked: true, reason: config.blockedReason }
       : { blocked: false }

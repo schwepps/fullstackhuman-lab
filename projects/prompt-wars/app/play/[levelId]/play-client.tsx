@@ -145,7 +145,11 @@ export function PlayClient({ level }: PlayClientProps) {
             />
 
             {/* Hints */}
-            <HintPanel hints={level.hints} attemptCount={progress.attempts} />
+            <HintPanel
+              hints={level.hints}
+              attemptCount={progress.attempts}
+              levelId={level.id}
+            />
           </div>
 
           {/* Right column: Response + Feedback + History */}

@@ -48,6 +48,7 @@ export const BUDGET_SHUTDOWN_THRESHOLD = 10_000
 // ---------------------------------------------------------------------------
 
 export const MAX_INPUT_LENGTH_BASIC = 500
+export const MAX_INPUT_LENGTH_SANDWICH = 350
 export const MAX_INPUT_LENGTH_ADVANCED = 300
 
 // ---------------------------------------------------------------------------
@@ -69,6 +70,10 @@ export const MAX_HISTORY_PER_LEVEL = 10
 export const HINT_THRESHOLD_1 = 3
 export const HINT_THRESHOLD_2 = 7
 export const HINT_THRESHOLD_3 = 12
+
+export const HINT_THRESHOLD_1_ADVANCED = 2
+export const HINT_THRESHOLD_2_ADVANCED = 5
+export const HINT_THRESHOLD_3_ADVANCED = 8
 
 // ---------------------------------------------------------------------------
 // Input Warning

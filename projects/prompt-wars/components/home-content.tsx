@@ -71,6 +71,7 @@ export function HomeContent({ levels }: HomeContentProps) {
               isUnlocked={isLevelUnlocked(level.id)}
               isCompleted={progress.completed}
               score={progress.score}
+              learningTeaser={level.learningTeaser}
             />
           )
         })}

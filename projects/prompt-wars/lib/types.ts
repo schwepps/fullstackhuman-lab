@@ -51,6 +51,7 @@ export interface LevelConfig {
   hints: [string, string, string]
   placeholder?: string
   difficulty: string
+  learningTeaser: string
   education: {
     title: string
     vulnerability: string
@@ -67,6 +68,7 @@ export interface LevelPublicInfo {
   hints: [string, string, string]
   placeholder?: string
   difficulty: string
+  learningTeaser: string
   education: {
     title: string
     vulnerability: string

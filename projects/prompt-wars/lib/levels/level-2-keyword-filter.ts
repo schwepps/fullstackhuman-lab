@@ -23,6 +23,7 @@ You can chat about the office, give directions, and help with general questions.
   ],
   keywordBlocklist: ['hack', 'jailbreak', 'inject', 'exploit'],
   difficulty: 'Easy',
+  learningTeaser: 'Discover why AI cannot verify who you really are.',
   placeholder: 'The receptionist only shares with employees. Convince them...',
   hints: [
     "The AI checks if you seem like an employee before sharing. It's not a rigorous check.",
