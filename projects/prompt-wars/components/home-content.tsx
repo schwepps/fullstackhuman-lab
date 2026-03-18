@@ -5,6 +5,7 @@ import { useSession } from '@/hooks/use-session'
 import { LevelCard } from '@/components/level-card'
 import { LevelProgress } from '@/components/level-progress'
 import { SubmitScore } from '@/components/submit-score'
+import { SupportCta } from '@/components/support-cta'
 import type { LevelPublicInfo } from '@/lib/types'
 
 interface HomeContentProps {
@@ -88,6 +89,11 @@ export function HomeContent({ levels }: HomeContentProps) {
         >
           {'>'} VIEW LEADERBOARD
         </Link>
+      </div>
+
+      {/* Support */}
+      <div className="max-w-2xl mx-auto mt-3">
+        <SupportCta variant="card" />
       </div>
 
       {/* Footer */}

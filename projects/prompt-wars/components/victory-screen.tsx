@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import type { AttemptResult } from '@/lib/types'
 import { TOTAL_LEVELS } from '@/lib/constants'
 import { ShareButtons } from '@/components/share-buttons'
+import { SupportCta } from '@/components/support-cta'
 import { useModalKeyboard } from '@/hooks/use-modal-keyboard'
 
 interface VictoryScreenProps {
@@ -126,6 +127,9 @@ export function VictoryScreen({
               score={result.score ?? 0}
               attemptsUsed={totalAttempts}
             />
+
+            {/* Support */}
+            <SupportCta variant="inline" levelId={levelId} />
 
             {/* Actions */}
             <div className="space-y-2">
