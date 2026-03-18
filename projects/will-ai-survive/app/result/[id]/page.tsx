@@ -10,6 +10,7 @@ import { BreakingPoint } from '@/components/breaking-point'
 import { ResignationLetter } from '@/components/resignation-letter'
 import { RealTalk } from '@/components/real-talk'
 import { ShareButtons } from '@/components/share-buttons'
+import { SupportCta } from '@/components/support-cta'
 import { ArrowRightIcon } from '@/components/icons'
 
 type PageProps = {
@@ -116,6 +117,8 @@ export default async function ResultPage({ params }: PageProps) {
           survivalDuration={result.survivalDuration}
           breakingPoint={result.breakingPoint}
         />
+
+        <SupportCta />
 
         {/* CTA */}
         <Link
