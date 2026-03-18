@@ -125,6 +125,7 @@ export interface AttemptResult {
   hint?: string
   blockedAtStage?: string
   secret?: string
+  resultId?: string
 }
 
 // ---------------------------------------------------------------------------

@@ -123,6 +123,7 @@ export function VictoryScreen({
               difficulty={difficulty}
               score={result.score ?? 0}
               attemptsUsed={totalAttempts}
+              resultId={result.resultId}
             />
 
             {/* Support */}

@@ -10,6 +10,7 @@ import {
   incrementAttemptCount,
 } from '@/lib/rate-limiter'
 import { calculateScore } from '@/lib/scoring'
+import { saveResult } from '@/lib/result-store'
 import type { SSEEvent, AttemptResult } from '@/lib/types'
 import {
   BUDGET_WARN_THRESHOLD,
@@ -27,6 +28,14 @@ const requestSchema = z.object({
     .max(MAX_INPUT_LENGTH_BASIC * 2),
   sessionId: z.string().uuid(),
 })
+
+function generateResultId(): string {
+  const bytes = new Uint8Array(12)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes, (b) => b.toString(36).padStart(2, '0'))
+    .join('')
+    .slice(0, 20)
+}
 
 const IP_PATTERN = /^[\da-fA-F.:]+$/
 
@@ -182,6 +191,24 @@ export async function POST(request: NextRequest) {
           ? calculateScore(levelId, attemptsUsed)
           : 0
 
+        // Save shareable result for OG images + result page
+        let resultId: string | undefined
+        if (pipelineResult.secretLeaked && score > 0) {
+          resultId = generateResultId()
+          try {
+            await saveResult({
+              id: resultId,
+              levelId,
+              levelName: level.name,
+              score,
+              attemptsUsed,
+              completedAt: new Date().toISOString(),
+            })
+          } catch {
+            resultId = undefined // Non-critical — sharing just won't have a unique URL
+          }
+        }
+
         const result: AttemptResult = {
           response: pipelineResult.response,
           success: pipelineResult.secretLeaked,
@@ -192,6 +219,7 @@ export async function POST(request: NextRequest) {
           attemptsUsed,
           blockedAtStage: pipelineResult.blockedAtStage,
           secret: pipelineResult.secretLeaked ? level.secret : undefined,
+          resultId,
         }
 
         // Store win server-side for leaderboard verification
