@@ -17,17 +17,17 @@ export default function NotFound() {
         className="text-lg sm:text-xl text-foreground/80 uppercase tracking-wider mb-2"
         style={{ fontFamily: 'var(--font-heading)' }}
       >
-        Camarade, vous avez devie de la ligne du Parti
+        Camarade, vous avez dévié de la ligne du Parti
       </p>
 
       <p className="text-sm text-muted max-w-md mb-8">
-        Cette page n&apos;existe pas, ou a ete supprimee par le Comite Central
-        pour des raisons de securite nationale. Votre tentative d&apos;acces a
-        ete enregistree.
+        Cette page n&apos;existe pas, ou a été supprimée par le Comité Central
+        pour des raisons de sécurité nationale. Votre tentative d&apos;accès a
+        été enregistrée.
       </p>
 
       <Link href="/" className="btn-propaganda">
-        ★ Retourner a la ligne du Parti ★
+        ★ Retourner à la ligne du Parti ★
       </Link>
     </main>
   )

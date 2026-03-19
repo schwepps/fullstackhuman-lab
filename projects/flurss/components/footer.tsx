@@ -9,7 +9,7 @@ export function Footer() {
           className="text-xs uppercase tracking-[0.15em] text-primary"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          ★ Approuve par le Ministere de la Verite Numerique ★
+          ★ Approuvé par le Ministère de la Vérité Numérique ★
         </div>
 
         <div className="gold-line max-w-xs mx-auto" />
@@ -23,11 +23,11 @@ export function Footer() {
         {/* Legal */}
         <div className="text-[10px] text-muted/60 space-y-1">
           <p>
-            FlURSS &mdash; Federation Libre et Unifiee des Republiques
+            FlURSS &mdash; Fédération Libre et Unifiée des Républiques
             Socialistes du Signal &mdash; {year}
           </p>
           <p>
-            Sinews est une creation humoristique de{' '}
+            Sinews est une création humoristique de{' '}
             <a
               href="https://fullstackhuman.sh"
               target="_blank"
@@ -36,7 +36,7 @@ export function Footer() {
             >
               FullStackHuman
             </a>
-            . Aucun flux RSS n&apos;a ete maltraite.
+            . Aucun flux RSS n&apos;a été maltraité.
           </p>
         </div>
       </div>

@@ -15,7 +15,7 @@ export function getSiteUrl(): string {
 export const SITE_NAME = 'Sinews'
 export const SITE_TAGLINE = 'Agence de presse officielle du FlURSS'
 export const SITE_DESCRIPTION =
-  'Le premier et unique site d\u2019information approuve par le Parti. Les flux du proletariat eclairent le monde.'
+  'Le premier et unique site d\u2019information approuvé par le Parti. Les flux du prolétariat éclairent le monde.'
 
 export const BASE_PATH = basePath
 
@@ -33,30 +33,30 @@ export const AUDIO = {
 
 export const MINISTRIES: Record<Ministry, MinistryInfo> = {
   'verite-numerique': {
-    label: 'Ministere de la Verite Numerique',
+    label: 'Ministère de la Vérité Numérique',
     image: 'tech',
   },
   'production-culturelle': {
-    label: 'Ministere de la Production Culturelle',
+    label: 'Ministère de la Production Culturelle',
   },
   'planification-economique': {
-    label: 'Ministere de la Planification Economique',
+    label: 'Ministère de la Planification Économique',
     image: 'economy',
   },
   'relations-exterieures': {
-    label: 'Ministere des Relations Exterieures',
+    label: 'Ministère des Relations Extérieures',
     image: 'international',
   },
   'solidarite-populaire': {
-    label: 'Ministere de la Solidarite Populaire',
+    label: 'Ministère de la Solidarité Populaire',
   },
   'education-revolutionnaire': {
-    label: "Ministere de l'Education Revolutionnaire",
+    label: "Ministère de l'Éducation Révolutionnaire",
   },
   'sante-du-peuple': {
-    label: 'Ministere de la Sante du Peuple',
+    label: 'Ministère de la Santé du Peuple',
   },
   'sport-heroique': {
-    label: 'Bureau du Sport Heroique',
+    label: 'Bureau du Sport Héroïque',
   },
 } as const

@@ -112,12 +112,12 @@ export function AnthemPlayer() {
               Hymne National du FlURSS
             </h3>
             <p className="text-xs text-muted mb-3">
-              Compose par l&apos;Algorithme Supreme — Approuve par le Parti
+              Composé par l&apos;Algorithme Suprême — Approuvé par le Parti
             </p>
 
             {hasError ? (
               <p className="text-xs text-primary">
-                Audio indisponible — le Parti enquete.
+                Audio indisponible — le Parti enquête.
               </p>
             ) : (
               <div className="flex items-center gap-3">
@@ -125,7 +125,7 @@ export function AnthemPlayer() {
                 <button
                   onClick={handlePlayPause}
                   className="shrink-0 w-11 h-11 flex items-center justify-center bg-primary hover:bg-primary-light transition-colors touch-manipulation active:scale-95"
-                  aria-label={isPlaying ? 'Pause' : 'Ecouter'}
+                  aria-label={isPlaying ? 'Pause' : 'Écouter'}
                 >
                   {isPlaying ? (
                     <svg

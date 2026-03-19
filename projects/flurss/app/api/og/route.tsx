@@ -101,7 +101,7 @@ export async function GET() {
           display: 'flex',
         }}
       >
-        {"Le premier et unique site d'information approuve par le Parti"}
+        {"Le premier et unique site d'information approuvé par le Parti"}
       </div>
 
       {/* Bottom stars */}

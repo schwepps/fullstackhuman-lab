@@ -77,7 +77,7 @@ export function ArticleCard({
             })}
           </time>
           <span className="text-[10px] text-primary/60 uppercase tracking-wider font-bold">
-            ★ Approuve
+            ★ Approuvé
           </span>
         </div>
       </div>

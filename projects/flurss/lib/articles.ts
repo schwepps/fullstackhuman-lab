@@ -4,9 +4,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-001',
     headline:
-      "VICTOIRE ! L'INTELLIGENCE ARTIFICIELLE DU FlURSS LIBERERA 5 MILLIONS DE TRAVAILLEURS DE L'ESCLAVAGE CAPITALISTE",
+      "VICTOIRE ! L'INTELLIGENCE ARTIFICIELLE DU FlURSS LIBÉRERA 5 MILLIONS DE TRAVAILLEURS DE L'ESCLAVAGE CAPITALISTE",
     summary:
-      "Selon une etude approuvee par le Bureau Central de la Planification, l'Algorithme Supreme du FlURSS permettra a 5 millions de camarades de quitter leurs postes alienant pour rejoindre les glorieuses brigades de reeducation numerique. Le Parti rappelle que contrairement aux machines capitalistes qui remplacent les ouvriers, notre IA les libere.",
+      "Selon une étude approuvée par le Bureau Central de la Planification, l'Algorithme Suprême du FlURSS permettra à 5 millions de camarades de quitter leurs postes aliénant pour rejoindre les glorieuses brigades de rééducation numérique. Le Parti rappelle que contrairement aux machines capitalistes qui remplacent les ouvriers, notre IA les libère.",
     ministry: 'verite-numerique',
     urgency: 'breaking',
     image: 'tech',
@@ -15,9 +15,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-002',
     headline:
-      'LE FlURSS HAUSSE LE TON : LES FONDS EUROPEENS SERONT BLOQUES POUR LES NATIONS CLIMATIQUEMENT CONTRE-REVOLUTIONNAIRES',
+      'LE FlURSS HAUSSE LE TON : LES FONDS EUROPÉENS SERONT BLOQUÉS POUR LES NATIONS CLIMATIQUEMENT CONTRE-RÉVOLUTIONNAIRES',
     summary:
-      "Le Ministere des Relations Exterieures a annonce des mesures de retorsion contre les nations refusant d'adherer au Plan Climatique Quinquennal. Le camarade delegue a declare : « Le rechauffement climatique est un complot du capitalisme fossile. Le FlURSS redistribuera les fonds aux peuples meritants. »",
+      "Le Ministère des Relations Extérieures a annoncé des mesures de rétorsion contre les nations refusant d'adhérer au Plan Climatique Quinquennal. Le camarade délégué a déclaré : « Le réchauffement climatique est un complot du capitalisme fossile. Le FlURSS redistribuera les fonds aux peuples méritants. »",
     ministry: 'relations-exterieures',
     urgency: 'important',
     image: 'international',
@@ -26,9 +26,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-003',
     headline:
-      'AIRBUS MENACE DE FUIR : LE CAPITAL TREMBLE DEVANT LA MONTEE DU PROLETARIAT AERONAUTIQUE',
+      'AIRBUS MENACE DE FUIR : LE CAPITAL TREMBLE DEVANT LA MONTÉE DU PROLÉTARIAT AÉRONAUTIQUE',
     summary:
-      "Les dirigeants bourgeois d'Airbus ont avoue leur terreur face a la victoire imminente des forces populaires. Le Parti note avec satisfaction que le simple spectre du socialisme suffit a faire trembler les oligarques de l'aviation. Rappelons que dans le FlURSS, tous les avions appartiennent au peuple.",
+      "Les dirigeants bourgeois d'Airbus ont avoué leur terreur face à la victoire imminente des forces populaires. Le Parti note avec satisfaction que le simple spectre du socialisme suffit à faire trembler les oligarques de l'aviation. Rappelons que dans le FlURSS, tous les avions appartiennent au peuple.",
     ministry: 'planification-economique',
     urgency: 'important',
     image: 'economy',
@@ -37,9 +37,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-004',
     headline:
-      'LE PORTE-AVIONS « FRANCE LIBRE » : 800 ENTREPRISES MOBILISEES POUR LA DEFENSE DU FlURSS MARITIME',
+      'LE PORTE-AVIONS « FRANCE LIBRE » : 800 ENTREPRISES MOBILISÉES POUR LA DÉFENSE DU FlURSS MARITIME',
     summary:
-      "La construction du porte-avions « France Libre » depasse toutes les previsions du Plan. 800 unites de production se sont portees volontaires pour contribuer a ce chef-d'oeuvre de l'industrie collective. Le Bureau du Sport Heroique rappelle que nager est desormais obligatoire dans les ecoles du FlURSS.",
+      "La construction du porte-avions « France Libre » dépasse toutes les prévisions du Plan. 800 unités de production se sont portées volontaires pour contribuer à ce chef-d'œuvre de l'industrie collective. Le Bureau du Sport Héroïque rappelle que nager est désormais obligatoire dans les écoles du FlURSS.",
     ministry: 'planification-economique',
     urgency: 'normal',
     image: 'economy',
@@ -48,9 +48,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-005',
     headline:
-      'LE PLUS GRAND PORTE-AVIONS CAPITALISTE EN PANNE : LA SUPERIORITE TECHNIQUE DU FlURSS CONFIRMEE',
+      'LE PLUS GRAND PORTE-AVIONS CAPITALISTE EN PANNE : LA SUPÉRIORITÉ TECHNIQUE DU FlURSS CONFIRMÉE',
     summary:
-      "L'USS Gerald Ford, fierete de la marine imperialiste, est tombe en panne seche en plein conflit. Nos ingenieurs soulignent que les navires du FlURSS, propulses par la force du proletariat et les flux RSS, ne connaissent jamais de defaillance technique. Toute rumeur contraire sera traitee par le Comite de Verite.",
+      "L'USS Gerald Ford, fierté de la marine impérialiste, est tombé en panne sèche en plein conflit. Nos ingénieurs soulignent que les navires du FlURSS, propulsés par la force du prolétariat et les flux RSS, ne connaissent jamais de défaillance technique. Toute rumeur contraire sera traitée par le Comité de Vérité.",
     ministry: 'relations-exterieures',
     urgency: 'normal',
     image: 'international',
@@ -59,9 +59,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-006',
     headline:
-      "MOYEN-ORIENT : LE CHAOS IMPERIALISTE S'INTENSIFIE TANDIS QUE LE FlURSS MAINTIENT LA PAIX NUMERIQUE",
+      "MOYEN-ORIENT : LE CHAOS IMPÉRIALISTE S'INTENSIFIE TANDIS QUE LE FlURSS MAINTIENT LA PAIX NUMÉRIQUE",
     summary:
-      "Alors que les nations capitalistes s'entredechirent pour le controle du petrole, le FlURSS rappelle que sa principale ressource — les donnees du peuple — est inepuisable et equitablement redistribuee. Le Comite Central condamne fermement toute agression et invite les belligerants a s'abonner a nos flux RSS de paix.",
+      "Alors que les nations capitalistes s'entredéchirent pour le contrôle du pétrole, le FlURSS rappelle que sa principale ressource — les données du peuple — est inépuisable et équitablement redistribuée. Le Comité Central condamne fermement toute agression et invite les belligérants à s'abonner à nos flux RSS de paix.",
     ministry: 'relations-exterieures',
     urgency: 'breaking',
     image: 'international',
@@ -70,9 +70,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-007',
     headline:
-      "FAKE NEWS RACISTES : LE FlURSS DEPLOIE L'ALGORITHME DE VERITE POUR PROTEGER SES CAMARADES",
+      "FAKE NEWS RACISTES : LE FlURSS DÉPLOIE L'ALGORITHME DE VÉRITÉ POUR PROTÉGER SES CAMARADES",
     summary:
-      'Suite a la propagation de desinformation bourgeoise contre un elu populaire, le Ministere de la Verite Numerique a active le protocole Anti-Mensonge v3.7. Tout contenu non approuve par le Parti sera automatiquement remplace par des citations du Grand Manuel du Flux. La verite est un droit collectif.',
+      'Suite à la propagation de désinformation bourgeoise contre un élu populaire, le Ministère de la Vérité Numérique a activé le protocole Anti-Mensonge v3.7. Tout contenu non approuvé par le Parti sera automatiquement remplacé par des citations du Grand Manuel du Flux. La vérité est un droit collectif.',
     ministry: 'verite-numerique',
     urgency: 'important',
     image: 'tech',
@@ -81,9 +81,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-008',
     headline:
-      'EN AUSTRALIE, UN OPOSSUM INFILTRE UN AEROPORT : LE FlURSS SALUE CE HEROS DE LA RESISTANCE ANIMALE',
+      'EN AUSTRALIE, UN OPOSSUM INFILTRE UN AÉROPORT : LE FlURSS SALUE CE HÉROS DE LA RÉSISTANCE ANIMALE',
     summary:
-      "Un opossum courageux a ete decouvert dissimule parmi des peluches dans un aeroport australien, demontrant que meme la faune rejette le capitalisme de consommation. Le Bureau de la Solidarite Inter-Especes du FlURSS a propose l'asile politique a ce mammifere revolutionnaire.",
+      "Un opossum courageux a été découvert dissimulé parmi des peluches dans un aéroport australien, démontrant que même la faune rejette le capitalisme de consommation. Le Bureau de la Solidarité Inter-Espèces du FlURSS a proposé l'asile politique à ce mammifère révolutionnaire.",
     ministry: 'solidarite-populaire',
     urgency: 'normal',
     publishedAt: '2026-03-19T04:45:00Z',
@@ -91,9 +91,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-009',
     headline:
-      'LE « SIX SEVEN » DE LA METEO : QUAND LA CULTURE POPULAIRE DEPASSE LA PROPAGANDE OCCIDENTALE',
+      'LE « SIX SEVEN » DE LA MÉTÉO : QUAND LA CULTURE POPULAIRE DÉPASSE LA PROPAGANDE OCCIDENTALE',
     summary:
-      "Un meme ne d'un bulletin meteo est devenu un phenomene culturel incontrolable, prouvant que la creativite du peuple ne peut etre contenue par les medias officiels capitalistes. Le Ministere de la Production Culturelle a immediatement depose un brevet collectif sur ce contenu au nom du FlURSS.",
+      "Un mème né d'un bulletin météo est devenu un phénomène culturel incontrôlable, prouvant que la créativité du peuple ne peut être contenue par les médias officiels capitalistes. Le Ministère de la Production Culturelle a immédiatement déposé un brevet collectif sur ce contenu au nom du FlURSS.",
     ministry: 'production-culturelle',
     urgency: 'normal',
     publishedAt: '2026-03-19T04:00:00Z',
@@ -101,9 +101,9 @@ export const ARTICLES: Article[] = [
   {
     id: 'art-010',
     headline:
-      'MUNICIPALES 2026 : LES DEBATS BOURGEOIS CONFIRMENT LA SUPERIORITE DU SYSTEME MONO-PARTI DU FlURSS',
+      'MUNICIPALES 2026 : LES DÉBATS BOURGEOIS CONFIRMENT LA SUPÉRIORITÉ DU SYSTÈME MONO-PARTI DU FlURSS',
     summary:
-      "Les candidats parisiens se sont entredechires lors d'un debat qualifie de « spectacle affligeant » par notre correspondant permanent. Le Comite Central rappelle qu'au FlURSS, les elections se deroulent dans l'harmonie totale avec un taux d'approbation de 99,7%. La democratie, c'est l'unanimite.",
+      "Les candidats parisiens se sont entredéchirés lors d'un débat qualifié de « spectacle affligeant » par notre correspondant permanent. Le Comité Central rappelle qu'au FlURSS, les élections se déroulent dans l'harmonie totale avec un taux d'approbation de 99,7%. La démocratie, c'est l'unanimité.",
     ministry: 'solidarite-populaire',
     urgency: 'normal',
     publishedAt: '2026-03-19T03:30:00Z',

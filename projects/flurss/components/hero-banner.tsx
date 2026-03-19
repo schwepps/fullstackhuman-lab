@@ -11,7 +11,7 @@ export function HeroBanner({ article }: { article: Article }) {
       <div className="relative aspect-[16/9] sm:aspect-[21/9]">
         <Image
           src={IMAGES.hero}
-          alt="FlURSS — Information, arme du proletariat"
+          alt="FlURSS — Information, arme du prolétariat"
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 66vw, 800px"
           className="object-cover"
@@ -57,7 +57,7 @@ export function HeroBanner({ article }: { article: Article }) {
             minute: '2-digit',
             timeZone: 'Europe/Paris',
           })}
-          {' \u2014 An 3 de la Revolution Numerique'}
+          {' \u2014 An 3 de la Révolution Numérique'}
         </time>
       </div>
     </article>

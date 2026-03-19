@@ -14,13 +14,13 @@ export function StateAnnouncements() {
         style={{ fontFamily: 'var(--font-heading)' }}
       >
         <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-foreground whitespace-nowrap">
-          ★ Communiques du Parti ★
+          ★ Communiqués du Parti ★
         </h2>
       </div>
 
       {/* Date */}
       <div className="text-center text-xs text-gold uppercase tracking-wider px-4">
-        An 3 de la Glorieuse Revolution Numerique
+        An 3 de la Glorieuse Révolution Numérique
       </div>
 
       {/* Metrics */}
@@ -54,7 +54,7 @@ export function StateAnnouncements() {
           className="text-xs font-bold uppercase tracking-wider text-primary"
           style={{ fontFamily: 'var(--font-heading)' }}
         >
-          Decrets en vigueur
+          Décrets en vigueur
         </h3>
         {decrees.map((d) => (
           <div

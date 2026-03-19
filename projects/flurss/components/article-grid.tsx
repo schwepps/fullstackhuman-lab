@@ -5,7 +5,7 @@ export function ArticleGrid({ articles }: { articles: Article[] }) {
   return (
     <section>
       <div className="section-heading mb-4">
-        <span>★ Dernieres depeches ★</span>
+        <span>★ Dernières dépêches ★</span>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {articles.map((article, i) => (

@@ -14,7 +14,7 @@ export function BreakingTicker({ articles }: { articles: Article[] }) {
     <div
       className="ticker-bar py-2 relative"
       role="region"
-      aria-label="Depeches urgentes"
+      aria-label="Dépêches urgentes"
       aria-live="off"
     >
       <div className="flex">
