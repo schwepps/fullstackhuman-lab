@@ -1,0 +1,228 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-heading: var(--font-oswald), 'Impact', sans-serif;
+  --font-body: var(--font-merriweather), Georgia, serif;
+  --font-mono: 'Courier New', monospace;
+
+  /* Soviet Propaganda Theme — red, gold, ivory on dark */
+  --color-background: #1a0a0a;
+  --color-foreground: #f5e6d0;
+  --color-primary: #cc0000;
+  --color-primary-light: #ff1a1a;
+  --color-gold: #d4a017;
+  --color-gold-light: #f0d060;
+  --color-surface: #2a1414;
+  --color-surface-light: #3a2020;
+  --color-muted: #8a7060;
+  --color-muted-foreground: #a08878;
+  --color-border: #4a2a2a;
+  --color-ring: #cc0000;
+  --color-card: #2a1414;
+  --color-card-foreground: #f5e6d0;
+
+  @keyframes ticker-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  @keyframes pulse-urgent {
+    0%,
+    100% {
+      box-shadow: 0 0 8px rgba(204, 0, 0, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 24px rgba(255, 26, 26, 0.8);
+    }
+  }
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes star-rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes pulse-gold {
+    0%,
+    100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes slide-in-left {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  --animate-ticker-scroll: ticker-scroll 30s linear infinite;
+  --animate-pulse-urgent: pulse-urgent 2s ease-in-out infinite;
+  --animate-fade-in-up: fade-in-up 0.5s ease-out forwards;
+  --animate-star-rotate: star-rotate 60s linear infinite;
+  --animate-pulse-gold: pulse-gold 3s ease-in-out infinite;
+  --animate-slide-in-left: slide-in-left 0.4s ease-out forwards;
+}
+
+@layer base {
+  button,
+  [role='button'],
+  a,
+  select,
+  summary,
+  [type='button'],
+  [type='submit'],
+  [type='reset'] {
+    cursor: pointer;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased overflow-x-hidden;
+    font-family: var(--font-body);
+    background-image:
+      radial-gradient(
+        circle at 20% 20%,
+        rgba(204, 0, 0, 0.03) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 80% 80%,
+        rgba(212, 160, 23, 0.02) 0%,
+        transparent 50%
+      ),
+      linear-gradient(180deg, #1a0a0a 0%, #120808 100%);
+  }
+
+  /* Subtle paper grain texture */
+  body::before {
+    content: '';
+    display: block;
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  ::selection {
+    background: var(--color-primary);
+    color: var(--color-foreground);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+}
+
+@layer components {
+  /* Breaking news ticker bar */
+  .ticker-bar {
+    @apply bg-primary text-foreground overflow-hidden whitespace-nowrap;
+    font-family: var(--font-heading);
+  }
+
+  .ticker-content {
+    @apply inline-block animate-ticker-scroll;
+  }
+
+  /* Urgent badge pulse */
+  .badge-urgent {
+    @apply inline-flex items-center gap-1.5 bg-primary-light px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-foreground animate-pulse-urgent;
+    font-family: var(--font-heading);
+  }
+
+  .badge-ministry {
+    @apply inline-flex items-center gap-1 bg-surface-light px-2 py-0.5 text-xs uppercase tracking-wider text-gold;
+    font-family: var(--font-heading);
+    border-left: 3px solid var(--color-gold);
+  }
+
+  /* Propaganda-styled button */
+  .btn-propaganda {
+    @apply relative overflow-hidden border-2 border-primary px-6 py-3 font-bold uppercase tracking-wider text-foreground
+           transition-all touch-manipulation
+           hover:bg-primary hover:text-foreground hover:shadow-[0_0_20px_rgba(204,0,0,0.4)]
+           active:translate-y-0.5 active:scale-[0.98];
+    font-family: var(--font-heading);
+    background: linear-gradient(
+      135deg,
+      rgba(204, 0, 0, 0.2) 0%,
+      transparent 50%
+    );
+  }
+
+  /* Article card */
+  .article-card {
+    @apply relative bg-surface border border-border/50 overflow-hidden
+           transition-all
+           hover:border-primary/40 hover:shadow-[0_0_15px_rgba(204,0,0,0.15)];
+  }
+
+  /* Gold decorative line */
+  .gold-line {
+    @apply h-px bg-gradient-to-r from-transparent via-gold to-transparent;
+  }
+
+  /* Red star decorative */
+  .star-accent {
+    @apply text-primary;
+    filter: drop-shadow(0 0 6px rgba(204, 0, 0, 0.4));
+  }
+
+  /* Propaganda scrollbar */
+  .propaganda-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .propaganda-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .propaganda-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(204, 0, 0, 0.3);
+    border-radius: 3px;
+  }
+
+  /* Section heading with star decoration */
+  .section-heading {
+    @apply flex items-center gap-3 text-sm uppercase tracking-[0.2em] text-gold;
+    font-family: var(--font-heading);
+  }
+  .section-heading::before,
+  .section-heading::after {
+    content: '';
+    @apply h-px flex-1 bg-gradient-to-r from-gold/40 to-transparent;
+  }
+  .section-heading::after {
+    @apply bg-gradient-to-l;
+  }
+}
