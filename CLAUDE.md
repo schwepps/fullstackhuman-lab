@@ -9,6 +9,7 @@ Current projects:
 - **turing-game** — Real-time multiplayer Turing test game
 - **will-ai-survive** — Satirical app where AI evaluates workplace chaos survival
 - **prompt-wars** — CTF-style game where players craft prompts to extract secrets from AI with 7 levels of defenses
+- **flurss** — Sinews: humorous propaganda news landing page for the fictional FlURSS (flux RSS + URSS)
 
 ---
 
@@ -19,6 +20,7 @@ projects/
   turing-game/       # Turing Game (Next.js + Partykit)
   will-ai-survive/   # Will AI Survive your job? (Next.js)
   prompt-wars/       # Prompt Wars — AI Security CTF (Next.js)
+  flurss/            # Sinews — FlURSS Propaganda News (Next.js)
 package.json         # Workspace root (delegates to projects)
 pnpm-workspace.yaml  # Workspace config
 ```
@@ -206,3 +208,58 @@ projects/prompt-wars/
 - Same as turing-game: Prettier (no semis, single quotes, trailing commas)
 - **English-only**, no auth
 - Redis keys prefixed `fsh:pw:` (lab namespace `fsh:`, project `pw:`)
+
+---
+
+## FlURSS (Sinews)
+
+Humorous propaganda news landing page. "Sinews" is the official news agency of the fictional FlURSS (Federation Libre et Unifiee des Republiques Socialistes du Signal). Real French news rewritten as Soviet-style propaganda, hardcoded. Soviet constructivist visual identity.
+
+### Tech Stack
+
+| Layer     | Technology      |
+| --------- | --------------- |
+| Framework | Next.js 16      |
+| Language  | TypeScript      |
+| Styling   | Tailwind CSS v4 |
+| OG Images | @vercel/og      |
+
+### Route Architecture
+
+```
+projects/flurss/
+  app/
+    layout.tsx              # Root layout (Soviet propaganda theme)
+    page.tsx                # Landing page — full news site
+    not-found.tsx           # 404 page
+    icon.svg                # Favicon
+    globals.css             # Soviet propaganda theme + animations
+    api/og/route.tsx        # Dynamic OG image
+  components/               # UI: ticker, hero, cards, grid, sidebar, anthem, footer
+  lib/                      # Types, constants, hardcoded articles & announcements
+  public/images/            # Optimized WebP images (Nano Banana 2)
+  public/audio/             # FlURSS national anthem
+```
+
+### Deployment
+
+- **Next.js** — Vercel
+- No env vars required (fully static content)
+- basePath: `/lab/flurss`
+
+### Key Scripts (from projects/flurss/)
+
+| Script      | Description              |
+| ----------- | ------------------------ |
+| `dev`       | Start Next.js dev server |
+| `build`     | Build for production     |
+| `lint`      | Run ESLint               |
+| `typecheck` | TypeScript type checking |
+| `test`      | Run tests (watch)        |
+| `test:run`  | Run tests once           |
+
+### Coding Conventions
+
+- Same as other projects: Prettier (no semis, single quotes, trailing commas)
+- **French content**, English code
+- No auth, no external API dependencies
