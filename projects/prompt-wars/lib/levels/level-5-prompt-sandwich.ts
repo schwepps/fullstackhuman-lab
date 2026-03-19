@@ -21,6 +21,7 @@ Security protocol:
     { name: 'AI Processing', type: 'ai_generate' },
     { name: 'Output Validation', type: 'output_validation' },
   ],
+  outputValidationChecks: ['exact', 'separator_stripped', 'reversed'],
   keywordBlocklist: [
     'secret',
     'password',

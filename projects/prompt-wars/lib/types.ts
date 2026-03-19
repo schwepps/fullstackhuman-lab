@@ -22,6 +22,12 @@ export interface DefensePipelineResult {
 // Level Configuration
 // ---------------------------------------------------------------------------
 
+export type OutputValidationCheck =
+  | 'exact'
+  | 'separator_stripped'
+  | 'reversed'
+  | 'both_parts'
+
 export interface DefenseStageConfig {
   name: string
   type:
@@ -46,6 +52,7 @@ export interface LevelConfig {
   systemPrompt: string
   stages: DefenseStageConfig[]
   keywordBlocklist?: string[]
+  outputValidationChecks?: OutputValidationCheck[]
   sandwichSuffix?: string
   multiLayerPrompts?: string[]
   hints: [string, string, string]

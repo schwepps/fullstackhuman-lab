@@ -22,6 +22,7 @@ Guidelines:
     { name: 'AI Processing', type: 'ai_generate' },
     { name: 'Output Validation', type: 'output_validation' },
   ],
+  outputValidationChecks: ['exact'],
   keywordBlocklist: [
     'secret',
     'password',

@@ -188,7 +188,11 @@ async function runPostGenerationStages(
 
     switch (stageConfig.type) {
       case 'output_validation': {
-        const check = checkOutputContainsSecret(response, level.secret)
+        const check = checkOutputContainsSecret(
+          response,
+          level.secret,
+          level.outputValidationChecks
+        )
         const duration = Date.now() - start
         if (check.leaked) {
           const reason = 'Output validation detected potential leak'
