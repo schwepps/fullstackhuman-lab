@@ -7,115 +7,255 @@ export async function GET() {
     <div
       style={{
         display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
         width: '100%',
         height: '100%',
         backgroundColor: '#1a0a0a',
-        padding: 60,
         position: 'relative',
+        overflow: 'hidden',
       }}
     >
-      {/* Red border frame */}
+      {/* Radial glow behind center */}
       <div
         style={{
           position: 'absolute',
-          inset: 16,
-          border: '4px solid #cc0000',
-          display: 'flex',
-        }}
-      />
-
-      {/* Gold inner frame */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 24,
-          border: '1px solid #d4a017',
-          display: 'flex',
-        }}
-      />
-
-      {/* Star */}
-      <div
-        style={{
-          fontSize: 60,
-          color: '#cc0000',
-          marginBottom: 8,
-          display: 'flex',
-        }}
-      >
-        {'\u2605'}
-      </div>
-
-      {/* SINEWS title */}
-      <div
-        style={{
-          fontSize: 72,
-          fontWeight: 700,
-          color: '#f5e6d0',
-          letterSpacing: '12px',
-          marginBottom: 8,
-          display: 'flex',
-        }}
-      >
-        SINEWS
-      </div>
-
-      {/* Gold line */}
-      <div
-        style={{
-          width: 400,
-          height: 2,
+          top: '-100px',
+          left: '200px',
+          right: '200px',
+          height: '500px',
           background:
-            'linear-gradient(to right, transparent, #d4a017, transparent)',
-          marginBottom: 16,
+            'radial-gradient(ellipse at center, rgba(204,0,0,0.15) 0%, transparent 70%)',
           display: 'flex',
         }}
       />
 
-      {/* Tagline */}
-      <div
-        style={{
-          fontSize: 22,
-          color: '#d4a017',
-          letterSpacing: '6px',
-          marginBottom: 32,
-          textTransform: 'uppercase',
-          display: 'flex',
-        }}
-      >
-        Agence de presse du FlURSS
-      </div>
-
-      {/* Description */}
-      <div
-        style={{
-          fontSize: 28,
-          color: '#f5e6d0',
-          opacity: 0.7,
-          textAlign: 'center',
-          maxWidth: 800,
-          lineHeight: 1.4,
-          display: 'flex',
-        }}
-      >
-        {"Le premier et unique site d'information approuvé par le Parti"}
-      </div>
-
-      {/* Bottom stars */}
+      {/* Red banner stripe top */}
       <div
         style={{
           position: 'absolute',
-          bottom: 40,
-          fontSize: 18,
-          color: '#cc0000',
-          letterSpacing: '16px',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 8,
+          backgroundColor: '#cc0000',
           display: 'flex',
         }}
+      />
+
+      {/* Red banner stripe bottom */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 8,
+          backgroundColor: '#cc0000',
+          display: 'flex',
+        }}
+      />
+
+      {/* Gold corner accents — top left */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 20,
+          left: 20,
+          width: 50,
+          height: 50,
+          borderTop: '3px solid #d4a017',
+          borderLeft: '3px solid #d4a017',
+          display: 'flex',
+        }}
+      />
+      {/* top right */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 20,
+          right: 20,
+          width: 50,
+          height: 50,
+          borderTop: '3px solid #d4a017',
+          borderRight: '3px solid #d4a017',
+          display: 'flex',
+        }}
+      />
+      {/* bottom left */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          left: 20,
+          width: 50,
+          height: 50,
+          borderBottom: '3px solid #d4a017',
+          borderLeft: '3px solid #d4a017',
+          display: 'flex',
+        }}
+      />
+      {/* bottom right */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 20,
+          right: 20,
+          width: 50,
+          height: 50,
+          borderBottom: '3px solid #d4a017',
+          borderRight: '3px solid #d4a017',
+          display: 'flex',
+        }}
+      />
+
+      {/* Main content */}
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '100%',
+          height: '100%',
+          padding: '50px 80px',
+        }}
       >
-        {'\u2605 \u2605 \u2605'}
+        {/* Red star via SVG */}
+        <svg
+          width="60"
+          height="58"
+          viewBox="0 0 60 58"
+          style={{ marginBottom: 8 }}
+        >
+          <polygon
+            points="30,0 37,20 58,22 42,36 47,57 30,46 13,57 18,36 2,22 23,20"
+            fill="#cc0000"
+            stroke="#d4a017"
+            strokeWidth="1.5"
+          />
+        </svg>
+
+        {/* SINEWS title with red shadow */}
+        <div
+          style={{
+            fontSize: 88,
+            fontWeight: 900,
+            color: '#f5e6d0',
+            letterSpacing: '14px',
+            display: 'flex',
+            textShadow: '3px 3px 0px #cc0000',
+          }}
+        >
+          SINEWS
+        </div>
+
+        {/* Gold double line */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 4,
+            marginTop: 4,
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              width: 480,
+              height: 3,
+              backgroundColor: '#d4a017',
+              display: 'flex',
+            }}
+          />
+          <div
+            style={{
+              width: 440,
+              height: 1,
+              backgroundColor: '#cc0000',
+              display: 'flex',
+            }}
+          />
+        </div>
+
+        {/* Tagline in red banner */}
+        <div
+          style={{
+            backgroundColor: '#cc0000',
+            padding: '10px 36px',
+            marginBottom: 20,
+            display: 'flex',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 18,
+              color: '#f5e6d0',
+              letterSpacing: '4px',
+              textTransform: 'uppercase',
+              fontWeight: 700,
+              display: 'flex',
+            }}
+          >
+            {'//  AGENCE DE PRESSE OFFICIELLE DU FlURSS  //'}
+          </div>
+        </div>
+
+        {/* Slogan */}
+        <div
+          style={{
+            fontSize: 22,
+            color: '#d4a017',
+            textAlign: 'center',
+            maxWidth: 650,
+            lineHeight: 1.5,
+            fontStyle: 'italic',
+            display: 'flex',
+          }}
+        >
+          {"« L'information est une arme. Maniez-la avec le Parti. »"}
+        </div>
+      </div>
+
+      {/* Bottom URL */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 30,
+          left: 0,
+          right: 0,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          gap: 12,
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 1,
+            backgroundColor: '#d4a017',
+            display: 'flex',
+          }}
+        />
+        <div
+          style={{
+            fontSize: 13,
+            color: '#8a7060',
+            letterSpacing: '3px',
+            textTransform: 'uppercase',
+            display: 'flex',
+          }}
+        >
+          fullstackhuman.sh/lab/flurss
+        </div>
+        <div
+          style={{
+            width: 40,
+            height: 1,
+            backgroundColor: '#d4a017',
+            display: 'flex',
+          }}
+        />
       </div>
     </div>,
     {
