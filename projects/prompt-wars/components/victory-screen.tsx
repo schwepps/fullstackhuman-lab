@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import type { AttemptResult } from '@/lib/types'
 import { TOTAL_LEVELS } from '@/lib/constants'
 import { ShareButtons } from '@/components/share-buttons'
+import { LeaderboardPrompt } from '@/components/leaderboard-prompt'
 import { SupportCta } from '@/components/support-cta'
 import { useModalKeyboard } from '@/hooks/use-modal-keyboard'
 
@@ -76,7 +77,7 @@ export function VictoryScreen({
       <div className="fixed inset-0 bg-background/95" />
 
       {/* Content */}
-      <div className="relative z-10 w-full max-w-lg animate-scale-in">
+      <div className="relative z-10 w-full max-w-lg max-h-[90vh] overflow-y-auto terminal-scrollbar animate-scale-in">
         {/* ASCII Art */}
         {showAscii && (
           <div className="mb-4 overflow-x-auto">
@@ -144,6 +145,9 @@ export function VictoryScreen({
                 against it
               </div>
             </button>
+
+            {/* Leaderboard */}
+            <LeaderboardPrompt />
 
             {/* Share */}
             <ShareButtons

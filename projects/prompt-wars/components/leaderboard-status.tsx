@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { DISPLAY_NAME_MAX_LENGTH, DISPLAY_NAME_PATTERN } from '@/lib/constants'
+import { postLeaderboard, LeaderboardError } from '@/lib/leaderboard-client'
 
 interface LeaderboardStatusProps {
   sessionId: string
@@ -14,39 +15,6 @@ interface LeaderboardStatusProps {
   onUpdateLeaderboardSync: (syncedScore: number) => void
   onResetLeaderboard: () => void
   onDisplayNameChange: (name: string) => void
-}
-
-class LeaderboardError extends Error {
-  constructor(
-    message: string,
-    public readonly status: number
-  ) {
-    super(message)
-  }
-}
-
-const USER_ERROR_MAP: Record<number, string> = {
-  403: 'No verified wins found. Play a level first.',
-  429: 'Too many submissions. Try again later.',
-}
-
-async function postLeaderboard(
-  sessionId: string,
-  displayName: string
-): Promise<{ totalScore: number }> {
-  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
-  const res = await fetch(`${basePath}/api/leaderboard`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sessionId, displayName }),
-  })
-  if (!res.ok) {
-    throw new LeaderboardError(
-      USER_ERROR_MAP[res.status] ?? 'Something went wrong. Try again.',
-      res.status
-    )
-  }
-  return (await res.json()) as { totalScore: number }
 }
 
 export function LeaderboardStatus({
@@ -191,6 +159,9 @@ export function LeaderboardStatus({
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && isValidName) handleJoin()
+            }}
             placeholder="Enter your callsign..."
             maxLength={DISPLAY_NAME_MAX_LENGTH}
             disabled={status === 'submitting'}
