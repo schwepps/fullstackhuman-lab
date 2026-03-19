@@ -1,11 +1,14 @@
 'use client'
 
+import { useState, useCallback } from 'react'
 import Link from 'next/link'
 import { useSession } from '@/hooks/use-session'
 import { LevelCard } from '@/components/level-card'
 import { LevelProgress } from '@/components/level-progress'
 import { LeaderboardStatus } from '@/components/leaderboard-status'
 import { SupportCta } from '@/components/support-cta'
+import { DefenseExplainer } from '@/components/defense-explainer'
+import { ShareModal } from '@/components/share-modal'
 import type { LevelPublicInfo } from '@/lib/types'
 
 interface HomeContentProps {
@@ -27,8 +30,35 @@ export function HomeContent({ levels }: HomeContentProps) {
     resetLeaderboard,
   } = useSession()
 
+  const [debriefLevelId, setDebriefLevelId] = useState<number | null>(null)
+  const [shareLevelId, setShareLevelId] = useState<number | null>(null)
+
   const completedCount = getCompletedCount()
   const totalScore = getTotalScore()
+
+  const handleDebrief = useCallback((levelId: number) => {
+    setDebriefLevelId(levelId)
+  }, [])
+
+  const handleShare = useCallback((levelId: number) => {
+    setShareLevelId(levelId)
+  }, [])
+
+  const handleCloseDebrief = useCallback(() => {
+    setDebriefLevelId(null)
+  }, [])
+
+  const handleCloseShare = useCallback(() => {
+    setShareLevelId(null)
+  }, [])
+
+  const debriefLevel = debriefLevelId
+    ? levels.find((l) => l.id === debriefLevelId)
+    : null
+  const shareLevel = shareLevelId
+    ? levels.find((l) => l.id === shareLevelId)
+    : null
+  const shareProgress = shareLevelId ? getLevelProgress(shareLevelId) : null
 
   return (
     <main className="min-h-svh p-4 sm:p-6 lg:p-8 pb-safe">
@@ -72,6 +102,8 @@ export function HomeContent({ levels }: HomeContentProps) {
               isCompleted={progress.completed}
               score={progress.score}
               learningTeaser={level.learningTeaser}
+              onDebrief={progress.completed ? handleDebrief : undefined}
+              onShare={progress.completed ? handleShare : undefined}
             />
           )
         })}
@@ -115,6 +147,28 @@ export function HomeContent({ levels }: HomeContentProps) {
           experiment
         </p>
       </div>
+
+      {/* Debrief modal */}
+      {debriefLevel && (
+        <DefenseExplainer
+          education={debriefLevel.education}
+          levelId={debriefLevel.id}
+          onClose={handleCloseDebrief}
+        />
+      )}
+
+      {/* Share modal */}
+      {shareLevel && shareProgress && (
+        <ShareModal
+          levelId={shareLevel.id}
+          levelName={shareLevel.name}
+          difficulty={shareLevel.difficulty}
+          score={shareProgress.score}
+          attemptsUsed={shareProgress.attempts}
+          resultId={shareProgress.resultId}
+          onClose={handleCloseShare}
+        />
+      )}
     </main>
   )
 }

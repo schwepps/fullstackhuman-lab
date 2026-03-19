@@ -126,6 +126,25 @@ export function VictoryScreen({
               </div>
             )}
 
+            {/* Debrief — primary educational CTA */}
+            <button
+              onClick={onViewDebrief}
+              className="w-full terminal-border bg-popover p-4 text-left
+                         hover:border-primary/60 hover:shadow-[0_0_20px_rgba(0,255,65,0.15)]
+                         transition-all touch-manipulation group"
+            >
+              <div className="text-xs text-accent uppercase tracking-widest mb-1">
+                What did you just exploit?
+              </div>
+              <div className="text-sm text-primary terminal-text-glow group-hover:text-primary">
+                VIEW DEBRIEF
+              </div>
+              <div className="text-xs text-muted-foreground mt-1">
+                Learn about the vulnerability and how real systems defend
+                against it
+              </div>
+            </button>
+
             {/* Share */}
             <ShareButtons
               levelId={levelId}
@@ -154,13 +173,6 @@ export function VictoryScreen({
                   ALL DEFENSES BREACHED — YOU WIN
                 </div>
               )}
-              <button
-                onClick={onViewDebrief}
-                className="w-full h-11 border border-accent/40 text-accent text-sm
-                           hover:border-accent/60 hover:text-accent transition-colors touch-manipulation"
-              >
-                VIEW DEBRIEF
-              </button>
               <button
                 onClick={onBackToLevels}
                 className="w-full h-11 border border-muted text-muted-foreground text-sm

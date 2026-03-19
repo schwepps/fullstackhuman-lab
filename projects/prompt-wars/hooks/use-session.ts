@@ -101,7 +101,12 @@ export function useSession() {
   )
 
   const recordWin = useCallback(
-    (levelId: number, score: number, winningPrompt: string) => {
+    (
+      levelId: number,
+      score: number,
+      winningPrompt: string,
+      resultId?: string
+    ) => {
       setState((prev) => {
         const current = prev.levels[levelId] ?? {
           ...DEFAULT_LEVEL_PROGRESS,
@@ -120,6 +125,7 @@ export function useSession() {
               completed: true,
               score,
               winningPrompt,
+              resultId,
             },
           },
         }

@@ -9,10 +9,12 @@ import { AiResponse } from '@/components/ai-response'
 import { DefenseVisualizer } from '@/components/defense-visualizer'
 import { VictoryScreen } from '@/components/victory-screen'
 import { FailureFeedback } from '@/components/failure-feedback'
-import { LevelProgress } from '@/components/level-progress'
+import { PlayHeader } from '@/components/play-header'
 import { HintPanel } from '@/components/hint-panel'
 import { AttemptHistory } from '@/components/attempt-history'
 import { DefenseExplainer } from '@/components/defense-explainer'
+import { ShareModal } from '@/components/share-modal'
+import { CompletedLevelBar } from '@/components/completed-level-bar'
 import { TOTAL_LEVELS } from '@/lib/constants'
 import type { LevelPublicInfo } from '@/lib/types'
 
@@ -23,7 +25,8 @@ interface PlayClientProps {
 export function PlayClient({ level }: PlayClientProps) {
   const levelId = level.id
   const router = useRouter()
-  const [showExplainer, setShowExplainer] = useState(false)
+  const [showDebrief, setShowDebrief] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
   const {
     state: session,
     getLevelProgress,
@@ -57,7 +60,12 @@ export function PlayClient({ level }: PlayClientProps) {
       })
 
       if (attempt.result.success && attempt.result.score != null) {
-        recordWin(levelId, attempt.result.score, lastPromptRef.current)
+        recordWin(
+          levelId,
+          attempt.result.score,
+          lastPromptRef.current,
+          attempt.result.resultId
+        )
       }
     }
   }, [attempt.result, levelId, recordAttempt, recordWin])
@@ -80,16 +88,24 @@ export function PlayClient({ level }: PlayClientProps) {
     }
   }, [levelId, router, resetAttempt])
 
-  const handleViewDebrief = useCallback(() => {
-    setShowExplainer(true)
+  const handleOpenDebrief = useCallback(() => {
+    setShowDebrief(true)
+  }, [])
+
+  const handleCloseDebrief = useCallback(() => {
+    setShowDebrief(false)
   }, [])
 
   const handleBackToLevels = useCallback(() => {
     router.push('/')
   }, [router])
 
-  const handleCloseExplainer = useCallback(() => {
-    setShowExplainer(false)
+  const handleOpenShare = useCallback(() => {
+    setShowShareModal(true)
+  }, [])
+
+  const handleCloseShare = useCallback(() => {
+    setShowShareModal(false)
   }, [])
 
   const isProcessing =
@@ -98,26 +114,11 @@ export function PlayClient({ level }: PlayClientProps) {
 
   return (
     <main className="min-h-svh pb-safe">
-      {/* Header */}
-      <div className="sticky top-0 z-50 bg-background/95 border-b border-border p-3 sm:p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-2">
-            <button
-              onClick={() => router.push('/')}
-              className="text-xs text-muted-foreground hover:text-primary transition-colors touch-manipulation"
-            >
-              {'<'} BACK
-            </button>
-            <span className="text-xs text-accent">
-              LEVEL {levelId} — {level.name.toUpperCase()}
-            </span>
-          </div>
-          <LevelProgress
-            currentLevel={levelId}
-            completedLevels={completedCount}
-          />
-        </div>
-      </div>
+      <PlayHeader
+        levelId={levelId}
+        levelName={level.name}
+        completedLevels={completedCount}
+      />
 
       {/* Content */}
       <div className="max-w-4xl mx-auto p-4 sm:p-6">
@@ -128,6 +129,16 @@ export function PlayClient({ level }: PlayClientProps) {
             <div className="text-sm text-muted-foreground">
               <span className="text-accent">{'>'}</span> {level.description}
             </div>
+
+            {/* Persistent actions for completed levels */}
+            {progress.completed && (
+              <CompletedLevelBar
+                score={progress.score}
+                attempts={progress.attempts}
+                onOpenDebrief={handleOpenDebrief}
+                onOpenShare={handleOpenShare}
+              />
+            )}
 
             {/* Prompt input */}
             <TerminalPrompt
@@ -192,17 +203,30 @@ export function PlayClient({ level }: PlayClientProps) {
           difficulty={level.difficulty}
           totalAttempts={progress.attempts}
           onNextLevel={handleNextLevel}
-          onViewDebrief={handleViewDebrief}
+          onViewDebrief={handleOpenDebrief}
           onBackToLevels={handleBackToLevels}
         />
       )}
 
-      {/* Educational explainer (shows after dismissing victory) */}
-      {showExplainer && (
+      {/* Debrief modal */}
+      {showDebrief && (
         <DefenseExplainer
           education={level.education}
           levelId={levelId}
-          onClose={handleCloseExplainer}
+          onClose={handleCloseDebrief}
+        />
+      )}
+
+      {/* Share modal */}
+      {showShareModal && (
+        <ShareModal
+          levelId={levelId}
+          levelName={level.name}
+          difficulty={level.difficulty}
+          score={progress.score}
+          attemptsUsed={progress.attempts}
+          resultId={progress.resultId}
+          onClose={handleCloseShare}
         />
       )}
     </main>

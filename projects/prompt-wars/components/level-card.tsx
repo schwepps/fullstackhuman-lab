@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import type { MouseEvent } from 'react'
 
 interface LevelCardProps {
   id: number
@@ -11,6 +12,8 @@ interface LevelCardProps {
   isCompleted: boolean
   score: number
   learningTeaser: string
+  onDebrief?: (levelId: number) => void
+  onShare?: (levelId: number) => void
 }
 
 export function LevelCard({
@@ -22,6 +25,8 @@ export function LevelCard({
   isCompleted,
   score,
   learningTeaser,
+  onDebrief,
+  onShare,
 }: LevelCardProps) {
   if (!isUnlocked) {
     return (
@@ -36,6 +41,12 @@ export function LevelCard({
         </div>
       </div>
     )
+  }
+
+  function handleAction(e: MouseEvent, action: (levelId: number) => void) {
+    e.preventDefault()
+    e.stopPropagation()
+    action(id)
   }
 
   return (
@@ -78,6 +89,32 @@ export function LevelCard({
           />
         ))}
       </div>
+
+      {/* Persistent actions for completed levels */}
+      {isCompleted && (onDebrief || onShare) && (
+        <div className="mt-3 pt-3 border-t border-border/40 flex gap-2">
+          {onDebrief && (
+            <button
+              onClick={(e) => handleAction(e, onDebrief)}
+              className="flex-1 h-8 text-xs text-primary border border-primary/40
+                         hover:bg-primary/10 hover:border-primary/60 transition-colors
+                         touch-manipulation uppercase tracking-wider terminal-text-glow"
+            >
+              Debrief
+            </button>
+          )}
+          {onShare && (
+            <button
+              onClick={(e) => handleAction(e, onShare)}
+              className="flex-1 h-8 text-xs text-muted-foreground border border-muted/30
+                         hover:border-primary/40 hover:text-foreground transition-colors
+                         touch-manipulation uppercase tracking-wider"
+            >
+              Share
+            </button>
+          )}
+        </div>
+      )}
     </Link>
   )
 }

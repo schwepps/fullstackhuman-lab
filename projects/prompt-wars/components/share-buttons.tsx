@@ -11,6 +11,32 @@ function getShareVerb(levelId: number): string {
   return 'conquered'
 }
 
+function getShareText(params: {
+  variant: 'victory' | 'retrospective'
+  levelId: number
+  levelName: string
+  difficulty: string
+  score: number
+  attemptsUsed: number
+}): string {
+  const { variant, levelId, levelName, difficulty, score, attemptsUsed } =
+    params
+  const allCleared = levelId === TOTAL_LEVELS
+
+  if (variant === 'retrospective') {
+    if (allCleared) {
+      return `I breached all ${TOTAL_LEVELS} AI defenses in Prompt Wars — ${score}pts total. Can you do it?`
+    }
+    return `I breached Level ${levelId}: ${levelName} in Prompt Wars — ${score}pts in ${attemptsUsed} attempts. Can you beat that?`
+  }
+
+  const verb = getShareVerb(levelId)
+  if (allCleared) {
+    return `I ${verb} all ${TOTAL_LEVELS} levels of Prompt Wars (${difficulty})! Score: ${score}pts. Think you can beat that?`
+  }
+  return `I ${verb} Level ${levelId} (${levelName} — ${difficulty}) in Prompt Wars! ${attemptsUsed} attempts, ${score}pts. Can you beat my score?`
+}
+
 interface ShareButtonsProps {
   levelId: number
   levelName: string
@@ -18,6 +44,7 @@ interface ShareButtonsProps {
   score: number
   attemptsUsed: number
   resultId?: string
+  variant?: 'victory' | 'retrospective'
 }
 
 export function ShareButtons({
@@ -27,14 +54,18 @@ export function ShareButtons({
   score,
   attemptsUsed,
   resultId,
+  variant = 'victory',
 }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false)
 
-  const verb = getShareVerb(levelId)
-  const allCleared = levelId === TOTAL_LEVELS
-  const shareText = allCleared
-    ? `I ${verb} all ${TOTAL_LEVELS} levels of Prompt Wars (${difficulty})! Score: ${score}pts. Think you can beat that?`
-    : `I ${verb} Level ${levelId} (${levelName} — ${difficulty}) in Prompt Wars! ${attemptsUsed} attempts, ${score}pts. Can you beat my score?`
+  const shareText = getShareText({
+    variant,
+    levelId,
+    levelName,
+    difficulty,
+    score,
+    attemptsUsed,
+  })
 
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
@@ -75,7 +106,7 @@ export function ShareButtons({
           rel="noopener noreferrer"
           className="btn-terminal flex-1 h-10 flex items-center justify-center gap-1.5 text-xs"
         >
-          <XIcon className="size-4" />X
+          <XIcon className="size-4" />
         </a>
       </div>
       <button

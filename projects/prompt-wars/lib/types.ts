@@ -93,6 +93,7 @@ export interface LevelProgress {
   attempts: number
   score: number
   winningPrompt: string | null
+  resultId?: string
   history: AttemptRecord[]
 }
 
