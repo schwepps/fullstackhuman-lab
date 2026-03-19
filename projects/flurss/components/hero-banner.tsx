@@ -55,6 +55,7 @@ export function HeroBanner({ article }: { article: Article }) {
             year: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
+            timeZone: 'Europe/Paris',
           })}
           {' \u2014 An 3 de la Revolution Numerique'}
         </time>

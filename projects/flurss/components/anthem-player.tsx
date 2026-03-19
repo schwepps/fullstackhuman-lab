@@ -61,6 +61,9 @@ export function AnthemPlayer() {
     (e: React.KeyboardEvent) => {
       const audio = audioRef.current
       if (!audio || !duration) return
+      const handled = ['ArrowRight', 'ArrowLeft', 'Home', 'End']
+      if (!handled.includes(e.key)) return
+      e.preventDefault()
       if (e.key === 'ArrowRight')
         audio.currentTime = Math.min(audio.currentTime + SEEK_STEP, duration)
       else if (e.key === 'ArrowLeft')
@@ -184,7 +187,11 @@ export function AnthemPlayer() {
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleEnded}
-        onError={() => setHasError(true)}
+        onError={() => {
+          setHasError(true)
+          setIsPlaying(false)
+          setProgress(0)
+        }}
       />
     </section>
   )

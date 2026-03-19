@@ -28,13 +28,13 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     siteName: 'FullStackHuman',
     type: 'website',
-    images: ['/api/og'],
+    images: [`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/og`],
   },
   twitter: {
     card: 'summary_large_image',
     title: `${SITE_NAME} — Le premier site de propagande du FlURSS`,
     description: SITE_DESCRIPTION,
-    images: ['/api/og'],
+    images: [`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/api/og`],
   },
 }
 

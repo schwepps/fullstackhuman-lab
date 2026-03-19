@@ -73,6 +73,7 @@ export function ArticleCard({
               month: 'short',
               hour: '2-digit',
               minute: '2-digit',
+              timeZone: 'Europe/Paris',
             })}
           </time>
           <span className="text-[10px] text-primary/60 uppercase tracking-wider font-bold">

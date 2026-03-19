@@ -20,8 +20,10 @@ export function BreakingTicker({ articles }: { articles: Article[] }) {
       <div className="flex">
         <span className="ticker-content text-sm font-bold tracking-wide px-4">
           {tickerText}
-          {'     \u2502     '}
-          {tickerText}
+          <span aria-hidden="true">
+            {'     \u2502     '}
+            {tickerText}
+          </span>
         </span>
       </div>
     </div>
