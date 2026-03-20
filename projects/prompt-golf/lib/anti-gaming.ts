@@ -1,4 +1,4 @@
-import { countWords, getWords } from './word-counter'
+import { countWords, getWords, normalizeInput } from './word-counter'
 import {
   MIN_PROMPT_WORDS,
   MAX_PROMPT_WORDS,
@@ -23,7 +23,9 @@ const BLATANT_CODE_PATTERNS = [
 ]
 
 export function validatePrompt(prompt: string): ValidationResult {
-  const trimmed = prompt.trim()
+  // Normalize NFKC + strip zero-width chars BEFORE pattern matching
+  // to prevent fullwidth Unicode bypasses
+  const trimmed = normalizeInput(prompt)
 
   if (trimmed.length === 0) {
     return { isValid: false, wordCount: 0, reason: 'Prompt is empty.' }

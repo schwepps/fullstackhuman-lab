@@ -131,6 +131,7 @@ export async function getAttemptCount(
 
 /**
  * Check and consume a mulligan for the given course.
+ * Uses SETNX + DECR to avoid TOCTOU race on initialization.
  */
 export async function consumeMulligan(
   sessionId: string,
@@ -139,18 +140,20 @@ export async function consumeMulligan(
   const redis = getRedisClient()
   const key = REDIS_KEYS.mulligans(sessionId, course)
 
-  // Initialize mulligans if not set
-  const current = await redis.get<number>(key)
-  if (current == null) {
-    await redis.set(key, MULLIGANS_PER_COURSE, { ex: RESULT_TTL_SECONDS })
-    // Now consume one
-    const remaining = await redis.decr(key)
-    return remaining >= 0
+  // Initialize atomically if not set (SETNX = set-if-not-exists)
+  await redis.set(key, MULLIGANS_PER_COURSE, {
+    ex: RESULT_TTL_SECONDS,
+    nx: true,
+  })
+
+  // Atomically decrement and check
+  const remaining = await redis.decr(key)
+  if (remaining < 0) {
+    // Over-decremented — restore and reject
+    await redis.incr(key)
+    return false
   }
 
-  if (current <= 0) return false
-
-  await redis.decr(key)
   return true
 }
 

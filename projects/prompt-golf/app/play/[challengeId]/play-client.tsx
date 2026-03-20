@@ -50,6 +50,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
   )
 
   const [showMulliganOffer, setShowMulliganOffer] = useState(false)
+  const [pendingMulligan, setPendingMulligan] = useState(false)
 
   // Track the prompt for the current swing (for recordScoredAttempt + share)
   const [lastPrompt, setLastPrompt] = useState('')
@@ -73,12 +74,15 @@ export function PlayClient({ challenge }: PlayClientProps) {
       const isPractice = mode === 'practice'
       setLastPrompt(prompt)
 
+      const isMulligan = pendingMulligan
+      if (isMulligan) setPendingMulligan(false)
+
       await sendSwing(
         challenge.id,
         prompt,
         session.sessionId,
         isPractice,
-        false
+        isMulligan
       )
 
       if (isPractice) {
@@ -90,6 +94,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
     },
     [
       mode,
+      pendingMulligan,
       challenge.id,
       session.sessionId,
       sendSwing,
@@ -100,6 +105,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
   const handleMulligan = useCallback(() => {
     consumeMulligan(challenge.course)
+    setPendingMulligan(true)
     setShowMulliganOffer(false)
     reset()
   }, [challenge.course, consumeMulligan, reset])
