@@ -243,7 +243,8 @@ export async function POST(request: NextRequest) {
           challenge,
           prompt,
           generatedCode,
-          isPractice ? 'practice' : pass ? 'pass' : 'fail'
+          isPractice ? 'practice' : pass ? 'pass' : 'fail',
+          validation.wordCount
         )
 
         const score = !isPractice

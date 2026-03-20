@@ -24,11 +24,13 @@ export async function analyzeSwing(
   challenge: CodeChallenge,
   playerPrompt: string,
   generatedCode: string,
-  verdict: 'pass' | 'fail' | 'practice'
+  verdict: 'pass' | 'fail' | 'practice',
+  wordCount: number
 ): Promise<SwingAnalysis> {
   const systemPrompt = buildAnalyzerPrompt(challenge, verdict)
 
   const userMessage = `Player's prompt: "${playerPrompt}"
+Word count: ${wordCount} (target: ${challenge.par})
 
 Generated code:
 \`\`\`typescript
@@ -60,6 +62,9 @@ Principle being taught: ${challenge.principle}
 
 ## Challenge-Specific Knowledge
 ${challenge.analyzerContext}
+
+## Important
+The word count is provided in the user message. ALWAYS use the provided word count — do NOT count words yourself. Your counting will be wrong.
 
 ## Your Task
 Analyze the player's prompt and the code it generated.
