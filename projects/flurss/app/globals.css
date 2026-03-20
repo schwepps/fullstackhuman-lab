@@ -191,7 +191,7 @@
 
   /* Gold decorative line */
   .gold-line {
-    @apply h-px bg-gradient-to-r from-transparent via-gold to-transparent;
+    @apply h-px bg-linear-to-r from-transparent via-gold to-transparent;
   }
 
   /* Red star decorative */
@@ -220,7 +220,7 @@
   .section-heading::before,
   .section-heading::after {
     content: '';
-    @apply h-px flex-1 bg-gradient-to-r from-gold/40 to-transparent;
+    @apply h-px flex-1 bg-linear-to-r from-gold/40 to-transparent;
   }
   .section-heading::after {
     @apply bg-gradient-to-l;

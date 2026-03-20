@@ -13,7 +13,7 @@ export function StateAnnouncements() {
         className="bg-primary px-4 py-3 text-center"
         style={{ fontFamily: 'var(--font-heading)' }}
       >
-        <h2 className="text-xs font-bold uppercase tracking-[0.1em] text-foreground whitespace-nowrap">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-foreground whitespace-nowrap">
           ★ Communiqués du Parti ★
         </h2>
       </div>

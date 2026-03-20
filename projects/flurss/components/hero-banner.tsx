@@ -8,7 +8,7 @@ export function HeroBanner({ article }: { article: Article }) {
   return (
     <article className="relative overflow-hidden">
       {/* Hero image */}
-      <div className="relative aspect-[16/9] sm:aspect-[21/9]">
+      <div className="relative aspect-video sm:aspect-21/9">
         <Image
           src={IMAGES.hero}
           alt="FlURSS — Information, arme du prolétariat"
@@ -17,7 +17,7 @@ export function HeroBanner({ article }: { article: Article }) {
           className="object-cover"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-background via-background/60 to-transparent" />
       </div>
 
       {/* Content overlay */}
