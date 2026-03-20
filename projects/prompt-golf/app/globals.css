@@ -238,7 +238,7 @@
 
   /* Gold divider */
   .gold-divider {
-    @apply h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent;
+    @apply h-px bg-linear-to-r from-transparent via-accent/40 to-transparent;
   }
 
   /* Scorecard styles */

@@ -223,6 +223,6 @@
     @apply h-px flex-1 bg-linear-to-r from-gold/40 to-transparent;
   }
   .section-heading::after {
-    @apply bg-gradient-to-l;
+    @apply bg-linear-to-l;
   }
 }
