@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { getChallengesByCourseName } from '@/lib/challenges'
 import { COURSES } from '@/lib/constants'
+import { SupportCta } from '@/components/support-cta'
 
 export default function HomePage() {
   const frontNine = getChallengesByCourseName('front-9')
@@ -91,8 +92,13 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Support */}
+      <div className="mt-10">
+        <SupportCta variant="card" />
+      </div>
+
       {/* Footer */}
-      <div className="mt-12 text-center">
+      <div className="mt-8 text-center">
         <p className="font-serif text-xs text-muted-foreground/40">
           A{' '}
           <a
