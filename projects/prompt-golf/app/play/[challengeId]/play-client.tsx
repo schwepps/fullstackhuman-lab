@@ -52,6 +52,8 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
   const [showMulliganOffer, setShowMulliganOffer] = useState(false)
   const [pendingMulligan, setPendingMulligan] = useState(false)
+  // When returning to a completed challenge, show debrief until player clicks "improve"
+  const [showRetryInput, setShowRetryInput] = useState(!progress.isComplete)
 
   const [lastPrompt, setLastPrompt] = useState('')
 
@@ -201,79 +203,121 @@ export function PlayClient({ challenge }: PlayClientProps) {
         </div>
       </div>
 
-      {/* Debrief — shown when returning to a completed challenge (before any new attempt) */}
+      {/* Debrief — shown when returning to a completed challenge */}
       {progress.isComplete &&
+        !showRetryInput &&
         state.status === 'idle' &&
         progress.bestPrompt &&
         progress.bestScore && (
-          <div className="mb-6 club-card overflow-hidden border-primary/30">
-            <div className="px-5 py-4">
-              <p className="font-serif text-xs uppercase tracking-wider text-primary">
-                Your Best
-              </p>
-              <p className="mt-2 font-serif text-lg text-foreground">
-                &ldquo;{progress.bestPrompt}&rdquo;
-              </p>
-              <p className="mt-1 font-mono text-sm text-muted-foreground">
-                {progress.bestScore.wordCount} words &middot;{' '}
-                {getScoreDisplayLabel(progress.bestScore.label)}
-              </p>
-            </div>
-
-            {/* Persisted educational content */}
-            {progress.optimalPrompt && progress.concept && (
-              <div className="border-t border-border/30 px-5 py-4">
-                <p className="font-serif text-xs uppercase tracking-wider text-accent">
-                  Pro Prompt
-                </p>
-                <p className="mt-2 font-serif text-lg text-foreground">
-                  &ldquo;{progress.optimalPrompt}&rdquo;
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  <span className="font-semibold text-accent">
-                    Why it works:{' '}
+          <div className="space-y-4">
+            {/* Your best result */}
+            <div className="club-card overflow-hidden border-primary/30">
+              <div className="px-5 py-4">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-serif text-xs uppercase tracking-wider text-primary">
+                    Your Best
+                  </p>
+                  <span
+                    className={`font-serif text-sm font-bold ${
+                      progress.bestScore.relativeScore > 0
+                        ? 'text-accent'
+                        : 'score-birdie'
+                    }`}
+                  >
+                    {getScoreDisplayLabel(progress.bestScore.label)}
                   </span>
-                  {progress.concept}
+                </div>
+                <p className="mt-2 font-serif text-xl text-foreground">
+                  &ldquo;{progress.bestPrompt}&rdquo;
+                </p>
+                <p className="mt-1 font-mono text-sm text-muted-foreground">
+                  {progress.bestScore.wordCount} words &middot; target{' '}
+                  {progress.bestScore.par}
                 </p>
               </div>
+
+              {/* Persisted educational content */}
+              {progress.optimalPrompt && progress.concept && (
+                <div className="border-t border-border/30 px-5 py-4">
+                  <p className="font-serif text-xs uppercase tracking-wider text-accent">
+                    Pro Prompt
+                  </p>
+                  <div className="mt-2 flex items-baseline justify-between">
+                    <p className="font-serif text-xl text-foreground">
+                      &ldquo;{progress.optimalPrompt}&rdquo;
+                    </p>
+                    <span className="ml-3 shrink-0 font-mono text-sm text-primary">
+                      {progress.optimalPrompt.split(/\s+/).length} words
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    <span className="font-semibold text-accent">
+                      Why it works:{' '}
+                    </span>
+                    {progress.concept}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Try to improve */}
+            <button
+              onClick={() => setShowRetryInput(true)}
+              className="btn-fairway w-full"
+            >
+              Try to Improve Your Score
+            </button>
+
+            {/* Navigate to next challenge */}
+            {challenge.nextChallengeId && (
+              <button
+                onClick={() =>
+                  router.push(`/play/${challenge.nextChallengeId}`)
+                }
+                className="btn-club w-full"
+              >
+                Next Challenge &rarr;
+              </button>
             )}
           </div>
         )}
 
-      {/* Mode indicator */}
-      <div className="mb-4 flex items-center gap-3">
-        {mode === 'practice' ? (
-          <div className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1">
-            <span className="inline-block h-2 w-2 rounded-full bg-primary" />
-            <span className="font-serif text-xs uppercase tracking-wider text-primary">
-              Practice Mode
-            </span>
-            <span className="font-mono text-xs text-muted-foreground">
-              ({2 - progress.practiceSwings} free{' '}
-              {2 - progress.practiceSwings === 1 ? 'try' : 'tries'} left)
-            </span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1">
-            <span className="inline-block h-2 w-2 rounded-full bg-accent" />
-            <span className="font-serif text-xs uppercase tracking-wider text-accent">
-              Scored Attempt
-            </span>
-            {mulligansLeft > 0 && (
-              <span className="font-mono text-xs text-muted-foreground">
-                ({mulligansLeft} free{' '}
-                {mulligansLeft === 1 ? 'retry' : 'retries'})
+      {/* Mode indicator — only when actively playing */}
+      {showRetryInput && (
+        <div className="mb-4 flex items-center gap-3">
+          {mode === 'practice' ? (
+            <div className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-primary" />
+              <span className="font-serif text-xs uppercase tracking-wider text-primary">
+                Practice Mode
               </span>
-            )}
-          </div>
-        )}
+              <span className="font-mono text-xs text-muted-foreground">
+                ({2 - progress.practiceSwings} free{' '}
+                {2 - progress.practiceSwings === 1 ? 'try' : 'tries'} left)
+              </span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-accent" />
+              <span className="font-serif text-xs uppercase tracking-wider text-accent">
+                Scored Attempt
+              </span>
+              {mulligansLeft > 0 && (
+                <span className="font-mono text-xs text-muted-foreground">
+                  ({mulligansLeft} free{' '}
+                  {mulligansLeft === 1 ? 'retry' : 'retries'})
+                </span>
+              )}
+            </div>
+          )}
 
-        {progress.isComplete && (
-          <span className="font-serif text-xs text-primary">
-            {'\u2713'} Completed
-          </span>
-        )}
-      </div>
+          {progress.isComplete && (
+            <span className="font-serif text-xs text-primary">
+              {'\u2713'} Completed
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Free retry offer */}
       {showMulliganOffer && (
@@ -298,8 +342,8 @@ export function PlayClient({ challenge }: PlayClientProps) {
         </div>
       )}
 
-      {/* Prompt input */}
-      {!showMulliganOffer && state.status === 'idle' && (
+      {/* Prompt input — hidden when showing debrief */}
+      {showRetryInput && !showMulliganOffer && state.status === 'idle' && (
         <PromptInput
           onSubmit={handleSubmit}
           disabled={isLoading}
