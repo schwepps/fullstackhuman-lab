@@ -43,7 +43,7 @@ export function PromptInput({
           className="w-full resize-none rounded-sm border border-border bg-background/60 px-4 py-3 font-sans text-base text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 sm:text-sm"
           rows={3}
           maxLength={500}
-          autoFocus
+          autoFocus={false}
         />
 
         {/* Word count badge */}

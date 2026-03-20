@@ -21,9 +21,9 @@ export async function analyzeSwing(
   challenge: CodeChallenge,
   playerPrompt: string,
   generatedCode: string,
-  passed: boolean
+  verdict: 'pass' | 'fail' | 'practice'
 ): Promise<SwingAnalysis> {
-  const systemPrompt = buildAnalyzerPrompt(challenge, passed)
+  const systemPrompt = buildAnalyzerPrompt(challenge, verdict)
 
   const userMessage = `Player's prompt: "${playerPrompt}"
 
@@ -32,7 +32,7 @@ Generated code:
 ${generatedCode}
 \`\`\`
 
-Result: ${passed ? 'PASSED' : 'FAILED'}`
+Result: ${verdict === 'pass' ? 'PASSED' : verdict === 'fail' ? 'FAILED' : 'PRACTICE (not judged)'}`
 
   const response = await callClaude(
     ANALYZER_MODEL,
@@ -46,7 +46,7 @@ Result: ${passed ? 'PASSED' : 'FAILED'}`
 
 function buildAnalyzerPrompt(
   challenge: CodeChallenge,
-  passed: boolean
+  verdict: 'pass' | 'fail' | 'practice'
 ): string {
   const base = `You are the swing analyzer for Prompt Golf — a game where players describe code in as few words as possible.
 
@@ -70,12 +70,20 @@ Wrap your output in <analysis> tags as JSON:
 {"summary": "...", "detail": "..."}
 </analysis>`
 
-  if (passed) {
+  if (verdict === 'pass') {
     return `${base}
 
 ## For PASSING attempts:
 - summary: "Load-bearing: [key words]. Filler: [removable words]. [compression tip]."
 - detail: Explain which words were essential vs removable, what the AI inferred implicitly, and how a pro might compress further. Connect to the hole's learning principle: "${challenge.principle}".`
+  }
+
+  if (verdict === 'practice') {
+    return `${base}
+
+## For PRACTICE swings (code was NOT judged for correctness):
+- summary: "Interesting approach. [observation about word choice]. Try scoring to see if it passes."
+- detail: Comment on the player's prompt strategy — which words seem promising, what the AI interpreted, and what to refine. Do NOT claim the code is correct or incorrect (it was not judged). Connect to the hole's learning principle: "${challenge.principle}".`
   }
 
   return `${base}

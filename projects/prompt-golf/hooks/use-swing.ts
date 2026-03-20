@@ -31,6 +31,7 @@ export interface SwingState {
   codeTokens: string
   code: string | null
   wordCount: number | null
+  resultId: string | null
   verdict: {
     pass: boolean
     testResults: JudgeTestResult[]
@@ -47,6 +48,7 @@ const INITIAL_STATE: SwingState = {
   codeTokens: '',
   code: null,
   wordCount: null,
+  resultId: null,
   verdict: null,
   score: null,
   analysis: null,
@@ -271,6 +273,7 @@ function handleSSEEvent(
       setState((prev) => ({
         ...prev,
         status: result.verdict?.pass ? 'pass' : 'fail',
+        resultId: result.resultId ?? prev.resultId,
         score: result.score ?? prev.score,
         analysis: result.analysis ?? prev.analysis,
       }))

@@ -84,7 +84,8 @@ export function SwingResultPanel({
         <div className="club-card p-4">
           <button
             onClick={() => setAnalysisExpanded(!isAnalysisExpanded)}
-            className="flex w-full items-center justify-between text-left"
+            className="flex min-h-11 w-full items-center justify-between rounded-sm text-left touch-manipulation focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            aria-expanded={isAnalysisExpanded}
           >
             <div className="flex items-center gap-2">
               <span className="font-serif text-sm uppercase tracking-wider text-accent/70">

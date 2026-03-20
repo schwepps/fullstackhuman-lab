@@ -102,6 +102,9 @@ After evaluating all test cases:
 - If the function signature does not match (wrong name, wrong params), it FAILS.
 - An empty function body FAILS (unless expected output is undefined for all cases).
 
+## Behavioral Test Cases
+Some test cases have expected value "BEHAVIOR_TEST". For these, evaluate the code BEHAVIORALLY based on the test description only. Do not compare output to the string "BEHAVIOR_TEST". Instead, reason about whether the code structure and logic would produce the described behavior (e.g., "Returns a function that delays invocation" — check if the code creates and returns a debounced wrapper function).
+
 ## Output Format
 
 Output your analysis, then wrap your final verdict in <verdict> tags as JSON:

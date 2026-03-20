@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState, useEffect, useRef } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useSwing } from '@/hooks/use-swing'
@@ -8,6 +8,8 @@ import { useSession } from '@/hooks/use-session'
 import { PromptInput } from '@/components/prompt-input'
 import { CodeOutput } from '@/components/code-output'
 import { SwingResultPanel } from '@/components/swing-result'
+import { ShareButtons } from '@/components/share-buttons'
+import { SupportCta } from '@/components/support-cta'
 
 interface ChallengeInfo {
   id: string
@@ -49,8 +51,8 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
   const [showMulliganOffer, setShowMulliganOffer] = useState(false)
 
-  // Track the prompt for the current swing (for recordScoredAttempt)
-  const lastPromptRef = useRef<string>('')
+  // Track the prompt for the current swing (for recordScoredAttempt + share)
+  const [lastPrompt, setLastPrompt] = useState('')
 
   const isLoading = state.status === 'sending' || state.status === 'streaming'
 
@@ -60,16 +62,16 @@ export function PlayClient({ challenge }: PlayClientProps) {
       state.score &&
       state.score.isPassing &&
       mode === 'scored' &&
-      lastPromptRef.current
+      lastPrompt
     ) {
-      recordScoredAttempt(challenge.id, state.score, lastPromptRef.current)
+      recordScoredAttempt(challenge.id, state.score, lastPrompt)
     }
-  }, [state.score, mode, challenge.id, recordScoredAttempt])
+  }, [state.score, mode, challenge.id, lastPrompt, recordScoredAttempt])
 
   const handleSubmit = useCallback(
     async (prompt: string) => {
       const isPractice = mode === 'practice'
-      lastPromptRef.current = prompt
+      setLastPrompt(prompt)
 
       await sendSwing(
         challenge.id,
@@ -267,6 +269,24 @@ export function PlayClient({ challenge }: PlayClientProps) {
           analysis={state.analysis}
           isPractice={mode === 'practice'}
         />
+
+        {/* Share buttons (on scored pass with resultId) */}
+        {state.status === 'pass' &&
+          mode === 'scored' &&
+          state.resultId &&
+          state.score && (
+            <div className="space-y-3">
+              <ShareButtons
+                challengeName={challenge.name}
+                holeName={`Hole ${challenge.holeNumber}`}
+                prompt={lastPrompt}
+                wordCount={state.score.wordCount}
+                label={state.score.label}
+                resultId={state.resultId}
+              />
+              <SupportCta variant="inline" />
+            </div>
+          )}
 
         {/* Error */}
         {state.status === 'error' && state.error && (

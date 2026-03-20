@@ -232,7 +232,7 @@ export async function POST(request: NextRequest) {
           challenge,
           prompt,
           generatedCode,
-          isPractice ? true : pass
+          isPractice ? 'practice' : pass ? 'pass' : 'fail'
         )
 
         const score = !isPractice

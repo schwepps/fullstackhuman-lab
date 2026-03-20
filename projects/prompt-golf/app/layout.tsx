@@ -62,7 +62,7 @@ export default function RootLayout({
               href="https://fullstackhuman.sh"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex min-h-11 items-center font-serif text-[10px] font-semibold uppercase tracking-[0.15em] transition-colors hover:text-accent"
+              className="flex min-h-11 items-center font-serif text-[10px] font-semibold uppercase tracking-[0.15em] transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               FullStackHuman
             </a>
@@ -71,7 +71,7 @@ export default function RootLayout({
               href="https://fullstackhuman.sh/lab"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex min-h-11 items-center font-serif text-[10px] uppercase tracking-[0.15em] transition-colors hover:text-accent"
+              className="flex min-h-11 items-center font-serif text-[10px] uppercase tracking-[0.15em] transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             >
               Lab
             </a>
