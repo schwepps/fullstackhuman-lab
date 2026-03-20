@@ -7,6 +7,7 @@ import {
   getScoreDisplayLabel,
   getCelebrationMessage,
 } from '@/lib/scoring'
+import { countWords } from '@/lib/word-counter'
 
 interface SwingResultProps {
   verdict: {
@@ -15,7 +16,12 @@ interface SwingResultProps {
     summary: string
   } | null
   score: ScoreResult | null
-  analysis: { summary: string; detail: string } | null
+  analysis: {
+    summary: string
+    detail: string
+    optimalPrompt: string | null
+    concept: string | null
+  } | null
   isPractice: boolean
   prompt?: string
 }
@@ -66,9 +72,19 @@ export function SwingResultPanel({
                 {score.wordCount}
               </p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Words used
+                Words
               </p>
             </div>
+            {score.attemptNumber > 1 && (
+              <div className="flex-1 border-r border-border/30 px-4 py-3 text-center">
+                <p className="font-mono text-lg font-bold text-muted-foreground">
+                  &times;{score.attemptPenalty}
+                </p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Attempt {score.attemptNumber}
+                </p>
+              </div>
+            )}
             <div className="flex-1 border-r border-border/30 px-4 py-3 text-center">
               <p className="font-mono text-lg font-bold text-accent">
                 {score.par}
@@ -94,10 +110,20 @@ export function SwingResultPanel({
                     : score.relativeScore}
               </p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                vs Target
+                {score.attemptNumber > 1 ? 'Effective' : 'vs Target'}
               </p>
             </div>
           </div>
+
+          {/* Penalty explanation */}
+          {score.attemptNumber > 1 && (
+            <div className="border-t border-border/30 px-4 py-2 text-center">
+              <p className="font-mono text-[10px] text-muted-foreground">
+                {score.wordCount} words &times; {score.attemptPenalty}x penalty
+                = {score.effectiveStrokes} effective (target {score.par})
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -144,6 +170,31 @@ export function SwingResultPanel({
           )}
         </div>
       )}
+
+      {/* ── Optimal prompt + concept (pass only) ── */}
+      {analysis?.optimalPrompt && analysis?.concept && (
+        <div className="club-card border-accent/30 p-5">
+          <p className="font-serif text-xs uppercase tracking-wider text-accent">
+            Pro Prompt
+          </p>
+
+          <div className="mt-3 flex items-baseline justify-between">
+            <p className="font-serif text-xl text-foreground">
+              &ldquo;{analysis.optimalPrompt}&rdquo;
+            </p>
+            <span className="ml-3 shrink-0 font-mono text-sm text-primary">
+              {countWords(analysis.optimalPrompt)} words
+            </span>
+          </div>
+
+          <div className="gold-divider mt-3" />
+
+          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+            <span className="font-semibold text-accent">Why it works: </span>
+            {analysis.concept}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
@@ -152,8 +203,6 @@ export function SwingResultPanel({
 function AnalysisSummary({ text, passed }: { text: string; passed: boolean }) {
   if (!text) return null
 
-  // Try to extract structured parts from the summary
-  // Common format: "Load-bearing: 'x', 'y'. Filler: 'a', 'b'. Pro tip: ..."
   const loadBearingMatch = text.match(/load[- ]bearing:\s*([^.]+)/i)
   const fillerMatch = text.match(/filler:\s*([^.]+)/i)
   const tipMatch = text.match(/(?:pro tip|tip|try):\s*(.+?)(?:\.|$)/i)
@@ -163,7 +212,6 @@ function AnalysisSummary({ text, passed }: { text: string; passed: boolean }) {
     loadBearingMatch ?? fillerMatch ?? tipMatch ?? misreadMatch
 
   if (!hasStructure) {
-    // Fallback: just render the text nicely
     return <p className="mt-3 text-sm text-foreground/90">{text}</p>
   }
 

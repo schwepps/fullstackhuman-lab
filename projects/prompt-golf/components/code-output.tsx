@@ -1,5 +1,12 @@
 'use client'
 
+function stripCodeFences(code: string): string {
+  return code
+    .replace(/^```(?:typescript|ts|javascript|js)?\n?/i, '')
+    .replace(/\n?```\s*$/, '')
+    .trim()
+}
+
 interface CodeOutputProps {
   tokens: string
   code: string | null
@@ -7,14 +14,15 @@ interface CodeOutputProps {
 }
 
 export function CodeOutput({ tokens, code, isStreaming }: CodeOutputProps) {
-  const displayCode = code ?? tokens
+  const raw = code ?? tokens
+  const displayCode = raw ? stripCodeFences(raw) : ''
 
   if (!displayCode && !isStreaming) return null
 
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <h3 className="font-serif text-sm uppercase tracking-wider text-accent/70">
+        <h3 className="font-serif text-sm uppercase tracking-wider text-accent">
           Generated Code
         </h3>
         {isStreaming && (
@@ -26,7 +34,7 @@ export function CodeOutput({ tokens, code, isStreaming }: CodeOutputProps) {
       </div>
 
       <div className="code-block">
-        <pre className="whitespace-pre-wrap break-words">
+        <pre className="whitespace-pre-wrap wrap-break-word">
           <code>{displayCode}</code>
           {isStreaming && (
             <span className="inline-block h-4 w-1.5 animate-pulse bg-accent/60" />

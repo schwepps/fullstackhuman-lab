@@ -96,7 +96,7 @@ export function getCelebrationMessage(label: string): string {
     case 'Bogey':
       return 'Bogey. The caddie politely looks away.'
     case 'Double Bogey':
-      return 'Double Bogey. The bartender at the 19th Hole starts pouring early.'
+      return 'Double Bogey. The bartender starts pouring early.'
     case 'Triple Bogey':
       return 'Triple Bogey. Your clubs have filed a formal complaint.'
     default:

@@ -94,7 +94,15 @@ export type SSEEvent =
         summary: string
       }
     }
-  | { type: 'analysis'; data: { summary: string; detail: string } }
+  | {
+      type: 'analysis'
+      data: {
+        summary: string
+        detail: string
+        optimalPrompt: string | null
+        concept: string | null
+      }
+    }
   | { type: 'result'; data: SwingResult }
   | { type: 'error'; data: { message: string } }
 
@@ -121,7 +129,12 @@ export interface SwingResult {
     summary: string
   }
   score: ScoreResult | null
-  analysis: { summary: string; detail: string } | null
+  analysis: {
+    summary: string
+    detail: string
+    optimalPrompt: string | null
+    concept: string | null
+  } | null
 }
 
 // ---------------------------------------------------------------------------

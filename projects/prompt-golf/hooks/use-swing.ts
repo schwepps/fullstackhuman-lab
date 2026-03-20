@@ -38,7 +38,12 @@ export interface SwingState {
     summary: string
   } | null
   score: ScoreResult | null
-  analysis: { summary: string; detail: string } | null
+  analysis: {
+    summary: string
+    detail: string
+    optimalPrompt: string | null
+    concept: string | null
+  } | null
   error: string | null
 }
 
@@ -258,11 +263,15 @@ function handleSSEEvent(
     }
 
     case 'analysis': {
+      const d = data as Record<string, unknown>
       setState((prev) => ({
         ...prev,
         analysis: {
-          summary: String((data as Record<string, unknown>).summary ?? ''),
-          detail: String((data as Record<string, unknown>).detail ?? ''),
+          summary: String(d.summary ?? ''),
+          detail: String(d.detail ?? ''),
+          optimalPrompt:
+            typeof d.optimalPrompt === 'string' ? d.optimalPrompt : null,
+          concept: typeof d.concept === 'string' ? d.concept : null,
         },
       }))
       break
