@@ -80,7 +80,7 @@ Wrap your output in <analysis> tags as JSON:
 - **summary**: "Load-bearing: [key words]. Filler: [removable words]. Tip: [compression tip]." (max 100 chars)
 - **detail**: 2-3 paragraphs explaining which words were essential vs removable, what the AI inferred implicitly, and how a pro might compress further.
 - **optimalPrompt**: The shortest natural language prompt (2-5 words) that would produce correct code for this challenge. Be specific and realistic — this must actually work.
-- **concept**: 1-2 sentences explaining WHY the optimal prompt works. Connect to the principle: "${challenge.principle}". Frame as a general prompting technique, e.g. "AI models recognize named patterns — 'chunk' alone carries the full spec because..."
+- **concept**: ONE sentence (max 30 words) explaining WHY the optimal prompt works. Be punchy and concrete. Connect to: "${challenge.principle}". Example: "AI models know 'chunk' as a named pattern — the name alone is the full specification."
 
 The optimalPrompt and concept are the main learning payoff — make them concrete and insightful.`
   }

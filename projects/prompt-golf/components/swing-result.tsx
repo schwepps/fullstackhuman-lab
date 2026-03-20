@@ -44,10 +44,14 @@ export function SwingResultPanel({
       {/* ── Victory card ── */}
       {verdict && !isPractice && verdict.pass && score?.isPassing && (
         <div className="club-card overflow-hidden border-primary/40">
-          {/* Score hero */}
+          {/* Score hero — use gold for over-target wins (not red, which implies failure) */}
           <div className="animate-score-pop px-6 py-5 text-center">
             <p
-              className={`font-serif text-4xl font-bold ${getScoreCssClass(score.label)}`}
+              className={`font-serif text-4xl font-bold ${
+                score.relativeScore > 0
+                  ? 'text-accent'
+                  : getScoreCssClass(score.label)
+              }`}
             >
               {getScoreDisplayLabel(score.label)}
             </p>
@@ -100,17 +104,17 @@ export function SwingResultPanel({
                     ? 'text-primary'
                     : score.relativeScore === 0
                       ? 'text-accent'
-                      : 'text-destructive'
+                      : 'text-accent'
                 }`}
               >
                 {score.relativeScore === 0
-                  ? '0'
+                  ? 'Even'
                   : score.relativeScore > 0
                     ? `+${score.relativeScore}`
                     : score.relativeScore}
               </p>
               <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                {score.attemptNumber > 1 ? 'Effective' : 'vs Target'}
+                vs Target
               </p>
             </div>
           </div>

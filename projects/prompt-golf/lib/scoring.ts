@@ -94,12 +94,12 @@ export function getCelebrationMessage(label: string): string {
     case 'Par':
       return 'Par. Solid, respectable, dry martini energy.'
     case 'Bogey':
-      return 'Bogey. The caddie politely looks away.'
+      return 'You passed! A little over target — check the pro prompt below.'
     case 'Double Bogey':
-      return 'Double Bogey. The bartender starts pouring early.'
+      return 'You passed! Room to compress — the pro prompt shows how.'
     case 'Triple Bogey':
-      return 'Triple Bogey. Your clubs have filed a formal complaint.'
+      return 'You passed! Wordy, but it worked. See the shorter version below.'
     default:
-      return 'The rough is deep, and so is character development.'
+      return 'You passed! See how a pro would say it below.'
   }
 }
