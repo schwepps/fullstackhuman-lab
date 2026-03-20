@@ -10,6 +10,7 @@ Current projects:
 - **will-ai-survive** — Satirical app where AI evaluates workplace chaos survival
 - **prompt-wars** — CTF-style game where players craft prompts to extract secrets from AI with 7 levels of defenses
 - **flurss** — Sinews: humorous propaganda news landing page for the fictional FlURSS (flux RSS + URSS)
+- **prompt-golf** — Word golf for code: describe functions in natural language, fewest words wins. Country club aesthetic with 9-hole courses teaching prompt engineering.
 
 ---
 
@@ -21,6 +22,7 @@ projects/
   will-ai-survive/   # Will AI Survive your job? (Next.js)
   prompt-wars/       # Prompt Wars — AI Security CTF (Next.js)
   flurss/            # Sinews — FlURSS Propaganda News (Next.js)
+  prompt-golf/       # Prompt Golf — Word Golf for Code (Next.js)
 package.json         # Workspace root (delegates to projects)
 pnpm-workspace.yaml  # Workspace config
 ```
@@ -263,3 +265,68 @@ projects/flurss/
 - Same as other projects: Prettier (no semis, single quotes, trailing commas)
 - **French content**, English code
 - No auth, no external API dependencies
+
+---
+
+## Prompt Golf
+
+Word golf for code — describe functions in natural language using the fewest words possible. Country club aesthetic (deep greens, cream, gold, serif typography). 9-hole courses, each hole teaching a 2026 prompt engineering principle. Driving range (2 free practice swings), scored swings with mulligan system, AI judge, and educational swing analysis.
+
+### Tech Stack
+
+| Layer     | Technology                  |
+| --------- | --------------------------- |
+| Framework | Next.js 16                  |
+| Language  | TypeScript                  |
+| Styling   | Tailwind CSS v4             |
+| AI        | Claude API (Haiku + Sonnet) |
+| Testing   | Vitest                      |
+| Cache     | Upstash Redis               |
+| OG Images | @vercel/og                  |
+
+### Route Architecture
+
+```
+projects/prompt-golf/
+  app/
+    layout.tsx                      # Root layout (golf course theme)
+    page.tsx                        # Clubhouse — course map + challenge select
+    play/[challengeId]/page.tsx     # Play a hole (driving range + scored swings)
+    result/[id]/page.tsx            # Shareable result (SSR from Redis)
+    leaderboard/page.tsx            # The 19th Hole — rankings
+    support/page.tsx                # Ko-fi support page
+    not-found.tsx                   # 404 (Out of Bounds)
+    api/
+      swing/route.ts                # POST: SSE stream (prompt → code gen → judge → analysis)
+      leaderboard/route.ts          # GET/POST: leaderboard
+      og/route.tsx                  # GET: dynamic OG image (prompt-centric)
+    globals.css                     # Golf course / country club theme
+  components/                       # UI: prompt-input, code-output, swing-result, share, support
+  hooks/                            # useSwing (SSE), useSession (localStorage)
+  lib/                              # Types, constants, challenges, AI pipeline, scoring
+  lib/challenges/front-9/           # 9 challenge files with test cases + analyzerContext
+  tests/                            # Unit tests (word counter, anti-gaming, scoring)
+```
+
+### Deployment
+
+- **Next.js** — Vercel
+- Env vars: `ANTHROPIC_API_KEY`, `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+- basePath: `/lab/prompt-golf`
+
+### Key Scripts (from projects/prompt-golf/)
+
+| Script      | Description              |
+| ----------- | ------------------------ |
+| `dev`       | Start Next.js dev server |
+| `build`     | Build for production     |
+| `lint`      | Run ESLint               |
+| `typecheck` | TypeScript type checking |
+| `test`      | Run tests (watch)        |
+| `test:run`  | Run tests once           |
+
+### Coding Conventions
+
+- Same as other projects: Prettier (no semis, single quotes, trailing commas)
+- **English-only**, no auth
+- Redis keys prefixed `fsh:pg:` (lab namespace `fsh:`, project `pg:`)
