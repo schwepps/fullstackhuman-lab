@@ -2,12 +2,10 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { getResult } from '@/lib/result-store'
-import { getSiteUrl, BASE_PATH } from '@/lib/constants'
+import { getSiteUrl, BASE_PATH, RESULT_ID_PATTERN } from '@/lib/constants'
 import { getScoreCssClass } from '@/lib/scoring'
 import { ShareButtons } from '@/components/share-buttons'
 import { SupportCta } from '@/components/support-cta'
-
-const RESULT_ID_PATTERN = /^[a-zA-Z0-9_-]{10,30}$/
 
 interface PageProps {
   params: Promise<{ id: string }>

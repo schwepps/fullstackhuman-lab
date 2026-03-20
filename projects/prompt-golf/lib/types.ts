@@ -114,6 +114,7 @@ export interface SwingResult {
   code: string
   isPractice: boolean
   isMulligan: boolean
+  resultId?: string
   verdict: {
     pass: boolean
     testResults: JudgeTestResult[]

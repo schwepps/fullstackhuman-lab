@@ -21,7 +21,7 @@ export function SupportCta({ variant, isPractice }: SupportCtaProps) {
           href={KOFI_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-accent/70 transition-colors hover:text-accent"
+          className="inline-flex min-h-11 items-center text-accent/70 transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
         >
           Help keep the fairway open
         </a>
@@ -32,7 +32,7 @@ export function SupportCta({ variant, isPractice }: SupportCtaProps) {
   return (
     <Link
       href="/support"
-      className="club-card block p-3 text-center text-sm text-muted-foreground transition-colors hover:border-accent/40 hover:text-accent touch-manipulation"
+      className="club-card block p-3 text-center text-sm text-muted-foreground transition-colors hover:border-accent/40 hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
     >
       <span className="font-serif uppercase tracking-wider">
         Support Prompt Golf

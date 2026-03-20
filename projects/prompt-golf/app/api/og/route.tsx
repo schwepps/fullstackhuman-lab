@@ -1,10 +1,9 @@
 import { ImageResponse } from '@vercel/og'
 import { NextRequest } from 'next/server'
 import { getResult } from '@/lib/result-store'
+import { RESULT_ID_PATTERN } from '@/lib/constants'
 
 export const runtime = 'edge'
-
-const RESULT_ID_PATTERN = /^[a-zA-Z0-9_-]{10,30}$/
 
 const BG_COLOR = '#0c1a0f'
 const GREEN = '#4caf50'

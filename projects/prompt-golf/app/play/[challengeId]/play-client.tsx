@@ -103,7 +103,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
       <div className="mb-6">
         <Link
           href="/"
-          className="font-serif text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-accent"
+          className="inline-flex min-h-11 items-center font-serif text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
         >
           &larr; Clubhouse
         </Link>

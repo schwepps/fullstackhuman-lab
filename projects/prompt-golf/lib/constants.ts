@@ -61,6 +61,9 @@ export const MULLIGANS_PER_COURSE = 2
 export const COST_PER_SWING = 0.004
 export const COST_PER_PRACTICE = 0.001
 
+// ── Validation ───────────────────────────────────────────────
+export const RESULT_ID_PATTERN = /^[a-zA-Z0-9_-]{10,30}$/
+
 // ── Limits ───────────────────────────────────────────────────────
 export const MAX_PROMPT_LENGTH = 500
 export const MIN_PROMPT_WORDS = 2

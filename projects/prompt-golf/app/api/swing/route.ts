@@ -13,11 +13,12 @@ import {
   getAttemptCount,
   consumeMulligan,
 } from '@/lib/rate-limiter'
+import { saveResult } from '@/lib/result-store'
 import {
   BUDGET_WARN_THRESHOLD,
   BUDGET_SHUTDOWN_THRESHOLD,
 } from '@/lib/constants'
-import type { SSEEvent } from '@/lib/types'
+import type { SSEEvent, ShareableResult } from '@/lib/types'
 
 const requestSchema = z.object({
   challengeId: z.string().regex(/^[a-z0-9-]+$/),
@@ -26,6 +27,14 @@ const requestSchema = z.object({
   isPractice: z.boolean().default(false),
   isMulligan: z.boolean().default(false),
 })
+
+function generateResultId(): string {
+  const bytes = new Uint8Array(12)
+  crypto.getRandomValues(bytes)
+  return Array.from(bytes, (b) => b.toString(36).padStart(2, '0'))
+    .join('')
+    .slice(0, 20)
+}
 
 const IP_PATTERN = /^[\da-fA-F.:]+$/
 
@@ -239,6 +248,30 @@ export async function POST(request: NextRequest) {
           data: { stage: 'analyzing', status: 'passed' },
         })
 
+        // Save shareable result if scored and passing
+        let resultId: string | undefined
+        if (!isPractice && pass && score) {
+          resultId = generateResultId()
+          const shareableResult: ShareableResult = {
+            id: resultId,
+            challengeId,
+            challengeName: challenge.description.slice(0, 100),
+            holeName: challenge.name,
+            prompt,
+            code: generatedCode,
+            wordCount: validation.wordCount,
+            effectiveStrokes: score.effectiveStrokes,
+            par: challenge.par,
+            relativeScore: score.relativeScore,
+            label: score.label,
+            attemptNumber,
+            createdAt: new Date().toISOString(),
+          }
+          await saveResult(shareableResult).catch((err) =>
+            console.error('[swing] Failed to save result:', err)
+          )
+        }
+
         // Final result
         emit({
           type: 'result',
@@ -251,6 +284,7 @@ export async function POST(request: NextRequest) {
             verdict: verdictData,
             score,
             analysis,
+            resultId,
           },
         })
       } catch (error) {

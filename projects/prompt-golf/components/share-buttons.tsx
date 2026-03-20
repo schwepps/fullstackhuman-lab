@@ -19,7 +19,7 @@ export function ShareButtons({
   label,
   resultId,
 }: ShareButtonsProps) {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState<'idle' | 'copied' | 'failed'>('idle')
 
   const origin = typeof window !== 'undefined' ? window.location.origin : ''
   const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
@@ -36,10 +36,11 @@ export function ShareButtons({
   async function copyToClipboard(text: string) {
     try {
       await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      setCopied('copied')
+      setTimeout(() => setCopied('idle'), 2000)
     } catch {
-      // Clipboard API not available
+      setCopied('failed')
+      setTimeout(() => setCopied('idle'), 2000)
     }
   }
 
@@ -66,9 +67,13 @@ export function ShareButtons({
       </div>
       <button
         onClick={() => copyToClipboard(`${challengeText}\n${shareUrl}`)}
-        className="h-11 w-full rounded-sm border border-accent/40 font-serif text-xs uppercase tracking-wider text-accent transition-colors hover:border-accent/60 hover:bg-accent/10 active:scale-[0.98] touch-manipulation"
+        className="h-11 w-full rounded-sm border border-accent/40 font-serif text-xs uppercase tracking-wider text-accent transition-colors hover:border-accent/60 hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98] touch-manipulation"
       >
-        {copied ? 'Copied!' : 'Challenge a Friend'}
+        {copied === 'copied'
+          ? 'Copied!'
+          : copied === 'failed'
+            ? 'Copy failed'
+            : 'Challenge a Friend'}
       </button>
     </div>
   )
