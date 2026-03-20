@@ -388,6 +388,24 @@ export function PlayClient({ challenge }: PlayClientProps) {
             </div>
           )}
 
+        {/* Leaderboard confirmation */}
+        {state.status === 'pass' && mode === 'scored' && (
+          <Link
+            href="/leaderboard"
+            className="club-card flex items-center justify-between border-primary/30 p-4 transition-all hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-primary">{'\u2713'}</span>
+              <span className="font-serif text-sm text-foreground">
+                Score submitted to leaderboard
+              </span>
+            </div>
+            <span className="font-serif text-xs text-accent">
+              View rankings &rarr;
+            </span>
+          </Link>
+        )}
+
         {/* Error */}
         {state.status === 'error' && state.error && (
           <div className="club-card border-destructive/40 p-4">
