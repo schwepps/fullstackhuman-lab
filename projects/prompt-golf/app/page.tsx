@@ -92,8 +92,26 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Support */}
+      {/* Leaderboard link */}
       <div className="mt-10">
+        <Link
+          href="/leaderboard"
+          className="club-card group flex items-center justify-between p-4 transition-all hover:border-accent/40 hover:shadow-[0_0_12px_rgba(201,168,76,0.1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
+        >
+          <div>
+            <span className="font-serif text-sm font-semibold text-foreground group-hover:text-accent">
+              The 19th Hole
+            </span>
+            <span className="ml-2 text-xs text-muted-foreground">
+              Leaderboard
+            </span>
+          </div>
+          <span className="text-accent/40 group-hover:text-accent">&rarr;</span>
+        </Link>
+      </div>
+
+      {/* Support */}
+      <div className="mt-4">
         <SupportCta variant="card" />
       </div>
 
