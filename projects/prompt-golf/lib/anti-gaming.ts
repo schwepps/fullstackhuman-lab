@@ -1,5 +1,9 @@
 import { countWords, getWords } from './word-counter'
-import { MIN_PROMPT_WORDS, MAX_PROMPT_WORDS } from './constants'
+import {
+  MIN_PROMPT_WORDS,
+  MAX_PROMPT_WORDS,
+  MAX_PROMPT_LENGTH,
+} from './constants'
 import type { ValidationResult } from './types'
 
 /**
@@ -13,8 +17,9 @@ import type { ValidationResult } from './types'
 const BLATANT_CODE_PATTERNS = [
   /=>/, // Arrow functions
   /function\s*\(/, // Function declarations
-  /function\s*\{/, // Function blocks
-  /;\s*\S/, // Multi-statement (semicolon then code)
+  /\w\.\w+\(/, // Method calls: arr.map(
+  /\$\{/, // Template literal interpolation
+  /(?:const|let|var)\s+\w+\s*=/, // Variable declarations
 ]
 
 export function validatePrompt(prompt: string): ValidationResult {
@@ -22,6 +27,14 @@ export function validatePrompt(prompt: string): ValidationResult {
 
   if (trimmed.length === 0) {
     return { isValid: false, wordCount: 0, reason: 'Prompt is empty.' }
+  }
+
+  if (trimmed.length > MAX_PROMPT_LENGTH) {
+    return {
+      isValid: false,
+      wordCount: 0,
+      reason: `Prompt too long. Maximum ${MAX_PROMPT_LENGTH} characters.`,
+    }
   }
 
   const wordCount = countWords(trimmed)

@@ -48,6 +48,8 @@ export type ScoreLabel =
   | 'Bogey'
   | 'Double Bogey'
   | 'Triple Bogey'
+  | 'N/A'
+  | `+${number}`
 
 export interface ScoreResult {
   wordCount: number
@@ -56,7 +58,7 @@ export interface ScoreResult {
   attemptPenalty: number
   effectiveStrokes: number
   relativeScore: number
-  label: ScoreLabel | string
+  label: ScoreLabel
   isPassing: boolean
 }
 

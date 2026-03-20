@@ -40,8 +40,18 @@ describe('validatePrompt', () => {
     expect(result.isValid).toBe(false)
   })
 
-  it('rejects multi-statement code', () => {
-    const result = validatePrompt('split the array; reverse it')
+  it('rejects method chain code', () => {
+    const result = validatePrompt('do arr.reverse( please')
+    expect(result.isValid).toBe(false)
+  })
+
+  it('rejects template literal interpolation', () => {
+    const result = validatePrompt('return ${value} as output')
+    expect(result.isValid).toBe(false)
+  })
+
+  it('rejects variable declarations', () => {
+    const result = validatePrompt('const x = something useful')
     expect(result.isValid).toBe(false)
   })
 
@@ -67,5 +77,35 @@ describe('validatePrompt', () => {
     const result = validatePrompt('use x => x')
     expect(result.isValid).toBe(false)
     expect(result.wordCount).toBeGreaterThan(0)
+  })
+
+  it('rejects prompts exceeding MAX_PROMPT_LENGTH', () => {
+    const longPrompt = 'word '.repeat(200) // 1000 chars
+    const result = validatePrompt(longPrompt)
+    expect(result.isValid).toBe(false)
+    expect(result.reason).toContain('too long')
+  })
+
+  it('accepts prompt at exactly MAX_PROMPT_WORDS', () => {
+    // 100 unique 2-char words = 299 chars (under 500 limit)
+    const words = Array.from({ length: 100 }, (_, i) => {
+      const a = String.fromCharCode(97 + (i % 26))
+      const b = String.fromCharCode(97 + Math.floor(i / 26))
+      return `${a}${b}${i}`
+    })
+    const prompt = words.join(' ')
+    expect(validatePrompt(prompt).isValid).toBe(true)
+  })
+
+  it('rejects prompt exceeding MAX_PROMPT_WORDS', () => {
+    const words = Array.from({ length: 101 }, (_, i) => {
+      const a = String.fromCharCode(97 + (i % 26))
+      const b = String.fromCharCode(97 + Math.floor(i / 26))
+      return `${a}${b}${i}`
+    })
+    const prompt = words.join(' ')
+    const result = validatePrompt(prompt)
+    expect(result.isValid).toBe(false)
+    expect(result.reason).toContain('Maximum')
   })
 })

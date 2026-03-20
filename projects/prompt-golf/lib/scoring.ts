@@ -17,6 +17,16 @@ export function calculateScore(
   attemptNumber: number,
   isPassing: boolean
 ): ScoreResult {
+  if (wordCount < 0 || !Number.isFinite(wordCount)) {
+    throw new Error('wordCount must be a non-negative finite number')
+  }
+  if (par < 1 || !Number.isInteger(par)) {
+    throw new Error('par must be a positive integer')
+  }
+  if (attemptNumber < 1 || !Number.isInteger(attemptNumber)) {
+    throw new Error('attemptNumber must be a positive integer')
+  }
+
   const attemptPenalty = 1 + (attemptNumber - 1) * ATTEMPT_PENALTY_MULTIPLIER
   const effectiveStrokes = Math.ceil(wordCount * attemptPenalty)
   const relativeScore = effectiveStrokes - par
@@ -34,7 +44,7 @@ export function calculateScore(
   }
 }
 
-export function getScoreLabel(relativeScore: number): ScoreLabel | string {
+export function getScoreLabel(relativeScore: number): ScoreLabel {
   if (relativeScore <= -3) return 'Albatross'
   if (relativeScore === -2) return 'Eagle'
   if (relativeScore === -1) return 'Birdie'

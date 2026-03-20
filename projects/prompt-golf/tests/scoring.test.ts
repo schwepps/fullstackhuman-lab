@@ -66,6 +66,28 @@ describe('calculateScore', () => {
     expect(score.relativeScore).toBe(9)
     expect(score.label).toBe('+9')
   })
+
+  it('throws on negative wordCount', () => {
+    expect(() => calculateScore(-1, 6, 1, true)).toThrow('wordCount')
+  })
+
+  it('throws on zero par', () => {
+    expect(() => calculateScore(5, 0, 1, true)).toThrow('par')
+  })
+
+  it('throws on zero attemptNumber', () => {
+    expect(() => calculateScore(5, 6, 0, true)).toThrow('attemptNumber')
+  })
+
+  it('throws on negative attemptNumber', () => {
+    expect(() => calculateScore(5, 6, -1, true)).toThrow('attemptNumber')
+  })
+
+  it('handles high attempt penalty without floating-point drift', () => {
+    // attempt 5: penalty = 1 + 4 * 0.25 = 2.0
+    const score = calculateScore(5, 6, 5, true)
+    expect(score.effectiveStrokes).toBe(10) // exactly 5 * 2.0
+  })
 })
 
 describe('getScoreLabel', () => {

@@ -71,6 +71,34 @@ describe('countWords', () => {
   it('trims before counting', () => {
     expect(countWords('  reverse a string  ')).toBe(3)
   })
+
+  it('handles accented characters as part of words', () => {
+    expect(countWords('utilise la méthode')).toBe(3)
+  })
+
+  it('handles tabs between words', () => {
+    expect(countWords('reverse\ta\tstring')).toBe(3)
+  })
+
+  it('handles newlines between words', () => {
+    expect(countWords('reverse\na\nstring')).toBe(3)
+  })
+
+  it('handles multiple consecutive spaces', () => {
+    expect(countWords('reverse    a    string')).toBe(3)
+  })
+
+  it('strips zero-width characters', () => {
+    // Zero-width chars between spaces should not create phantom words
+    expect(countWords('reverse \u200B a \u200B string')).toBe(3)
+    // Zero-width chars within a word are stripped, word stays intact
+    expect(countWords('re\u200Bverse')).toBe(1)
+  })
+
+  it('normalizes fullwidth characters to ASCII via NFKC', () => {
+    // Fullwidth 'ａ' (U+FF41) normalizes to 'a'
+    expect(countWords('\uFF41 \uFF42 \uFF43')).toBe(3)
+  })
 })
 
 describe('getWords', () => {

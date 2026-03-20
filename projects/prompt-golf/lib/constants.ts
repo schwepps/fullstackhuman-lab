@@ -17,17 +17,28 @@ export const KOFI_URL = 'https://ko-fi.com/fullstackhuman'
 // ── Redis keys ───────────────────────────────────────────────────
 export const REDIS_PREFIX = 'fsh:pg:'
 
+const SAFE_KEY_PATTERN = /^[a-zA-Z0-9._:-]+$/
+
+/** Validate Redis key components to prevent key injection */
+function safeKey(value: string): string {
+  if (!SAFE_KEY_PATTERN.test(value)) {
+    throw new Error(`Invalid Redis key component: ${value.slice(0, 40)}`)
+  }
+  return value
+}
+
 export const REDIS_KEYS = {
   attempts: (ip: string, challengeId: string) =>
-    `${REDIS_PREFIX}attempts:${ip}:${challengeId}`,
-  globalAttempts: (ip: string) => `${REDIS_PREFIX}global:${ip}`,
+    `${REDIS_PREFIX}attempts:${safeKey(ip)}:${safeKey(challengeId)}`,
+  globalAttempts: (ip: string) => `${REDIS_PREFIX}global:${safeKey(ip)}`,
   mulligans: (sessionId: string, course: string) =>
-    `${REDIS_PREFIX}mulligans:${sessionId}:${course}`,
-  budget: (date: string) => `${REDIS_PREFIX}budget:${date}`,
-  result: (id: string) => `${REDIS_PREFIX}result:${id}`,
-  leaderboard: (course: string) => `${REDIS_PREFIX}leaderboard:${course}`,
+    `${REDIS_PREFIX}mulligans:${safeKey(sessionId)}:${safeKey(course)}`,
+  budget: (date: string) => `${REDIS_PREFIX}budget:${safeKey(date)}`,
+  result: (id: string) => `${REDIS_PREFIX}result:${safeKey(id)}`,
+  leaderboard: (course: string) =>
+    `${REDIS_PREFIX}leaderboard:${safeKey(course)}`,
   bestSwing: (sessionId: string, challengeId: string) =>
-    `${REDIS_PREFIX}best:${sessionId}:${challengeId}`,
+    `${REDIS_PREFIX}best:${safeKey(sessionId)}:${safeKey(challengeId)}`,
 } as const
 
 // ── Rate limits ──────────────────────────────────────────────────
