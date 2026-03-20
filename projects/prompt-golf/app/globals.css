@@ -1,0 +1,308 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-serif: var(--font-playfair), 'Georgia', serif;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  /* Country Club Theme — greens, cream, gold */
+  --color-background: #0c1a0f;
+  --color-foreground: #f5f0e8;
+  --color-primary: #4caf50;
+  --color-primary-dark: #2e7d32;
+  --color-accent: #c9a84c;
+  --color-accent-light: #dbc278;
+  --color-cream: #fff8e1;
+  --color-cream-dark: #f5ecd0;
+  --color-walnut: #3e2723;
+  --color-walnut-light: #5d4037;
+  --color-fairway: #1b5e20;
+  --color-fairway-light: #2e7d32;
+  --color-rough: #33691e;
+  --color-warning: #f59e0b;
+  --color-destructive: #ef4444;
+  --color-success: #4caf50;
+  --color-card: #0f2213;
+  --color-card-foreground: #f5f0e8;
+  --color-popover: #132917;
+  --color-popover-foreground: #f5f0e8;
+  --color-muted: #1a3320;
+  --color-muted-foreground: #a8b5a0;
+  --color-secondary: #1a3320;
+  --color-secondary-foreground: #f5f0e8;
+  --color-border: #2a4a30;
+  --color-ring: #4caf50;
+
+  /* Score colors */
+  --color-albatross: #e040fb;
+  --color-eagle: #ff6f00;
+  --color-birdie: #4caf50;
+  --color-par: #c9a84c;
+  --color-bogey: #ef6c00;
+  --color-double-bogey: #e53935;
+
+  @keyframes flag-wave {
+    0%,
+    100% {
+      transform: rotate(-2deg);
+    }
+    50% {
+      transform: rotate(2deg);
+    }
+  }
+  @keyframes flag-drop {
+    0% {
+      transform: translateY(-20px) rotate(-5deg);
+      opacity: 0;
+    }
+    60% {
+      transform: translateY(5px) rotate(2deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 1;
+    }
+  }
+  @keyframes confetti-fall {
+    0% {
+      transform: translateY(-10px) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+  @keyframes score-pop {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 8px rgba(76, 175, 80, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 24px rgba(76, 175, 80, 0.6);
+    }
+  }
+  @keyframes typing {
+    from {
+      opacity: 0.4;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes gentle-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-4px);
+    }
+  }
+
+  --animate-flag-wave: flag-wave 2s ease-in-out infinite;
+  --animate-flag-drop: flag-drop 0.6s ease-out forwards;
+  --animate-confetti-fall: confetti-fall 3s ease-in forwards;
+  --animate-score-pop: score-pop 0.5s ease-out forwards;
+  --animate-slide-up: slide-up 0.4s ease-out forwards;
+  --animate-scale-in: scale-in 0.3s ease-out forwards;
+  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-typing: typing 0.5s ease-in-out infinite alternate;
+  --animate-gentle-bounce: gentle-bounce 2s ease-in-out infinite;
+}
+
+:root {
+  --background: #0c1a0f;
+  --foreground: #f5f0e8;
+  --primary: #4caf50;
+  --accent: #c9a84c;
+  --radius: 4px;
+}
+
+@layer base {
+  button,
+  [role='button'],
+  a,
+  select,
+  summary,
+  [type='button'],
+  [type='submit'],
+  [type='reset'] {
+    cursor: pointer;
+  }
+
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased selection:bg-primary/30 selection:text-foreground overflow-x-hidden;
+    background-image:
+      radial-gradient(
+        ellipse at 20% 50%,
+        rgba(27, 94, 32, 0.15) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at 80% 50%,
+        rgba(27, 94, 32, 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 50% 100%,
+        rgba(201, 168, 76, 0.05) 0%,
+        transparent 40%
+      ),
+      linear-gradient(180deg, #0c1a0f 0%, #0f2213 50%, #0c1a0f 100%);
+  }
+
+  /* Subtle grass texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231b5e20' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+}
+
+@layer components {
+  /* Country Club button */
+  .btn-club {
+    @apply relative overflow-hidden border-2 border-accent px-6 py-3
+           font-serif text-sm uppercase tracking-[0.2em] text-accent
+           transition-all touch-manipulation
+           hover:bg-accent hover:text-walnut hover:shadow-[0_0_20px_rgba(201,168,76,0.3)]
+           active:translate-y-0.5 active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed
+           disabled:hover:bg-transparent disabled:hover:text-accent disabled:hover:shadow-none;
+  }
+
+  /* Primary action button */
+  .btn-fairway {
+    @apply relative overflow-hidden rounded-sm bg-primary px-6 py-3
+           font-serif text-sm uppercase tracking-[0.15em] text-background font-semibold
+           transition-all touch-manipulation
+           hover:bg-primary-dark hover:shadow-[0_0_20px_rgba(76,175,80,0.3)]
+           active:translate-y-0.5 active:scale-[0.98]
+           disabled:opacity-40 disabled:cursor-not-allowed
+           disabled:hover:bg-primary disabled:hover:shadow-none;
+  }
+
+  /* Card component */
+  .club-card {
+    @apply rounded-sm border border-border bg-card/80 backdrop-blur-sm
+           shadow-[0_2px_8px_rgba(0,0,0,0.3)];
+  }
+
+  /* Gold divider */
+  .gold-divider {
+    @apply h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent;
+  }
+
+  /* Scorecard styles */
+  .scorecard-cell {
+    @apply border border-border/50 px-2 py-1.5 text-center text-sm font-mono;
+  }
+
+  /* Word counter badge */
+  .word-badge {
+    @apply inline-flex items-center gap-1 rounded-full border border-accent/30
+           bg-accent/10 px-3 py-1 font-mono text-sm text-accent;
+  }
+
+  /* Score label colors */
+  .score-albatross {
+    @apply text-albatross;
+  }
+  .score-eagle {
+    @apply text-eagle;
+  }
+  .score-birdie {
+    @apply text-birdie;
+  }
+  .score-par {
+    @apply text-par;
+  }
+  .score-bogey {
+    @apply text-bogey;
+  }
+  .score-double-bogey {
+    @apply text-double-bogey;
+  }
+
+  /* Scrollbar */
+  .club-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .club-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .club-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(201, 168, 76, 0.2);
+    border-radius: 3px;
+  }
+
+  /* Code display */
+  .code-block {
+    @apply rounded-sm border border-border bg-background/80 p-4 font-mono text-sm
+           overflow-x-auto;
+  }
+  .code-block::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .code-block::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .code-block::-webkit-scrollbar-thumb {
+    background: rgba(201, 168, 76, 0.2);
+    border-radius: 3px;
+  }
+}

@@ -1,0 +1,83 @@
+// ── Site ─────────────────────────────────────────────────────────
+export function getSiteUrl(): string {
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+}
+
+export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+
+// ── Ko-fi ────────────────────────────────────────────────────────
+export const KOFI_URL = 'https://ko-fi.com/fullstackhuman'
+
+// ── Redis keys ───────────────────────────────────────────────────
+export const REDIS_PREFIX = 'fsh:pg:'
+
+export const REDIS_KEYS = {
+  attempts: (ip: string, challengeId: string) =>
+    `${REDIS_PREFIX}attempts:${ip}:${challengeId}`,
+  globalAttempts: (ip: string) => `${REDIS_PREFIX}global:${ip}`,
+  mulligans: (sessionId: string, course: string) =>
+    `${REDIS_PREFIX}mulligans:${sessionId}:${course}`,
+  budget: () =>
+    `${REDIS_PREFIX}budget:${new Date().toISOString().slice(0, 10)}`,
+  result: (id: string) => `${REDIS_PREFIX}result:${id}`,
+  leaderboard: (course: string) => `${REDIS_PREFIX}leaderboard:${course}`,
+  bestSwing: (sessionId: string, challengeId: string) =>
+    `${REDIS_PREFIX}best:${sessionId}:${challengeId}`,
+} as const
+
+// ── Rate limits ──────────────────────────────────────────────────
+export const RATE_LIMITS = {
+  globalPerWindow: 30,
+  perChallengePerWindow: 8,
+  practicePerChallengePerWindow: 6,
+  windowMs: 15 * 60 * 1000, // 15 minutes
+} as const
+
+// ── Budget ───────────────────────────────────────────────────────
+export const BUDGET_WARN_THRESHOLD = 2000
+export const BUDGET_SHUTDOWN_THRESHOLD = 4000
+
+// ── Scoring ──────────────────────────────────────────────────────
+export const ATTEMPT_PENALTY_MULTIPLIER = 0.25
+export const MULLIGANS_PER_COURSE = 2
+
+// ── Costs (USD) ──────────────────────────────────────────────────
+export const COST_PER_SWING = 0.004
+export const COST_PER_PRACTICE = 0.001
+
+// ── Limits ───────────────────────────────────────────────────────
+export const MAX_PROMPT_LENGTH = 500
+export const MIN_PROMPT_WORDS = 2
+export const MAX_PROMPT_WORDS = 100
+
+// ── Result TTL ───────────────────────────────────────────────────
+export const RESULT_TTL_SECONDS = 30 * 24 * 60 * 60 // 30 days
+
+// ── Models ───────────────────────────────────────────────────────
+export const GENERATOR_MODEL = 'claude-haiku-4-5-20251001'
+export const JUDGE_MODEL = 'claude-sonnet-4-6-20250514'
+export const ANALYZER_MODEL = 'claude-haiku-4-5-20251001'
+
+// ── Courses ──────────────────────────────────────────────────────
+export const COURSES = {
+  'front-9': {
+    id: 'front-9',
+    name: 'The Front 9',
+    subtitle: 'Utility Functions',
+    description:
+      'Learn the fundamentals of prompt engineering through classic coding challenges.',
+    holes: 9,
+    isLocked: false,
+  },
+  'public-9': {
+    id: 'public-9',
+    name: 'The Public Course',
+    subtitle: 'For Everyone',
+    description: 'Prompt engineering for non-developers. Coming soon.',
+    holes: 9,
+    isLocked: true,
+  },
+} as const
