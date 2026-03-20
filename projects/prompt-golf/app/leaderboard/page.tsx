@@ -41,7 +41,7 @@ export default async function LeaderboardPage() {
             No scores yet.
           </p>
           <p className="mt-2 text-sm text-muted-foreground/60">
-            Complete all 9 holes to earn your spot on the board.
+            Complete any challenge to earn your spot on the board.
           </p>
           <Link href="/" className="btn-fairway mt-6 inline-block">
             Start Playing

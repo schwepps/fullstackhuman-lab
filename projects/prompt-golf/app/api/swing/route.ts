@@ -15,6 +15,7 @@ import {
   consumeMulligan,
 } from '@/lib/rate-limiter'
 import { saveResult } from '@/lib/result-store'
+import { recordHoleAndUpdateLeaderboard } from '@/lib/leaderboard-client'
 import {
   BUDGET_WARN_THRESHOLD,
   BUDGET_SHUTDOWN_THRESHOLD,
@@ -273,6 +274,18 @@ export async function POST(request: NextRequest) {
           }
           await saveResult(shareableResult).catch((err) =>
             console.error('[swing] Failed to save result:', err)
+          )
+
+          // Auto-update leaderboard with accumulated score
+          await recordHoleAndUpdateLeaderboard(
+            sessionId,
+            challenge.course,
+            challengeId,
+            score.effectiveStrokes,
+            challenge.par,
+            '' // displayName set client-side later
+          ).catch((err) =>
+            console.error('[swing] Failed to update leaderboard:', err)
           )
         }
 
