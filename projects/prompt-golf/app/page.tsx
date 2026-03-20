@@ -43,10 +43,10 @@ export default function HomePage() {
             <Link
               key={challenge.id}
               href={`/play/${challenge.id}`}
-              className="club-card group flex items-center justify-between p-4 transition-all hover:border-accent/40 hover:shadow-[0_0_12px_rgba(201,168,76,0.1)] active:scale-[0.99]"
+              className="club-card group flex items-center justify-between p-4 transition-all hover:border-accent/40 hover:shadow-[0_0_12px_rgba(201,168,76,0.1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99] touch-manipulation"
             >
               <div className="flex items-center gap-4">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-accent/20 font-serif text-sm font-bold text-accent sm:h-11 sm:w-11">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full border border-accent/20 font-serif text-sm font-bold text-accent">
                   {challenge.holeNumber}
                 </span>
                 <div>

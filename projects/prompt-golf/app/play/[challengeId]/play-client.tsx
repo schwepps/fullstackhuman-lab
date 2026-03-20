@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useSwing } from '@/hooks/use-swing'
 import { useSession } from '@/hooks/use-session'
 import { PromptInput } from '@/components/prompt-input'
@@ -16,6 +17,8 @@ interface ChallengeInfo {
   principle: string
   course: string
   holeNumber: number
+  totalHoles: number
+  nextChallengeId: string | null
   hints: [string, string, string]
 }
 
@@ -24,6 +27,7 @@ interface PlayClientProps {
 }
 
 export function PlayClient({ challenge }: PlayClientProps) {
+  const router = useRouter()
   const { state, sendSwing, reset } = useSwing()
   const {
     session,
@@ -45,11 +49,27 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
   const [showMulliganOffer, setShowMulliganOffer] = useState(false)
 
+  // Track the prompt for the current swing (for recordScoredAttempt)
+  const lastPromptRef = useRef<string>('')
+
   const isLoading = state.status === 'sending' || state.status === 'streaming'
+
+  // Record scored attempt via useEffect when score arrives (fixes stale closure)
+  useEffect(() => {
+    if (
+      state.score &&
+      state.score.isPassing &&
+      mode === 'scored' &&
+      lastPromptRef.current
+    ) {
+      recordScoredAttempt(challenge.id, state.score, lastPromptRef.current)
+    }
+  }, [state.score, mode, challenge.id, recordScoredAttempt])
 
   const handleSubmit = useCallback(
     async (prompt: string) => {
       const isPractice = mode === 'practice'
+      lastPromptRef.current = prompt
 
       await sendSwing(
         challenge.id,
@@ -64,8 +84,6 @@ export function PlayClient({ challenge }: PlayClientProps) {
         if (progress.practiceSwings + 1 >= 2) {
           setMode('scored')
         }
-      } else if (state.score) {
-        recordScoredAttempt(challenge.id, state.score, prompt)
       }
     },
     [
@@ -74,28 +92,59 @@ export function PlayClient({ challenge }: PlayClientProps) {
       session.sessionId,
       sendSwing,
       recordPracticeSwing,
-      recordScoredAttempt,
       progress.practiceSwings,
-      state.score,
     ]
   )
 
-  // After a failed scored swing, offer mulligan
-  const handleMulligan = useCallback(async () => {
+  const handleMulligan = useCallback(() => {
     consumeMulligan(challenge.course)
     setShowMulliganOffer(false)
     reset()
   }, [challenge.course, consumeMulligan, reset])
 
-  const handleNextSwing = useCallback(() => {
-    // Check if we should offer mulligan
+  const handleNextAction = useCallback(() => {
     if (state.status === 'fail' && mode === 'scored' && mulligansLeft > 0) {
+      // Show mulligan offer WITHOUT resetting state
       setShowMulliganOffer(true)
-    } else {
-      setShowMulliganOffer(false)
+      return
     }
+
+    if (state.status === 'pass' && challenge.nextChallengeId) {
+      // Navigate to next hole
+      router.push(`/play/${challenge.nextChallengeId}`)
+      return
+    }
+
+    if (state.status === 'pass' && !challenge.nextChallengeId) {
+      // Completed the course — back to clubhouse
+      router.push('/')
+      return
+    }
+
+    // Default: reset for another swing
+    setShowMulliganOffer(false)
     reset()
-  }, [state.status, mode, mulligansLeft, reset])
+  }, [
+    state.status,
+    mode,
+    mulligansLeft,
+    challenge.nextChallengeId,
+    router,
+    reset,
+  ])
+
+  const getNextButtonText = () => {
+    if (state.status === 'pass') {
+      if (progress.isComplete && challenge.nextChallengeId) {
+        return 'Next Hole \u2192'
+      }
+      if (!challenge.nextChallengeId) {
+        return 'Back to Clubhouse \u2192'
+      }
+      return 'Next Hole \u2192'
+    }
+    return 'Try Again'
+  }
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 pb-safe sm:px-6 sm:py-8">
@@ -111,7 +160,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
         <div className="mt-3 flex items-baseline justify-between">
           <div>
             <span className="font-mono text-xs text-muted-foreground">
-              Hole {challenge.holeNumber}
+              Hole {challenge.holeNumber} of {challenge.totalHoles}
             </span>
             <h1 className="font-serif text-2xl font-bold text-foreground sm:text-3xl">
               {challenge.name}
@@ -165,14 +214,14 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
         {progress.isComplete && (
           <span className="font-serif text-xs text-primary">
-            \u2713 Completed
+            {'\u2713'} Completed
           </span>
         )}
       </div>
 
       {/* Mulligan offer */}
       {showMulliganOffer && (
-        <div className="mb-4 club-card border-accent/30 p-4">
+        <div className="club-card mb-4 border-accent/30 p-4">
           <p className="font-serif text-sm text-foreground">
             Tough break. Use a mulligan to retry without penalty?
           </p>
@@ -185,7 +234,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
                 setShowMulliganOffer(false)
                 reset()
               }}
-              className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+              className="min-h-11 px-3 text-xs text-muted-foreground transition-colors hover:text-foreground focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
             >
               No thanks, retry normally
             </button>
@@ -194,7 +243,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
       )}
 
       {/* Prompt input */}
-      {!showMulliganOffer && (
+      {!showMulliganOffer && state.status === 'idle' && (
         <PromptInput
           onSubmit={handleSubmit}
           disabled={isLoading}
@@ -226,17 +275,13 @@ export function PlayClient({ challenge }: PlayClientProps) {
           </div>
         )}
 
-        {/* Next swing button */}
+        {/* Next action button */}
         {(state.status === 'pass' ||
           state.status === 'fail' ||
           state.status === 'error') &&
           !showMulliganOffer && (
-            <button onClick={handleNextSwing} className="btn-fairway w-full">
-              {state.status === 'pass'
-                ? progress.isComplete
-                  ? 'Try for a Better Score'
-                  : 'Next Hole \u2192'
-                : 'Try Again'}
+            <button onClick={handleNextAction} className="btn-fairway w-full">
+              {getNextButtonText()}
             </button>
           )}
       </div>

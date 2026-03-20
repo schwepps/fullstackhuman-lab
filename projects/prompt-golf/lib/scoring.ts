@@ -71,20 +71,20 @@ export function getScoreCssClass(label: string): string {
 export function getCelebrationMessage(label: string): string {
   switch (label) {
     case 'Albatross':
-      return 'Albatross! Legendary precision.'
+      return 'Albatross! The AI just tipped its hat.'
     case 'Eagle':
-      return 'Eagle! Masterful compression.'
+      return 'Eagle! The clubhouse is buzzing.'
     case 'Birdie':
-      return 'Birdie! One under par.'
+      return 'Birdie! One under par. The caddie approves.'
     case 'Par':
-      return 'Clean swing. Right on par.'
+      return 'Par. Solid, respectable, dry martini energy.'
     case 'Bogey':
-      return 'The wind was rough. Try again.'
+      return 'Bogey. The caddie politely looks away.'
     case 'Double Bogey':
-      return 'Tough hole. You can do better.'
+      return 'Double Bogey. The bartender at the 19th Hole starts pouring early.'
     case 'Triple Bogey':
-      return 'Long day on the course. Keep swinging.'
+      return 'Triple Bogey. Your clubs have filed a formal complaint.'
     default:
-      return 'The rough is deep out here.'
+      return 'The rough is deep, and so is character development.'
   }
 }

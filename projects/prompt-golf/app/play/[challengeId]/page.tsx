@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation'
-import { getChallenge } from '@/lib/challenges'
+import { getChallenge, getChallengesByCourseName } from '@/lib/challenges'
 import { PlayClient } from './play-client'
 
 interface PageProps {
@@ -12,6 +12,11 @@ export default async function PlayPage({ params }: PageProps) {
 
   if (!challenge) notFound()
 
+  // Determine the next challenge in the same course
+  const courseChallenges = getChallengesByCourseName(challenge.course)
+  const currentIndex = courseChallenges.findIndex((c) => c.id === challenge.id)
+  const nextChallenge = courseChallenges[currentIndex + 1] ?? null
+
   return (
     <PlayClient
       challenge={{
@@ -22,6 +27,8 @@ export default async function PlayPage({ params }: PageProps) {
         principle: challenge.principle,
         course: challenge.course,
         holeNumber: challenge.holeNumber,
+        totalHoles: courseChallenges.length,
+        nextChallengeId: nextChallenge?.id ?? null,
         hints: challenge.hints,
       }}
     />

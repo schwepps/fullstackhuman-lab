@@ -9,6 +9,7 @@ import { calculateScore } from '@/lib/scoring'
 import {
   checkAttemptAllowed,
   incrementBudgetCounter,
+  getDailyBudget,
   incrementAttemptCount,
   getAttemptCount,
   consumeMulligan,
@@ -22,7 +23,7 @@ import type { SSEEvent, ShareableResult } from '@/lib/types'
 
 const requestSchema = z.object({
   challengeId: z.string().regex(/^[a-z0-9-]+$/),
-  prompt: z.string().trim().min(1).max(2000),
+  prompt: z.string().trim().min(1).max(500),
   sessionId: z.string().uuid(),
   isPractice: z.boolean().default(false),
   isMulligan: z.boolean().default(false),
@@ -93,17 +94,12 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  // ── Budget check ────────────────────────────────────────────────
-  const budgetCount = await incrementBudgetCounter()
-  if (budgetCount >= BUDGET_SHUTDOWN_THRESHOLD) {
+  // ── Budget check (read-only — increment happens inside stream before API call) ──
+  const currentBudget = await getDailyBudget()
+  if (currentBudget >= BUDGET_SHUTDOWN_THRESHOLD) {
     return Response.json(
       { error: 'Course closed for the day. Try again tomorrow.' },
       { status: 503 }
-    )
-  }
-  if (budgetCount >= BUDGET_WARN_THRESHOLD) {
-    console.warn(
-      `[swing] Budget warning: ${budgetCount}/${BUDGET_SHUTDOWN_THRESHOLD} daily swings`
     )
   }
 
@@ -167,6 +163,14 @@ export async function POST(request: NextRequest) {
           type: 'stage_update',
           data: { stage: 'validating', status: 'passed' },
         })
+
+        // Increment budget counter only when we are about to call Claude
+        const budgetCount = await incrementBudgetCounter()
+        if (budgetCount >= BUDGET_WARN_THRESHOLD) {
+          console.warn(
+            `[swing] Budget warning: ${budgetCount}/${BUDGET_SHUTDOWN_THRESHOLD} daily swings`
+          )
+        }
 
         // Stage 2: Code generation (stream tokens live)
         emit({
@@ -309,8 +313,9 @@ export async function POST(request: NextRequest) {
   return new Response(stream, {
     headers: {
       'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
+      'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
+      'X-Accel-Buffering': 'no',
     },
   })
 }

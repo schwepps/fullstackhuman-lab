@@ -116,11 +116,11 @@ describe('getScoreCssClass', () => {
 
 describe('getCelebrationMessage', () => {
   it('returns appropriate messages', () => {
-    expect(getCelebrationMessage('Albatross')).toContain('Legendary')
-    expect(getCelebrationMessage('Eagle')).toContain('Masterful')
-    expect(getCelebrationMessage('Birdie')).toContain('under par')
-    expect(getCelebrationMessage('Par')).toContain('Clean')
-    expect(getCelebrationMessage('Bogey')).toContain('wind')
-    expect(getCelebrationMessage('+5')).toContain('rough')
+    expect(getCelebrationMessage('Albatross')).toContain('tipped its hat')
+    expect(getCelebrationMessage('Eagle')).toContain('clubhouse')
+    expect(getCelebrationMessage('Birdie')).toContain('caddie approves')
+    expect(getCelebrationMessage('Par')).toContain('martini')
+    expect(getCelebrationMessage('Bogey')).toContain('caddie')
+    expect(getCelebrationMessage('+5')).toContain('character development')
   })
 })
