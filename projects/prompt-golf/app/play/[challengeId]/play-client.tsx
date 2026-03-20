@@ -10,6 +10,7 @@ import { CodeOutput } from '@/components/code-output'
 import { SwingResultPanel } from '@/components/swing-result'
 import { SupportCta } from '@/components/support-cta'
 import { getScoreDisplayLabel } from '@/lib/scoring'
+import { countWords } from '@/lib/word-counter'
 
 interface ChallengeInfo {
   id: string
@@ -263,7 +264,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
                       &ldquo;{progress.optimalPrompt}&rdquo;
                     </p>
                     <span className="ml-3 shrink-0 font-mono text-sm text-primary">
-                      {progress.optimalPrompt.split(/\s+/).length} words
+                      {countWords(progress.optimalPrompt)} words
                     </span>
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">

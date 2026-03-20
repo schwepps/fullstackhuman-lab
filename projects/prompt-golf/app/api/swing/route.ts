@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
           const shareableResult: ShareableResult = {
             id: resultId,
             challengeId,
-            challengeName: challenge.name,
+            challengeName: challenge.description.split('.')[0],
             holeName: challenge.name,
             prompt,
             code: generatedCode,

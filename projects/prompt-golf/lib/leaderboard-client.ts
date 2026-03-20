@@ -1,6 +1,6 @@
 import 'server-only'
 import { getRedisClient } from './upstash'
-import { REDIS_KEYS, RESULT_TTL_SECONDS } from './constants'
+import { REDIS_KEYS, RESULT_TTL_SECONDS, safeKey } from './constants'
 import type { LeaderboardEntry } from './types'
 
 const MAX_ENTRIES = 50
@@ -22,21 +22,28 @@ export async function recordHoleAndUpdateLeaderboard(
 ): Promise<void> {
   const redis = getRedisClient()
 
-  // Store best score per hole (lower is better, use NX-like logic)
-  const holeKey = `${REDIS_KEYS.leaderboard(course)}:hole:${sessionId}:${challengeId}`
-  const existing = await redis.get<number>(holeKey)
+  // Store best score per hole (lower is better)
+  // Use SETNX for first attempt, then compare-and-set for improvements.
+  // Note: not fully atomic without Lua, but concurrent requests for
+  // the same session+hole are extremely unlikely in practice.
+  const holeKey = `${REDIS_KEYS.leaderboard(course)}:hole:${safeKey(sessionId)}:${safeKey(challengeId)}`
 
-  // Only update if this is a new best (or first attempt)
-  if (existing != null && existing <= effectiveStrokes) return
+  // Try SETNX first (atomic for first-time)
+  const wasSet = await redis.set(holeKey, effectiveStrokes, {
+    ex: RESULT_TTL_SECONDS,
+    nx: true,
+  })
 
-  const pipeline = redis.pipeline()
-  pipeline.set(holeKey, effectiveStrokes, { ex: RESULT_TTL_SECONDS })
-  pipeline.expire(holeKey, RESULT_TTL_SECONDS)
-  await pipeline.exec()
+  if (!wasSet) {
+    // Key exists — only update if better
+    const existing = await redis.get<number>(holeKey)
+    if (existing != null && existing <= effectiveStrokes) return
+    await redis.set(holeKey, effectiveStrokes, { ex: RESULT_TTL_SECONDS })
+  }
 
   // Recompute total from all holes for this session
   // Since we can't SCAN in Upstash REST easily, we store a hole list
-  const holesListKey = `${REDIS_KEYS.leaderboard(course)}:holes:${sessionId}`
+  const holesListKey = `${REDIS_KEYS.leaderboard(course)}:holes:${safeKey(sessionId)}`
   await redis.sadd(holesListKey, challengeId)
   await redis.expire(holesListKey, RESULT_TTL_SECONDS)
 
@@ -48,7 +55,7 @@ export async function recordHoleAndUpdateLeaderboard(
   const scorePipeline = redis.pipeline()
   let totalPar = 0
   for (const holeId of completedHoles) {
-    const key = `${REDIS_KEYS.leaderboard(course)}:hole:${sessionId}:${holeId}`
+    const key = `${REDIS_KEYS.leaderboard(course)}:hole:${safeKey(sessionId)}:${safeKey(String(holeId))}`
     scorePipeline.get<number>(key)
     // Each hole has a par, but we don't have it here — use the passed par
     // for the current hole. For accumulated, we'd need to look up each par.
@@ -63,9 +70,9 @@ export async function recordHoleAndUpdateLeaderboard(
   }
 
   // For total par, we store it alongside
-  const totalParKey = `${REDIS_KEYS.leaderboard(course)}:totalpar:${sessionId}`
-  // Increment par tracking: add this hole's par if new
-  if (existing == null) {
+  const totalParKey = `${REDIS_KEYS.leaderboard(course)}:totalpar:${safeKey(sessionId)}`
+  // Increment par tracking: add this hole's par if first time (wasSet = true)
+  if (wasSet) {
     // First time completing this hole
     await redis.incrby(totalParKey, par)
     await redis.expire(totalParKey, RESULT_TTL_SECONDS)
@@ -85,7 +92,7 @@ export async function recordHoleAndUpdateLeaderboard(
 
   // Update sorted set + metadata
   const leaderboardKey = REDIS_KEYS.leaderboard(course)
-  const metaKey = `${leaderboardKey}:meta:${sessionId}`
+  const metaKey = `${leaderboardKey}:meta:${safeKey(sessionId)}`
 
   const updatePipeline = redis.pipeline()
   updatePipeline.zadd(leaderboardKey, {

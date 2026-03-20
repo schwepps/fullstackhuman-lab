@@ -20,7 +20,7 @@ export const REDIS_PREFIX = 'fsh:pg:'
 const SAFE_KEY_PATTERN = /^[a-zA-Z0-9._:-]+$/
 
 /** Validate Redis key components to prevent key injection */
-function safeKey(value: string): string {
+export function safeKey(value: string): string {
   if (!SAFE_KEY_PATTERN.test(value)) {
     throw new Error(`Invalid Redis key component: ${value.slice(0, 40)}`)
   }
