@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import type { ScoreResult, JudgeTestResult } from '@/lib/types'
 import {
   getScoreCssClass,
@@ -8,6 +9,7 @@ import {
   getCelebrationMessage,
 } from '@/lib/scoring'
 import { countWords } from '@/lib/word-counter'
+import { ShareButtons } from '@/components/share-buttons'
 
 interface SwingResultProps {
   verdict: {
@@ -24,6 +26,13 @@ interface SwingResultProps {
   } | null
   isPractice: boolean
   prompt?: string
+  resultId?: string | null
+  challengeName?: string
+  challengeNumber?: number
+  showNamePrompt?: boolean
+  nameInput?: string
+  onNameChange?: (name: string) => void
+  onNameSave?: () => void
 }
 
 export function SwingResultPanel({
@@ -32,8 +41,15 @@ export function SwingResultPanel({
   analysis,
   isPractice,
   prompt,
+  resultId,
+  challengeName,
+  challengeNumber,
+  showNamePrompt,
+  nameInput,
+  onNameChange,
+  onNameSave,
 }: SwingResultProps) {
-  const [isAnalysisExpanded, setAnalysisExpanded] = useState(false)
+  const [showLearnMore, setShowLearnMore] = useState(false)
 
   if (!verdict && !analysis) return null
 
@@ -41,10 +57,10 @@ export function SwingResultPanel({
 
   return (
     <div className="space-y-4">
-      {/* ── Victory card ── */}
+      {/* ── Victory card (consolidated: score + share + leaderboard) ── */}
       {verdict && !isPractice && verdict.pass && score?.isPassing && (
         <div className="club-card overflow-hidden border-primary/40">
-          {/* Score hero — use gold for over-target wins (not red, which implies failure) */}
+          {/* Score hero */}
           <div className="animate-score-pop px-6 py-5 text-center">
             <p
               className={`font-serif text-4xl font-bold ${
@@ -66,67 +82,65 @@ export function SwingResultPanel({
               <p className="font-serif text-lg text-foreground">
                 &ldquo;{prompt}&rdquo;
               </p>
+              <p className="mt-1 font-mono text-xs text-muted-foreground">
+                {score.wordCount} words &middot; target {score.par}
+                {score.attemptNumber > 1 &&
+                  ` \u00b7 attempt ${score.attemptNumber} (\u00d7${score.attemptPenalty})`}
+              </p>
             </div>
           )}
 
-          {/* Stats row */}
-          <div className="flex border-t border-border/30">
-            <div className="flex-1 border-r border-border/30 px-4 py-3 text-center">
-              <p className="font-mono text-lg font-bold text-foreground">
-                {score.wordCount}
-              </p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Words
-              </p>
+          {/* Share buttons — right inside the victory card */}
+          {resultId && (
+            <div className="border-t border-border/30 px-4 py-3">
+              <ShareButtons
+                challengeName={challengeName ?? ''}
+                holeName={`Challenge ${challengeNumber ?? ''}`}
+                prompt={prompt ?? ''}
+                wordCount={score.wordCount}
+                label={score.label}
+                resultId={resultId}
+              />
             </div>
-            {score.attemptNumber > 1 && (
-              <div className="flex-1 border-r border-border/30 px-4 py-3 text-center">
-                <p className="font-mono text-lg font-bold text-muted-foreground">
-                  &times;{score.attemptPenalty}
-                </p>
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                  Attempt {score.attemptNumber}
-                </p>
-              </div>
-            )}
-            <div className="flex-1 border-r border-border/30 px-4 py-3 text-center">
-              <p className="font-mono text-lg font-bold text-accent">
-                {score.par}
-              </p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Target
-              </p>
-            </div>
-            <div className="flex-1 px-4 py-3 text-center">
-              <p
-                className={`font-mono text-lg font-bold ${
-                  score.relativeScore < 0
-                    ? 'text-primary'
-                    : score.relativeScore === 0
-                      ? 'text-accent'
-                      : 'text-accent'
-                }`}
-              >
-                {score.relativeScore === 0
-                  ? 'Even'
-                  : score.relativeScore > 0
-                    ? `+${score.relativeScore}`
-                    : score.relativeScore}
-              </p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                vs Target
-              </p>
-            </div>
-          </div>
+          )}
 
-          {/* Penalty explanation */}
-          {score.attemptNumber > 1 && (
-            <div className="border-t border-border/30 px-4 py-2 text-center">
-              <p className="font-mono text-[10px] text-muted-foreground">
-                {score.wordCount} words &times; {score.attemptPenalty}x penalty
-                = {score.effectiveStrokes} effective (target {score.par})
+          {/* Display name prompt (first win) */}
+          {showNamePrompt && onNameChange && onNameSave && (
+            <div className="border-t border-border/30 px-4 py-3">
+              <p className="font-serif text-xs text-foreground">
+                Enter a name for the leaderboard:
               </p>
+              <div className="mt-2 flex gap-2">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => onNameChange(e.target.value)}
+                  placeholder="Your name"
+                  maxLength={30}
+                  className="flex-1 rounded-sm border border-border bg-background/60 px-3 py-2 font-sans text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                />
+                <button
+                  onClick={onNameSave}
+                  className="btn-fairway px-4 py-2 text-xs"
+                >
+                  Save
+                </button>
+              </div>
             </div>
+          )}
+
+          {/* Leaderboard link — compact, inside the card */}
+          {!showNamePrompt && (
+            <Link
+              href="/leaderboard"
+              className="flex items-center justify-between border-t border-border/30 px-4 py-2.5 text-xs transition-colors hover:bg-card/50 touch-manipulation"
+            >
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <span className="text-primary">{'\u2713'}</span>
+                Score submitted
+              </span>
+              <span className="text-accent">View rankings &rarr;</span>
+            </Link>
           )}
         </div>
       )}
@@ -143,67 +157,68 @@ export function SwingResultPanel({
         </div>
       )}
 
-      {/* ── Analysis card ── */}
+      {/* ── Learn more (collapsible: analysis + pro prompt) ── */}
       {analysis && (
         <div className="club-card p-4">
           <button
-            onClick={() => setAnalysisExpanded(!isAnalysisExpanded)}
+            onClick={() => setShowLearnMore(!showLearnMore)}
             className="flex min-h-11 w-full items-center justify-between rounded-sm text-left touch-manipulation focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            aria-expanded={isAnalysisExpanded}
+            aria-expanded={showLearnMore}
           >
             <span className="font-serif text-sm uppercase tracking-wider text-accent">
               {passed ? 'What you can learn' : 'What went wrong'}
             </span>
             <span className="text-xs text-muted-foreground">
-              {isAnalysisExpanded ? '\u25B2' : '\u25BC'}
+              {showLearnMore ? '\u25B2' : '\u25BC'}
             </span>
           </button>
 
-          {/* Summary — parsed into visual chips */}
+          {/* Summary chips — always visible */}
           <AnalysisSummary text={analysis.summary} passed={passed} />
 
-          {/* Detail (expandable) */}
-          {isAnalysisExpanded && (
-            <div className="mt-3 border-t border-border/40 pt-3 text-sm leading-relaxed text-muted-foreground">
-              {analysis.detail.split('\n\n').map((paragraph, i) => (
-                <p key={i} className={i > 0 ? 'mt-2' : ''}>
-                  {paragraph}
-                </p>
-              ))}
+          {/* Expanded: detail + pro prompt */}
+          {showLearnMore && (
+            <div className="mt-3 space-y-4 border-t border-border/40 pt-3">
+              {/* Detail paragraphs */}
+              <div className="text-sm leading-relaxed text-muted-foreground">
+                {analysis.detail.split('\n\n').map((paragraph, i) => (
+                  <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                    {paragraph}
+                  </p>
+                ))}
+              </div>
+
+              {/* Pro prompt (inside learn more, not a separate card) */}
+              {analysis.optimalPrompt && analysis.concept && (
+                <div className="rounded-sm border border-accent/20 bg-accent/5 p-4">
+                  <p className="font-serif text-xs uppercase tracking-wider text-accent">
+                    Pro Prompt
+                  </p>
+                  <div className="mt-2 flex items-baseline justify-between">
+                    <p className="font-serif text-lg text-foreground">
+                      &ldquo;{analysis.optimalPrompt}&rdquo;
+                    </p>
+                    <span className="ml-3 shrink-0 font-mono text-sm text-primary">
+                      {countWords(analysis.optimalPrompt)} words
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    <span className="font-semibold text-accent">
+                      Why it works:{' '}
+                    </span>
+                    {analysis.concept}
+                  </p>
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
-
-      {/* ── Optimal prompt + concept (pass only) ── */}
-      {analysis?.optimalPrompt && analysis?.concept && (
-        <div className="club-card border-accent/30 p-5">
-          <p className="font-serif text-xs uppercase tracking-wider text-accent">
-            Pro Prompt
-          </p>
-
-          <div className="mt-3 flex items-baseline justify-between">
-            <p className="font-serif text-xl text-foreground">
-              &ldquo;{analysis.optimalPrompt}&rdquo;
-            </p>
-            <span className="ml-3 shrink-0 font-mono text-sm text-primary">
-              {countWords(analysis.optimalPrompt)} words
-            </span>
-          </div>
-
-          <div className="gold-divider mt-3" />
-
-          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-            <span className="font-semibold text-accent">Why it works: </span>
-            {analysis.concept}
-          </p>
         </div>
       )}
     </div>
   )
 }
 
-/** Parse analysis summary into visual chips instead of a wall of text */
+/** Parse analysis summary into visual chips */
 function AnalysisSummary({ text, passed }: { text: string; passed: boolean }) {
   if (!text) return null
 

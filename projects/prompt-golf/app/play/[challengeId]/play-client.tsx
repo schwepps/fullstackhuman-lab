@@ -8,7 +8,6 @@ import { useSession } from '@/hooks/use-session'
 import { PromptInput } from '@/components/prompt-input'
 import { CodeOutput } from '@/components/code-output'
 import { SwingResultPanel } from '@/components/swing-result'
-import { ShareButtons } from '@/components/share-buttons'
 import { SupportCta } from '@/components/support-cta'
 import { getScoreDisplayLabel } from '@/lib/scoring'
 
@@ -393,82 +392,67 @@ export function PlayClient({ challenge }: PlayClientProps) {
           isStreaming={state.status === 'streaming'}
         />
 
-        {/* Result panel */}
+        {/* Result panel (consolidated: score + share + leaderboard in one card) */}
         <SwingResultPanel
           verdict={state.verdict}
           score={state.score}
           analysis={state.analysis}
           isPractice={mode === 'practice'}
           prompt={lastPrompt}
+          resultId={state.resultId}
+          challengeName={challenge.name}
+          challengeNumber={challenge.holeNumber}
+          showNamePrompt={shouldShowNamePrompt}
+          nameInput={nameInput}
+          onNameChange={setNameInput}
+          onNameSave={() => {
+            const name = nameInput.trim() || 'Anonymous'
+            setDisplayName(name)
+            setShowNamePrompt(false)
+          }}
         />
 
-        {/* Share buttons */}
-        {state.status === 'pass' &&
+        {/* Give up and learn — after 3+ failed scored attempts */}
+        {state.status === 'fail' &&
           mode === 'scored' &&
-          state.resultId &&
-          state.score && (
-            <div className="space-y-3">
-              <ShareButtons
-                challengeName={challenge.name}
-                holeName={`Challenge ${challenge.holeNumber}`}
-                prompt={lastPrompt}
-                wordCount={state.score.wordCount}
-                label={state.score.label}
-                resultId={state.resultId}
-              />
-              <SupportCta variant="inline" />
-            </div>
-          )}
-
-        {/* Display name prompt (first win only) */}
-        {shouldShowNamePrompt && state.status === 'pass' && (
-          <div className="club-card border-accent/30 p-4">
-            <p className="font-serif text-sm text-foreground">
-              Nice work! Enter a name for the leaderboard:
-            </p>
-            <div className="mt-3 flex gap-2">
-              <input
-                type="text"
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                placeholder="Your name"
-                maxLength={30}
-                className="flex-1 rounded-sm border border-border bg-background/60 px-3 py-2 font-sans text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
-                autoFocus={false}
-              />
+          progress.scoredAttempts >= 3 &&
+          !progress.isComplete &&
+          !progress.optimalPrompt && (
+            <div className="club-card border-accent/30 p-4 text-center">
+              <p className="font-serif text-sm text-foreground">
+                Struggling? See the answer and learn the technique.
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Your score won&apos;t be submitted to the leaderboard for this
+                challenge.
+              </p>
               <button
                 onClick={() => {
-                  const name = nameInput.trim() || 'Anonymous'
-                  setDisplayName(name)
-                  setShowNamePrompt(false)
+                  // Trigger a pass-equivalent analysis to get the pro prompt
+                  // by marking the hole as seen (blocks future leaderboard)
+                  recordAnalysis(challenge.id, 'PENDING', 'PENDING')
+                  // Re-run the swing as practice to get the analysis
+                  sendSwing(
+                    challenge.id,
+                    'reveal optimal prompt',
+                    session.sessionId,
+                    true,
+                    false,
+                    session.displayName,
+                    true
+                  )
                 }}
-                className="btn-fairway px-4 py-2 text-xs"
+                className="btn-club mt-3 text-xs"
               >
-                Save
+                Show me the Pro Prompt
               </button>
             </div>
-          </div>
-        )}
-
-        {/* Leaderboard confirmation */}
-        {state.status === 'pass' &&
-          mode === 'scored' &&
-          !shouldShowNamePrompt && (
-            <Link
-              href="/leaderboard"
-              className="club-card flex items-center justify-between border-primary/30 p-4 transition-all hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-primary">{'\u2713'}</span>
-                <span className="font-serif text-sm text-foreground">
-                  Score submitted to leaderboard
-                </span>
-              </div>
-              <span className="font-serif text-xs text-accent">
-                View rankings &rarr;
-              </span>
-            </Link>
           )}
+
+        {/* Support CTA — compact */}
+        {state.status === 'pass' && mode === 'scored' && (
+          <SupportCta variant="inline" />
+        )}
 
         {/* Error */}
         {state.status === 'error' && state.error && (
