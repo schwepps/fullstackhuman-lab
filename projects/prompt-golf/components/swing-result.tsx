@@ -17,6 +17,7 @@ interface SwingResultProps {
   score: ScoreResult | null
   analysis: { summary: string; detail: string } | null
   isPractice: boolean
+  prompt?: string
 }
 
 export function SwingResultPanel({
@@ -24,6 +25,7 @@ export function SwingResultPanel({
   score,
   analysis,
   isPractice,
+  prompt,
 }: SwingResultProps) {
   const [isAnalysisExpanded, setAnalysisExpanded] = useState(false)
 
@@ -33,57 +35,85 @@ export function SwingResultPanel({
 
   return (
     <div className="space-y-4">
-      {/* Verdict */}
-      {verdict && !isPractice && (
-        <div
-          className={`club-card p-4 ${
-            verdict.pass ? 'border-primary/40' : 'border-destructive/40'
-          }`}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <span className={`text-2xl ${verdict.pass ? '' : 'grayscale'}`}>
-                {verdict.pass ? '\u26F3' : '\u274C'}
-              </span>
-              <div>
-                <p
-                  className={`font-serif text-lg font-bold ${
-                    verdict.pass ? 'text-primary' : 'text-destructive'
-                  }`}
-                >
-                  {verdict.pass ? 'Passed!' : 'Not quite'}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {verdict.summary}
-                </p>
-              </div>
-            </div>
-
-            {/* Score badge */}
-            {score && score.isPassing && (
-              <div className="animate-score-pop text-right">
-                <p
-                  className={`font-serif text-2xl font-bold ${getScoreCssClass(score.label)}`}
-                >
-                  {getScoreDisplayLabel(score.label)}
-                </p>
-                <p className="font-mono text-xs text-muted-foreground">
-                  {score.effectiveStrokes} words (target {score.par})
-                </p>
-              </div>
-            )}
-          </div>
-
-          {/* Celebration message */}
-          {score && score.isPassing && (
-            <p className="mt-3 font-serif text-sm italic text-muted-foreground">
+      {/* ── Victory card ── */}
+      {verdict && !isPractice && verdict.pass && score?.isPassing && (
+        <div className="club-card overflow-hidden border-primary/40">
+          {/* Score hero */}
+          <div className="animate-score-pop px-6 py-5 text-center">
+            <p
+              className={`font-serif text-4xl font-bold ${getScoreCssClass(score.label)}`}
+            >
+              {getScoreDisplayLabel(score.label)}
+            </p>
+            <p className="mt-1 font-serif text-sm italic text-muted-foreground">
               {getCelebrationMessage(score.label)}
             </p>
+          </div>
+
+          {/* Player's prompt */}
+          {prompt && (
+            <div className="border-t border-border/30 px-6 py-3 text-center">
+              <p className="font-serif text-lg text-foreground">
+                &ldquo;{prompt}&rdquo;
+              </p>
+            </div>
           )}
+
+          {/* Stats row */}
+          <div className="flex border-t border-border/30">
+            <div className="flex-1 border-r border-border/30 px-4 py-3 text-center">
+              <p className="font-mono text-lg font-bold text-foreground">
+                {score.wordCount}
+              </p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Words used
+              </p>
+            </div>
+            <div className="flex-1 border-r border-border/30 px-4 py-3 text-center">
+              <p className="font-mono text-lg font-bold text-accent">
+                {score.par}
+              </p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                Target
+              </p>
+            </div>
+            <div className="flex-1 px-4 py-3 text-center">
+              <p
+                className={`font-mono text-lg font-bold ${
+                  score.relativeScore < 0
+                    ? 'text-primary'
+                    : score.relativeScore === 0
+                      ? 'text-accent'
+                      : 'text-destructive'
+                }`}
+              >
+                {score.relativeScore === 0
+                  ? '0'
+                  : score.relativeScore > 0
+                    ? `+${score.relativeScore}`
+                    : score.relativeScore}
+              </p>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                vs Target
+              </p>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* Analysis (collapsible) */}
+      {/* ── Failure card ── */}
+      {verdict && !isPractice && !verdict.pass && (
+        <div className="club-card border-destructive/40 p-5 text-center">
+          <p className="font-serif text-xl font-bold text-destructive">
+            Not quite
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {verdict.summary}
+          </p>
+        </div>
+      )}
+
+      {/* ── Analysis card ── */}
       {analysis && (
         <div className="club-card p-4">
           <button
@@ -91,34 +121,88 @@ export function SwingResultPanel({
             className="flex min-h-11 w-full items-center justify-between rounded-sm text-left touch-manipulation focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             aria-expanded={isAnalysisExpanded}
           >
-            <div className="flex items-center gap-2">
-              <span className="font-serif text-sm uppercase tracking-wider text-accent">
-                Analysis
-              </span>
-              {passed && (
-                <span className="text-xs text-muted-foreground">
-                  {isPractice ? '(practice)' : ''}
-                </span>
-              )}
-            </div>
+            <span className="font-serif text-sm uppercase tracking-wider text-accent">
+              {passed ? 'What you can learn' : 'What went wrong'}
+            </span>
             <span className="text-xs text-muted-foreground">
               {isAnalysisExpanded ? '\u25B2' : '\u25BC'}
             </span>
           </button>
 
-          {/* Summary (always visible) */}
-          <p className="mt-2 font-mono text-sm text-foreground/90">
-            {analysis.summary}
-          </p>
+          {/* Summary — parsed into visual chips */}
+          <AnalysisSummary text={analysis.summary} passed={passed} />
 
           {/* Detail (expandable) */}
           {isAnalysisExpanded && (
-            <div className="mt-3 border-t border-border/40 pt-3">
-              <p className="whitespace-pre-wrap text-sm text-muted-foreground">
-                {analysis.detail}
-              </p>
+            <div className="mt-3 border-t border-border/40 pt-3 text-sm leading-relaxed text-muted-foreground">
+              {analysis.detail.split('\n\n').map((paragraph, i) => (
+                <p key={i} className={i > 0 ? 'mt-2' : ''}>
+                  {paragraph}
+                </p>
+              ))}
             </div>
           )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** Parse analysis summary into visual chips instead of a wall of text */
+function AnalysisSummary({ text, passed }: { text: string; passed: boolean }) {
+  if (!text) return null
+
+  // Try to extract structured parts from the summary
+  // Common format: "Load-bearing: 'x', 'y'. Filler: 'a', 'b'. Pro tip: ..."
+  const loadBearingMatch = text.match(/load[- ]bearing:\s*([^.]+)/i)
+  const fillerMatch = text.match(/filler:\s*([^.]+)/i)
+  const tipMatch = text.match(/(?:pro tip|tip|try):\s*(.+?)(?:\.|$)/i)
+  const misreadMatch = text.match(/misread:\s*([^.]+)/i)
+
+  const hasStructure =
+    loadBearingMatch ?? fillerMatch ?? tipMatch ?? misreadMatch
+
+  if (!hasStructure) {
+    // Fallback: just render the text nicely
+    return <p className="mt-3 text-sm text-foreground/90">{text}</p>
+  }
+
+  return (
+    <div className="mt-3 space-y-2">
+      {loadBearingMatch && (
+        <div className="flex items-start gap-2">
+          <span className="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-primary" />
+          <p className="text-sm text-foreground/90">
+            <span className="font-semibold text-primary">Key words: </span>
+            {loadBearingMatch[1].trim()}
+          </p>
+        </div>
+      )}
+      {fillerMatch && (
+        <div className="flex items-start gap-2">
+          <span className="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-destructive/60" />
+          <p className="text-sm text-foreground/90">
+            <span className="font-semibold text-destructive">Removable: </span>
+            {fillerMatch[1].trim()}
+          </p>
+        </div>
+      )}
+      {tipMatch && (
+        <div className="flex items-start gap-2">
+          <span className="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-accent" />
+          <p className="text-sm text-foreground/90">
+            <span className="font-semibold text-accent">Tip: </span>
+            {tipMatch[1].trim()}
+          </p>
+        </div>
+      )}
+      {misreadMatch && !passed && (
+        <div className="flex items-start gap-2">
+          <span className="mt-0.5 inline-block h-2 w-2 shrink-0 rounded-full bg-destructive" />
+          <p className="text-sm text-foreground/90">
+            <span className="font-semibold text-destructive">Misread: </span>
+            {misreadMatch[1].trim()}
+          </p>
         </div>
       )}
     </div>

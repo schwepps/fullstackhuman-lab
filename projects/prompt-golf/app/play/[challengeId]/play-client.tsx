@@ -266,6 +266,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
           score={state.score}
           analysis={state.analysis}
           isPractice={mode === 'practice'}
+          prompt={lastPrompt}
         />
 
         {/* Share buttons */}

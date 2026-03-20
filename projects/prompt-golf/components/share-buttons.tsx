@@ -62,7 +62,7 @@ export function ShareButtons({
           rel="noopener noreferrer"
           className="btn-club flex h-11 flex-1 items-center justify-center gap-1.5 text-xs"
         >
-          <XIcon />X
+          <XIcon />
         </a>
       </div>
       <button
