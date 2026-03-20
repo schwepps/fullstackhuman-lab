@@ -303,16 +303,24 @@ export function PlayClient({ challenge }: PlayClientProps) {
       {showRetryInput && (
         <div className="mb-4 flex items-center gap-3">
           {mode === 'practice' ? (
-            <div className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1">
-              <span className="inline-block h-2 w-2 rounded-full bg-primary" />
-              <span className="font-serif text-xs uppercase tracking-wider text-primary">
-                Practice Mode
-              </span>
-              <span className="font-mono text-xs text-muted-foreground">
-                ({2 - progress.practiceSwings} free{' '}
-                {2 - progress.practiceSwings === 1 ? 'try' : 'tries'} left)
-              </span>
-            </div>
+            <>
+              <div className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-primary" />
+                <span className="font-serif text-xs uppercase tracking-wider text-primary">
+                  Practice Mode
+                </span>
+                <span className="font-mono text-xs text-muted-foreground">
+                  ({2 - progress.practiceSwings} free{' '}
+                  {2 - progress.practiceSwings === 1 ? 'try' : 'tries'} left)
+                </span>
+              </div>
+              <button
+                onClick={() => setModeOverride('scored')}
+                className="font-serif text-xs text-muted-foreground transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
+              >
+                Skip to scored &rarr;
+              </button>
+            </>
           ) : (
             <div className="flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1">
               <span className="inline-block h-2 w-2 rounded-full bg-accent" />
