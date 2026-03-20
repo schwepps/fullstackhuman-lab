@@ -34,6 +34,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
   const { state, sendSwing, reset } = useSwing()
   const {
     session,
+    setDisplayName,
     getHoleProgress,
     recordPracticeSwing,
     recordScoredAttempt,
@@ -58,6 +59,10 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
   const [lastPrompt, setLastPrompt] = useState('')
 
+  // Display name prompt — shown on first win if no name set
+  const [showNamePrompt, setShowNamePrompt] = useState(false)
+  const [nameInput, setNameInput] = useState(session.displayName)
+
   const isLoading = state.status === 'sending' || state.status === 'streaming'
 
   useEffect(() => {
@@ -70,6 +75,10 @@ export function PlayClient({ challenge }: PlayClientProps) {
       recordScoredAttempt(challenge.id, state.score, lastPrompt)
     }
   }, [state.score, mode, challenge.id, lastPrompt, recordScoredAttempt])
+
+  // Derive name prompt visibility — show on first pass without a display name
+  const shouldShowNamePrompt =
+    showNamePrompt || (state.status === 'pass' && !session.displayName)
 
   // Save analysis (optimalPrompt + concept) to session on pass
   useEffect(() => {
@@ -94,12 +103,17 @@ export function PlayClient({ challenge }: PlayClientProps) {
       const isMulligan = pendingMulligan
       if (isMulligan) setPendingMulligan(false)
 
+      // Has the player already seen the pro prompt for this hole?
+      const alreadyRevealedForThisHole = progress.optimalPrompt != null
+
       await sendSwing(
         challenge.id,
         prompt,
         session.sessionId,
         isPractice,
-        isMulligan
+        isMulligan,
+        session.displayName,
+        alreadyRevealedForThisHole
       )
 
       if (isPractice) {
@@ -114,6 +128,8 @@ export function PlayClient({ challenge }: PlayClientProps) {
       pendingMulligan,
       challenge.id,
       session.sessionId,
+      session.displayName,
+      progress.optimalPrompt,
       sendSwing,
       recordPracticeSwing,
       progress.practiceSwings,
@@ -388,23 +404,55 @@ export function PlayClient({ challenge }: PlayClientProps) {
             </div>
           )}
 
-        {/* Leaderboard confirmation */}
-        {state.status === 'pass' && mode === 'scored' && (
-          <Link
-            href="/leaderboard"
-            className="club-card flex items-center justify-between border-primary/30 p-4 transition-all hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-primary">{'\u2713'}</span>
-              <span className="font-serif text-sm text-foreground">
-                Score submitted to leaderboard
-              </span>
+        {/* Display name prompt (first win only) */}
+        {shouldShowNamePrompt && state.status === 'pass' && (
+          <div className="club-card border-accent/30 p-4">
+            <p className="font-serif text-sm text-foreground">
+              Nice work! Enter a name for the leaderboard:
+            </p>
+            <div className="mt-3 flex gap-2">
+              <input
+                type="text"
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                placeholder="Your name"
+                maxLength={30}
+                className="flex-1 rounded-sm border border-border bg-background/60 px-3 py-2 font-sans text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                autoFocus={false}
+              />
+              <button
+                onClick={() => {
+                  const name = nameInput.trim() || 'Anonymous'
+                  setDisplayName(name)
+                  setShowNamePrompt(false)
+                }}
+                className="btn-fairway px-4 py-2 text-xs"
+              >
+                Save
+              </button>
             </div>
-            <span className="font-serif text-xs text-accent">
-              View rankings &rarr;
-            </span>
-          </Link>
+          </div>
         )}
+
+        {/* Leaderboard confirmation */}
+        {state.status === 'pass' &&
+          mode === 'scored' &&
+          !shouldShowNamePrompt && (
+            <Link
+              href="/leaderboard"
+              className="club-card flex items-center justify-between border-primary/30 p-4 transition-all hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-primary">{'\u2713'}</span>
+                <span className="font-serif text-sm text-foreground">
+                  Score submitted to leaderboard
+                </span>
+              </div>
+              <span className="font-serif text-xs text-accent">
+                View rankings &rarr;
+              </span>
+            </Link>
+          )}
 
         {/* Error */}
         {state.status === 'error' && state.error && (

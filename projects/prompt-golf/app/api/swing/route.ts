@@ -28,6 +28,8 @@ const requestSchema = z.object({
   sessionId: z.string().uuid(),
   isPractice: z.boolean().default(false),
   isMulligan: z.boolean().default(false),
+  displayName: z.string().trim().max(30).default(''),
+  hasSeenProPrompt: z.boolean().default(false),
 })
 
 function generateResultId(): string {
@@ -72,7 +74,15 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: 'Invalid request.' }, { status: 400 })
   }
 
-  const { challengeId, prompt, sessionId, isPractice, isMulligan } = body
+  const {
+    challengeId,
+    prompt,
+    sessionId,
+    isPractice,
+    isMulligan,
+    displayName,
+    hasSeenProPrompt,
+  } = body
 
   // ── Validate challenge exists ───────────────────────────────────
   const challenge = getChallenge(challengeId)
@@ -276,17 +286,20 @@ export async function POST(request: NextRequest) {
             console.error('[swing] Failed to save result:', err)
           )
 
-          // Auto-update leaderboard with accumulated score
-          await recordHoleAndUpdateLeaderboard(
-            sessionId,
-            challenge.course,
-            challengeId,
-            score.effectiveStrokes,
-            challenge.par,
-            '' // displayName set client-side later
-          ).catch((err) =>
-            console.error('[swing] Failed to update leaderboard:', err)
-          )
+          // Auto-update leaderboard — skip if player already saw the pro prompt
+          // (prevents gaming the leaderboard by replaying with the revealed answer)
+          if (!hasSeenProPrompt) {
+            await recordHoleAndUpdateLeaderboard(
+              sessionId,
+              challenge.course,
+              challengeId,
+              score.effectiveStrokes,
+              challenge.par,
+              displayName
+            ).catch((err) =>
+              console.error('[swing] Failed to update leaderboard:', err)
+            )
+          }
         }
 
         // Final result

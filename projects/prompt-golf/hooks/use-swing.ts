@@ -74,7 +74,9 @@ export function useSwing() {
       prompt: string,
       sessionId: string,
       isPractice: boolean,
-      isMulligan: boolean
+      isMulligan: boolean,
+      displayName: string,
+      hasSeenProPrompt: boolean
     ) => {
       abortRef.current?.abort()
       const controller = new AbortController()
@@ -93,6 +95,8 @@ export function useSwing() {
             sessionId,
             isPractice,
             isMulligan,
+            displayName,
+            hasSeenProPrompt,
           }),
           signal: controller.signal,
         })
