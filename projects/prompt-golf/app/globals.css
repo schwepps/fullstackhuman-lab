@@ -72,7 +72,7 @@
       opacity: 1;
     }
     100% {
-      transform: translateY(100vh) rotate(720deg);
+      transform: translateY(100svh) rotate(720deg);
       opacity: 0;
     }
   }
@@ -147,14 +147,6 @@
   --animate-gentle-bounce: gentle-bounce 2s ease-in-out infinite;
 }
 
-:root {
-  --background: #0c1a0f;
-  --foreground: #f5f0e8;
-  --primary: #4caf50;
-  --accent: #c9a84c;
-  --radius: 4px;
-}
-
 @layer base {
   button,
   [role='button'],
@@ -208,6 +200,7 @@
     *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
     }
   }
 }
@@ -219,6 +212,7 @@
            font-serif text-sm uppercase tracking-[0.2em] text-accent
            transition-all touch-manipulation
            hover:bg-accent hover:text-walnut hover:shadow-[0_0_20px_rgba(201,168,76,0.3)]
+           focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background
            active:translate-y-0.5 active:scale-[0.98]
            disabled:opacity-40 disabled:cursor-not-allowed
            disabled:hover:bg-transparent disabled:hover:text-accent disabled:hover:shadow-none;
@@ -230,6 +224,7 @@
            font-serif text-sm uppercase tracking-[0.15em] text-background font-semibold
            transition-all touch-manipulation
            hover:bg-primary-dark hover:shadow-[0_0_20px_rgba(76,175,80,0.3)]
+           focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background
            active:translate-y-0.5 active:scale-[0.98]
            disabled:opacity-40 disabled:cursor-not-allowed
            disabled:hover:bg-primary disabled:hover:shadow-none;

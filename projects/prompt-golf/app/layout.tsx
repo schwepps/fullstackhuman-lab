@@ -56,13 +56,13 @@ export default function RootLayout({
         className={`${playfair.variable} ${geistMono.variable} min-h-svh font-sans`}
       >
         {/* FSH-branded top bar */}
-        <header className="relative z-10 flex h-10 items-center justify-between border-b border-accent/20 bg-background/80 px-4 backdrop-blur-sm sm:px-6">
+        <header className="relative z-10 flex h-11 items-center justify-between border-b border-accent/20 bg-background/80 px-4 backdrop-blur-sm sm:px-6">
           <div className="flex items-center gap-2 text-muted-foreground">
             <a
               href="https://fullstackhuman.sh"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-serif text-[10px] font-semibold uppercase tracking-[0.15em] transition-colors hover:text-accent"
+              className="flex min-h-11 items-center font-serif text-[10px] font-semibold uppercase tracking-[0.15em] transition-colors hover:text-accent"
             >
               FullStackHuman
             </a>
@@ -71,12 +71,12 @@ export default function RootLayout({
               href="https://fullstackhuman.sh/lab"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-serif text-[10px] uppercase tracking-[0.15em] transition-colors hover:text-accent"
+              className="flex min-h-11 items-center font-serif text-[10px] uppercase tracking-[0.15em] transition-colors hover:text-accent"
             >
               Lab
             </a>
           </div>
-          <span className="font-serif text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+          <span className="hidden font-serif text-[10px] uppercase tracking-[0.15em] text-muted-foreground sm:inline">
             Dress code: business casual or pajamas
           </span>
         </header>

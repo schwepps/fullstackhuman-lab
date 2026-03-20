@@ -1,6 +1,6 @@
 export default function HomePage() {
   return (
-    <div className="flex min-h-[calc(100svh-2.5rem)] flex-col items-center justify-center px-4 pb-safe">
+    <div className="flex min-h-[calc(100svh-2.75rem)] flex-col items-center justify-center px-4 pb-safe">
       <div className="mx-auto w-full max-w-2xl text-center">
         {/* Logo / Title */}
         <div className="mb-2 font-mono text-xs uppercase tracking-[0.3em] text-accent/60">

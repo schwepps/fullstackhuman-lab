@@ -1,9 +1,12 @@
 // ── Site ─────────────────────────────────────────────────────────
 export function getSiteUrl(): string {
-  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
-    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    return process.env.NEXT_PUBLIC_SITE_URL
   }
-  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  }
+  return `http://localhost:${process.env.PORT ?? '3000'}`
 }
 
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
@@ -20,8 +23,7 @@ export const REDIS_KEYS = {
   globalAttempts: (ip: string) => `${REDIS_PREFIX}global:${ip}`,
   mulligans: (sessionId: string, course: string) =>
     `${REDIS_PREFIX}mulligans:${sessionId}:${course}`,
-  budget: () =>
-    `${REDIS_PREFIX}budget:${new Date().toISOString().slice(0, 10)}`,
+  budget: (date: string) => `${REDIS_PREFIX}budget:${date}`,
   result: (id: string) => `${REDIS_PREFIX}result:${id}`,
   leaderboard: (course: string) => `${REDIS_PREFIX}leaderboard:${course}`,
   bestSwing: (sessionId: string, challengeId: string) =>
@@ -57,8 +59,11 @@ export const MAX_PROMPT_WORDS = 100
 export const RESULT_TTL_SECONDS = 30 * 24 * 60 * 60 // 30 days
 
 // ── Models ───────────────────────────────────────────────────────
+/** Generates TypeScript code from the player's natural language prompt */
 export const GENERATOR_MODEL = 'claude-haiku-4-5-20251001'
+/** Evaluates generated code correctness against test cases */
 export const JUDGE_MODEL = 'claude-sonnet-4-6-20250514'
+/** Produces educational swing analysis (why the prompt worked/failed) */
 export const ANALYZER_MODEL = 'claude-haiku-4-5-20251001'
 
 // ── Courses ──────────────────────────────────────────────────────

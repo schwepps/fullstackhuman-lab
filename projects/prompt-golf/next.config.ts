@@ -31,10 +31,10 @@ const securityHeaders = [
       [
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline'",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+        "style-src 'self' 'unsafe-inline'",
         "img-src 'self' https: data:",
-        "connect-src 'self'",
-        "font-src 'self' https://fonts.gstatic.com",
+        "connect-src 'self'", // All external calls go through API routes
+        "font-src 'self'", // next/font self-hosts Google Fonts
         "frame-ancestors 'self'",
       ].join('; ') + ';',
   },
