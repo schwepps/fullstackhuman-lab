@@ -43,11 +43,12 @@ export function PlayClient({ challenge }: PlayClientProps) {
   const progress = getHoleProgress(challenge.id)
   const mulligansLeft = getMulligansRemaining(challenge.course)
 
-  // Determine current mode
+  // Mode is derived from session progress — not independent state.
+  // The modeOverride allows the transition from practice → scored
+  // within the same render cycle (after the 2nd practice swing).
   const canPractice = progress.practiceSwings < 2
-  const [mode, setMode] = useState<'practice' | 'scored'>(
-    canPractice ? 'practice' : 'scored'
-  )
+  const [modeOverride, setModeOverride] = useState<'scored' | null>(null)
+  const mode = modeOverride ?? (canPractice ? 'practice' : 'scored')
 
   const [showMulliganOffer, setShowMulliganOffer] = useState(false)
   const [pendingMulligan, setPendingMulligan] = useState(false)
@@ -88,7 +89,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
       if (isPractice) {
         recordPracticeSwing(challenge.id)
         if (progress.practiceSwings + 1 >= 2) {
-          setMode('scored')
+          setModeOverride('scored')
         }
       }
     },
