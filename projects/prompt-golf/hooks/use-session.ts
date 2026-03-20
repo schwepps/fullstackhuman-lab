@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useMemo } from 'react'
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import type { SessionState, HoleProgress, ScoreResult } from '@/lib/types'
 import { MULLIGANS_PER_COURSE } from '@/lib/constants'
 
@@ -10,22 +10,6 @@ function generateSessionId(): string {
   return crypto.randomUUID()
 }
 
-function loadSession(): SessionState {
-  if (typeof window === 'undefined') return createFreshSession()
-
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as SessionState
-      if (parsed.sessionId) return parsed
-    }
-  } catch {
-    // Corrupted storage — reset
-  }
-
-  return createFreshSession()
-}
-
 function createFreshSession(): SessionState {
   return {
     sessionId: generateSessionId(),
@@ -33,6 +17,20 @@ function createFreshSession(): SessionState {
     mulligansRemaining: {},
     holes: {},
   }
+}
+
+function loadFromStorage(): SessionState | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw) as SessionState
+      if (parsed.sessionId) return parsed
+    }
+  } catch {
+    // Corrupted storage
+  }
+  return null
 }
 
 function saveSession(session: SessionState): void {
@@ -45,15 +43,30 @@ function saveSession(session: SessionState): void {
 }
 
 export function useSession() {
-  const [session, setSession] = useState<SessionState>(loadSession)
+  // Always start with a fresh session for SSR/hydration consistency.
+  // localStorage data is loaded after mount via useEffect + ref trick.
+  const [session, setSession] = useState<SessionState>(createFreshSession)
+  const hydratedRef = useRef(false)
 
-  // Persist on every change (skip initial SSR render)
-  const isHydrated = typeof window !== 'undefined'
+  // Hydrate from localStorage ONCE after mount.
+  // We use a ref + conditional setState to avoid the lint rule while
+  // ensuring we only do this once and only when data actually differs.
   useEffect(() => {
-    if (isHydrated && session.sessionId) {
+    if (hydratedRef.current) return
+    hydratedRef.current = true
+    const stored = loadFromStorage()
+    if (stored) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration from localStorage
+      setSession(stored)
+    }
+  }, [])
+
+  // Persist on every change after hydration
+  useEffect(() => {
+    if (hydratedRef.current && session.sessionId) {
       saveSession(session)
     }
-  }, [session, isHydrated])
+  }, [session])
 
   const setDisplayName = useCallback((name: string) => {
     setSession((prev) => ({ ...prev, displayName: name }))
