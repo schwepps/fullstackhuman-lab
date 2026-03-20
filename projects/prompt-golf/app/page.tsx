@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getChallengesByCourseName } from '@/lib/challenges'
 import { COURSES } from '@/lib/constants'
 import { SupportCta } from '@/components/support-cta'
+import { CourseMap } from '@/components/course-map'
 
 export default function HomePage() {
   const frontNine = getChallengesByCourseName('front-9')
@@ -47,48 +48,17 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Front 9 */}
+      {/* Front 9 — client component for progress display */}
       <div className="mt-8">
-        <div className="flex items-baseline justify-between">
-          <h2 className="font-serif text-xl font-semibold text-foreground">
-            The Front 9
-          </h2>
-          <span className="font-mono text-xs text-muted-foreground">
-            9 Challenges
-          </span>
-        </div>
-
-        <div className="gold-divider mt-2" />
-
-        <div className="mt-4 grid gap-3">
-          {frontNine.map((challenge) => (
-            <Link
-              key={challenge.id}
-              href={`/play/${challenge.id}`}
-              className="club-card group flex items-center justify-between p-4 transition-all hover:border-accent/50 hover:shadow-[0_0_12px_rgba(212,184,122,0.1)] focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.99] touch-manipulation"
-            >
-              <div className="flex items-center gap-4">
-                <span className="flex h-11 w-11 items-center justify-center rounded-full border border-accent/30 font-serif text-sm font-bold text-accent">
-                  {challenge.holeNumber}
-                </span>
-                <div>
-                  <p className="font-serif text-sm font-semibold text-foreground group-hover:text-accent">
-                    {challenge.name}
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {challenge.principle}
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <span className="font-mono text-sm font-bold text-accent">
-                  Target: {challenge.par}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <CourseMap
+          challenges={frontNine.map((c) => ({
+            id: c.id,
+            holeNumber: c.holeNumber,
+            name: c.name,
+            principle: c.principle,
+            par: c.par,
+          }))}
+        />
       </div>
 
       {/* Public Course (locked) */}

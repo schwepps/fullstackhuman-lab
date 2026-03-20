@@ -147,6 +147,8 @@ export interface HoleProgress {
   practiceSwings: number
   scoredAttempts: number
   isComplete: boolean
+  optimalPrompt: string | null
+  concept: string | null
 }
 
 export interface SessionState {

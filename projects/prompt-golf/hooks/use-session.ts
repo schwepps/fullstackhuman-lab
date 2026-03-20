@@ -6,6 +6,16 @@ import { MULLIGANS_PER_COURSE } from '@/lib/constants'
 
 const STORAGE_KEY = 'prompt-golf-session'
 
+const EMPTY_HOLE: HoleProgress = {
+  bestScore: null,
+  bestPrompt: null,
+  practiceSwings: 0,
+  scoredAttempts: 0,
+  isComplete: false,
+  optimalPrompt: null,
+  concept: null,
+}
+
 function generateSessionId(): string {
   return crypto.randomUUID()
 }
@@ -43,14 +53,9 @@ function saveSession(session: SessionState): void {
 }
 
 export function useSession() {
-  // Always start with a fresh session for SSR/hydration consistency.
-  // localStorage data is loaded after mount via useEffect + ref trick.
   const [session, setSession] = useState<SessionState>(createFreshSession)
   const hydratedRef = useRef(false)
 
-  // Hydrate from localStorage ONCE after mount.
-  // We use a ref + conditional setState to avoid the lint rule while
-  // ensuring we only do this once and only when data actually differs.
   useEffect(() => {
     if (hydratedRef.current) return
     hydratedRef.current = true
@@ -61,7 +66,6 @@ export function useSession() {
     }
   }, [])
 
-  // Persist on every change after hydration
   useEffect(() => {
     if (hydratedRef.current && session.sessionId) {
       saveSession(session)
@@ -74,28 +78,14 @@ export function useSession() {
 
   const getHoleProgress = useCallback(
     (challengeId: string): HoleProgress => {
-      return (
-        session.holes[challengeId] ?? {
-          bestScore: null,
-          bestPrompt: null,
-          practiceSwings: 0,
-          scoredAttempts: 0,
-          isComplete: false,
-        }
-      )
+      return session.holes[challengeId] ?? EMPTY_HOLE
     },
     [session.holes]
   )
 
   const recordPracticeSwing = useCallback((challengeId: string) => {
     setSession((prev) => {
-      const hole = prev.holes[challengeId] ?? {
-        bestScore: null,
-        bestPrompt: null,
-        practiceSwings: 0,
-        scoredAttempts: 0,
-        isComplete: false,
-      }
+      const hole = prev.holes[challengeId] ?? EMPTY_HOLE
       return {
         ...prev,
         holes: {
@@ -112,13 +102,7 @@ export function useSession() {
   const recordScoredAttempt = useCallback(
     (challengeId: string, score: ScoreResult, prompt: string) => {
       setSession((prev) => {
-        const hole = prev.holes[challengeId] ?? {
-          bestScore: null,
-          bestPrompt: null,
-          practiceSwings: 0,
-          scoredAttempts: 0,
-          isComplete: false,
-        }
+        const hole = prev.holes[challengeId] ?? EMPTY_HOLE
 
         const isBetter =
           score.isPassing &&
@@ -135,6 +119,33 @@ export function useSession() {
               isComplete: hole.isComplete || score.isPassing,
               bestScore: isBetter ? score : hole.bestScore,
               bestPrompt: isBetter ? prompt : hole.bestPrompt,
+            },
+          },
+        }
+      })
+    },
+    []
+  )
+
+  /** Save analysis data (optimalPrompt + concept) after a passing attempt */
+  const recordAnalysis = useCallback(
+    (
+      challengeId: string,
+      optimalPrompt: string | null,
+      concept: string | null
+    ) => {
+      setSession((prev) => {
+        const hole = prev.holes[challengeId] ?? EMPTY_HOLE
+        // Only store if we don't already have it
+        if (hole.optimalPrompt && hole.concept) return prev
+        return {
+          ...prev,
+          holes: {
+            ...prev.holes,
+            [challengeId]: {
+              ...hole,
+              optimalPrompt: optimalPrompt ?? hole.optimalPrompt,
+              concept: concept ?? hole.concept,
             },
           },
         }
@@ -176,6 +187,7 @@ export function useSession() {
       getHoleProgress,
       recordPracticeSwing,
       recordScoredAttempt,
+      recordAnalysis,
       getMulligansRemaining,
       consumeMulligan,
       completedHolesCount,
@@ -186,6 +198,7 @@ export function useSession() {
       getHoleProgress,
       recordPracticeSwing,
       recordScoredAttempt,
+      recordAnalysis,
       getMulligansRemaining,
       consumeMulligan,
       completedHolesCount,

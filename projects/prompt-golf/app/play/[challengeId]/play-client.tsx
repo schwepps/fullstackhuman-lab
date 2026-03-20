@@ -10,6 +10,7 @@ import { CodeOutput } from '@/components/code-output'
 import { SwingResultPanel } from '@/components/swing-result'
 import { ShareButtons } from '@/components/share-buttons'
 import { SupportCta } from '@/components/support-cta'
+import { getScoreDisplayLabel } from '@/lib/scoring'
 
 interface ChallengeInfo {
   id: string
@@ -36,6 +37,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
     getHoleProgress,
     recordPracticeSwing,
     recordScoredAttempt,
+    recordAnalysis,
     getMulligansRemaining,
     consumeMulligan,
   } = useSession()
@@ -65,6 +67,21 @@ export function PlayClient({ challenge }: PlayClientProps) {
       recordScoredAttempt(challenge.id, state.score, lastPrompt)
     }
   }, [state.score, mode, challenge.id, lastPrompt, recordScoredAttempt])
+
+  // Save analysis (optimalPrompt + concept) to session on pass
+  useEffect(() => {
+    if (
+      state.analysis?.optimalPrompt &&
+      state.analysis?.concept &&
+      state.status === 'pass'
+    ) {
+      recordAnalysis(
+        challenge.id,
+        state.analysis.optimalPrompt,
+        state.analysis.concept
+      )
+    }
+  }, [state.analysis, state.status, challenge.id, recordAnalysis])
 
   const handleSubmit = useCallback(
     async (prompt: string) => {
@@ -183,6 +200,45 @@ export function PlayClient({ challenge }: PlayClientProps) {
           </span>
         </div>
       </div>
+
+      {/* Debrief — shown when returning to a completed challenge (before any new attempt) */}
+      {progress.isComplete &&
+        state.status === 'idle' &&
+        progress.bestPrompt &&
+        progress.bestScore && (
+          <div className="mb-6 club-card overflow-hidden border-primary/30">
+            <div className="px-5 py-4">
+              <p className="font-serif text-xs uppercase tracking-wider text-primary">
+                Your Best
+              </p>
+              <p className="mt-2 font-serif text-lg text-foreground">
+                &ldquo;{progress.bestPrompt}&rdquo;
+              </p>
+              <p className="mt-1 font-mono text-sm text-muted-foreground">
+                {progress.bestScore.wordCount} words &middot;{' '}
+                {getScoreDisplayLabel(progress.bestScore.label)}
+              </p>
+            </div>
+
+            {/* Persisted educational content */}
+            {progress.optimalPrompt && progress.concept && (
+              <div className="border-t border-border/30 px-5 py-4">
+                <p className="font-serif text-xs uppercase tracking-wider text-accent">
+                  Pro Prompt
+                </p>
+                <p className="mt-2 font-serif text-lg text-foreground">
+                  &ldquo;{progress.optimalPrompt}&rdquo;
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  <span className="font-semibold text-accent">
+                    Why it works:{' '}
+                  </span>
+                  {progress.concept}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
       {/* Mode indicator */}
       <div className="mb-4 flex items-center gap-3">
