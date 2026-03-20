@@ -1,3 +1,4 @@
+import 'server-only'
 import { getRedisClient } from './upstash'
 import {
   REDIS_KEYS,

@@ -120,7 +120,15 @@ export async function POST(request: NextRequest) {
   try {
     const rateCheck = await checkAttemptAllowed(ip, levelId)
     if (!rateCheck.allowed) {
-      return Response.json({ error: rateCheck.reason }, { status: 429 })
+      return Response.json(
+        { error: rateCheck.reason },
+        {
+          status: 429,
+          headers: rateCheck.retryAfterSeconds
+            ? { 'Retry-After': String(rateCheck.retryAfterSeconds) }
+            : undefined,
+        }
+      )
     }
   } catch (error) {
     console.error('Rate limiting unavailable:', error)
@@ -145,7 +153,11 @@ export async function POST(request: NextRequest) {
   const stream = new ReadableStream({
     async start(controller) {
       function emit(event: SSEEvent) {
-        controller.enqueue(encoder.encode(formatSSE(event)))
+        try {
+          controller.enqueue(encoder.encode(formatSSE(event)))
+        } catch {
+          // Stream may be closed (client disconnected)
+        }
       }
 
       try {
@@ -239,7 +251,11 @@ export async function POST(request: NextRequest) {
           data: { message: 'TARGET SYSTEM OFFLINE. Retry in 30s.' },
         })
       } finally {
-        controller.close()
+        try {
+          controller.close()
+        } catch {
+          // Already closed
+        }
       }
     },
   })
