@@ -10,10 +10,10 @@
   /* Country Club Theme — greens, cream, gold */
   --color-background: #0c1a0f;
   --color-foreground: #f5f0e8;
-  --color-primary: #4caf50;
-  --color-primary-dark: #2e7d32;
-  --color-accent: #c9a84c;
-  --color-accent-light: #dbc278;
+  --color-primary: #5cb860;
+  --color-primary-dark: #3a9e3f;
+  --color-accent: #d4b87a;
+  --color-accent-light: #e8d49e;
   --color-cream: #fff8e1;
   --color-cream-dark: #f5ecd0;
   --color-walnut: #3e2723;
@@ -23,23 +23,23 @@
   --color-rough: #33691e;
   --color-warning: #f59e0b;
   --color-destructive: #ef4444;
-  --color-success: #4caf50;
+  --color-success: #5cb860;
   --color-card: #0f2213;
   --color-card-foreground: #f5f0e8;
   --color-popover: #132917;
   --color-popover-foreground: #f5f0e8;
   --color-muted: #1a3320;
-  --color-muted-foreground: #a8b5a0;
+  --color-muted-foreground: #b8c5b0;
   --color-secondary: #1a3320;
   --color-secondary-foreground: #f5f0e8;
   --color-border: #2a4a30;
-  --color-ring: #4caf50;
+  --color-ring: #5cb860;
 
   /* Score colors */
   --color-albatross: #e040fb;
   --color-eagle: #ff6f00;
-  --color-birdie: #4caf50;
-  --color-par: #c9a84c;
+  --color-birdie: #5cb860;
+  --color-par: #d4b87a;
   --color-bogey: #ef6c00;
   --color-double-bogey: #e53935;
 

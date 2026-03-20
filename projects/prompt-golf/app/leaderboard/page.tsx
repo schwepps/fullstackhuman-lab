@@ -17,22 +17,22 @@ export default async function LeaderboardPage() {
         href="/"
         className="inline-flex min-h-11 items-center font-serif text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
       >
-        &larr; Clubhouse
+        &larr; Home
       </Link>
 
       <div className="mt-4 flex items-baseline justify-between">
         <h1 className="font-serif text-3xl font-bold text-foreground">
-          The 19th Hole
+          Leaderboard
         </h1>
         <span className="font-mono text-xs text-muted-foreground">
-          Front 9 Rankings
+          Course Rankings
         </span>
       </div>
 
       <div className="gold-divider mt-3" />
 
-      <p className="mt-3 font-serif text-sm italic text-muted-foreground/60">
-        Where the real competition happens — over drinks and scorecards.
+      <p className="mt-3 font-serif text-sm italic text-muted-foreground/80">
+        See how your word count compares to other players.
       </p>
 
       {entries.length === 0 ? (

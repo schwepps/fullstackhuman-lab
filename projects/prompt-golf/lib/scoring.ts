@@ -55,6 +55,21 @@ export function getScoreLabel(relativeScore: number): ScoreLabel {
   return `+${relativeScore}`
 }
 
+/** Display label with +/- meaning for non-golfers: "Birdie (-1)" */
+export function getScoreDisplayLabel(label: string): string {
+  const meanings: Record<string, string> = {
+    Albatross: 'Albatross (-3)',
+    Eagle: 'Eagle (-2)',
+    Birdie: 'Birdie (-1)',
+    Par: 'Par (0)',
+    Bogey: 'Bogey (+1)',
+    'Double Bogey': 'Double Bogey (+2)',
+    'Triple Bogey': 'Triple Bogey (+3)',
+    'N/A': 'N/A',
+  }
+  return meanings[label] ?? label
+}
+
 export function getScoreCssClass(label: string): string {
   const map: Record<string, string> = {
     Albatross: 'score-albatross',

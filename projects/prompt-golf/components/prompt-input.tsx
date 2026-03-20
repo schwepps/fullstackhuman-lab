@@ -19,6 +19,16 @@ export function PromptInput({
   const [value, setValue] = useState('')
   const wordCount = countWords(value)
 
+  const diff = wordCount - par
+  const wordCountColor =
+    wordCount === 0
+      ? ''
+      : diff <= -1
+        ? 'border-birdie/40 bg-birdie/10 text-birdie'
+        : diff === 0
+          ? 'border-par/40 bg-par/10 text-par'
+          : 'border-bogey/40 bg-bogey/10 text-bogey'
+
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
       e.preventDefault()
@@ -38,9 +48,9 @@ export function PromptInput({
           placeholder={
             isPractice
               ? 'Describe the function in your own words...'
-              : 'Your best swing — make every word count...'
+              : 'Describe the function in as few words as possible...'
           }
-          className="w-full resize-none rounded-sm border border-border bg-background/60 px-4 py-3 font-sans text-base text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 sm:text-sm"
+          className="w-full resize-none rounded-sm border border-border bg-background/60 px-4 py-3 font-sans text-base text-foreground placeholder:text-muted-foreground/70 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50 sm:text-sm"
           rows={3}
           maxLength={500}
           autoFocus={false}
@@ -48,11 +58,9 @@ export function PromptInput({
 
         {/* Word count badge */}
         <div className="absolute bottom-3 right-3">
-          <span
-            className={`word-badge ${wordCount > 0 && wordCount <= par ? 'border-birdie/40 bg-birdie/10 text-birdie' : ''}`}
-          >
+          <span className={`word-badge ${wordCountColor}`}>
             {wordCount} {wordCount === 1 ? 'word' : 'words'}
-            <span className="text-muted-foreground/60"> / par {par}</span>
+            <span className="text-muted-foreground/80"> / target {par}</span>
           </span>
         </div>
       </div>
@@ -67,16 +75,12 @@ export function PromptInput({
               : 'btn-fairway w-full sm:w-auto'
           }
         >
-          {disabled
-            ? 'Swinging...'
-            : isPractice
-              ? 'Practice Swing'
-              : 'Take Your Swing'}
+          {disabled ? 'Generating...' : isPractice ? 'Practice' : 'Submit'}
         </button>
 
         {isPractice && (
           <span className="hidden text-xs text-muted-foreground sm:inline">
-            Practice swings are free — no score recorded
+            Practice is free — no score recorded
           </span>
         )}
       </div>

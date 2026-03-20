@@ -2,7 +2,11 @@
 
 import { useState } from 'react'
 import type { ScoreResult, JudgeTestResult } from '@/lib/types'
-import { getScoreCssClass, getCelebrationMessage } from '@/lib/scoring'
+import {
+  getScoreCssClass,
+  getScoreDisplayLabel,
+  getCelebrationMessage,
+} from '@/lib/scoring'
 
 interface SwingResultProps {
   verdict: {
@@ -33,7 +37,7 @@ export function SwingResultPanel({
       {verdict && !isPractice && (
         <div
           className={`club-card p-4 ${
-            verdict.pass ? 'border-primary/30' : 'border-destructive/30'
+            verdict.pass ? 'border-primary/40' : 'border-destructive/40'
           }`}
         >
           <div className="flex items-center justify-between">
@@ -47,7 +51,7 @@ export function SwingResultPanel({
                     verdict.pass ? 'text-primary' : 'text-destructive'
                   }`}
                 >
-                  {verdict.pass ? 'On the Green!' : 'In the Rough'}
+                  {verdict.pass ? 'Passed!' : 'Not quite'}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {verdict.summary}
@@ -57,14 +61,14 @@ export function SwingResultPanel({
 
             {/* Score badge */}
             {score && score.isPassing && (
-              <div className="text-right animate-score-pop">
+              <div className="animate-score-pop text-right">
                 <p
                   className={`font-serif text-2xl font-bold ${getScoreCssClass(score.label)}`}
                 >
-                  {score.label}
+                  {getScoreDisplayLabel(score.label)}
                 </p>
                 <p className="font-mono text-xs text-muted-foreground">
-                  {score.effectiveStrokes} strokes (par {score.par})
+                  {score.effectiveStrokes} words (target {score.par})
                 </p>
               </div>
             )}
@@ -79,7 +83,7 @@ export function SwingResultPanel({
         </div>
       )}
 
-      {/* Swing Analysis (collapsible) */}
+      {/* Analysis (collapsible) */}
       {analysis && (
         <div className="club-card p-4">
           <button
@@ -88,8 +92,8 @@ export function SwingResultPanel({
             aria-expanded={isAnalysisExpanded}
           >
             <div className="flex items-center gap-2">
-              <span className="font-serif text-sm uppercase tracking-wider text-accent/70">
-                Swing Analysis
+              <span className="font-serif text-sm uppercase tracking-wider text-accent">
+                Analysis
               </span>
               {passed && (
                 <span className="text-xs text-muted-foreground">
@@ -103,13 +107,13 @@ export function SwingResultPanel({
           </button>
 
           {/* Summary (always visible) */}
-          <p className="mt-2 font-mono text-sm text-foreground/80">
+          <p className="mt-2 font-mono text-sm text-foreground/90">
             {analysis.summary}
           </p>
 
           {/* Detail (expandable) */}
           {isAnalysisExpanded && (
-            <div className="mt-3 border-t border-border/30 pt-3">
+            <div className="mt-3 border-t border-border/40 pt-3">
               <p className="whitespace-pre-wrap text-sm text-muted-foreground">
                 {analysis.detail}
               </p>

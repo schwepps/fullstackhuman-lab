@@ -14,16 +14,16 @@ export function SupportCta({ variant, isPractice }: SupportCtaProps) {
 
   if (variant === 'inline') {
     return (
-      <div className="py-2 text-xs text-muted-foreground/60">
-        <span className="text-accent/30">{'\u26F3'} </span>
-        This swing cost {costLabel} in AI calls.{' '}
+      <div className="py-2 text-xs text-muted-foreground/80">
+        <span className="text-accent/50">{'\u26F3'} </span>
+        This attempt cost {costLabel} in AI calls.{' '}
         <a
           href={KOFI_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex min-h-11 items-center text-accent/70 transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
+          className="inline-flex min-h-11 items-center text-accent transition-colors hover:text-accent-light focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
         >
-          Help keep the fairway open
+          Help keep it running
         </a>
       </div>
     )
@@ -37,7 +37,7 @@ export function SupportCta({ variant, isPractice }: SupportCtaProps) {
       <span className="font-serif uppercase tracking-wider">
         Support Prompt Golf
       </span>
-      <span className="mt-1 block text-xs text-muted-foreground/60">
+      <span className="mt-1 block text-xs text-muted-foreground/80">
         Help cover AI costs — voluntary, always free to play
       </span>
     </Link>

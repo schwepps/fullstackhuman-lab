@@ -44,8 +44,6 @@ export function PlayClient({ challenge }: PlayClientProps) {
   const mulligansLeft = getMulligansRemaining(challenge.course)
 
   // Mode is derived from session progress — not independent state.
-  // The modeOverride allows the transition from practice → scored
-  // within the same render cycle (after the 2nd practice swing).
   const canPractice = progress.practiceSwings < 2
   const [modeOverride, setModeOverride] = useState<'scored' | null>(null)
   const mode = modeOverride ?? (canPractice ? 'practice' : 'scored')
@@ -53,12 +51,10 @@ export function PlayClient({ challenge }: PlayClientProps) {
   const [showMulliganOffer, setShowMulliganOffer] = useState(false)
   const [pendingMulligan, setPendingMulligan] = useState(false)
 
-  // Track the prompt for the current swing (for recordScoredAttempt + share)
   const [lastPrompt, setLastPrompt] = useState('')
 
   const isLoading = state.status === 'sending' || state.status === 'streaming'
 
-  // Record scored attempt via useEffect when score arrives (fixes stale closure)
   useEffect(() => {
     if (
       state.score &&
@@ -113,24 +109,20 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
   const handleNextAction = useCallback(() => {
     if (state.status === 'fail' && mode === 'scored' && mulligansLeft > 0) {
-      // Show mulligan offer WITHOUT resetting state
       setShowMulliganOffer(true)
       return
     }
 
     if (state.status === 'pass' && challenge.nextChallengeId) {
-      // Navigate to next hole
       router.push(`/play/${challenge.nextChallengeId}`)
       return
     }
 
     if (state.status === 'pass' && !challenge.nextChallengeId) {
-      // Completed the course — back to clubhouse
       router.push('/')
       return
     }
 
-    // Default: reset for another swing
     setShowMulliganOffer(false)
     reset()
   }, [
@@ -144,13 +136,10 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
   const getNextButtonText = () => {
     if (state.status === 'pass') {
-      if (progress.isComplete && challenge.nextChallengeId) {
-        return 'Next Hole \u2192'
+      if (challenge.nextChallengeId) {
+        return 'Next Challenge \u2192'
       }
-      if (!challenge.nextChallengeId) {
-        return 'Back to Clubhouse \u2192'
-      }
-      return 'Next Hole \u2192'
+      return 'Back to Home \u2192'
     }
     return 'Try Again'
   }
@@ -163,21 +152,21 @@ export function PlayClient({ challenge }: PlayClientProps) {
           href="/"
           className="inline-flex min-h-11 items-center font-serif text-xs uppercase tracking-wider text-muted-foreground transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
         >
-          &larr; Clubhouse
+          &larr; Home
         </Link>
 
         <div className="mt-3 flex items-baseline justify-between">
           <div>
             <span className="font-mono text-xs text-muted-foreground">
-              Hole {challenge.holeNumber} of {challenge.totalHoles}
+              Challenge {challenge.holeNumber} of {challenge.totalHoles}
             </span>
             <h1 className="font-serif text-2xl font-bold text-foreground sm:text-3xl">
               {challenge.name}
             </h1>
           </div>
           <div className="text-right">
-            <span className="font-mono text-2xl font-bold text-accent">
-              Par {challenge.par}
+            <span className="font-mono text-lg font-bold text-accent">
+              Target: {challenge.par} words
             </span>
           </div>
         </div>
@@ -189,7 +178,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
         </p>
 
         <div className="mt-2 flex items-center gap-2">
-          <span className="rounded-full border border-accent/20 bg-accent/5 px-2.5 py-0.5 font-serif text-[10px] uppercase tracking-wider text-accent/60">
+          <span className="rounded-full border border-accent/30 bg-accent/10 px-2.5 py-0.5 font-serif text-[10px] uppercase tracking-wider text-accent">
             {challenge.principle}
           </span>
         </div>
@@ -198,24 +187,26 @@ export function PlayClient({ challenge }: PlayClientProps) {
       {/* Mode indicator */}
       <div className="mb-4 flex items-center gap-3">
         {mode === 'practice' ? (
-          <div className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1">
+          <div className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1">
             <span className="inline-block h-2 w-2 rounded-full bg-primary" />
             <span className="font-serif text-xs uppercase tracking-wider text-primary">
-              Driving Range
+              Practice Mode
             </span>
             <span className="font-mono text-xs text-muted-foreground">
-              ({2 - progress.practiceSwings} remaining)
+              ({2 - progress.practiceSwings} free{' '}
+              {2 - progress.practiceSwings === 1 ? 'try' : 'tries'} left)
             </span>
           </div>
         ) : (
-          <div className="flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1">
+          <div className="flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1">
             <span className="inline-block h-2 w-2 rounded-full bg-accent" />
             <span className="font-serif text-xs uppercase tracking-wider text-accent">
-              Scored Swing
+              Scored Attempt
             </span>
             {mulligansLeft > 0 && (
               <span className="font-mono text-xs text-muted-foreground">
-                ({mulligansLeft} mulligan{mulligansLeft > 1 ? 's' : ''})
+                ({mulligansLeft} free{' '}
+                {mulligansLeft === 1 ? 'retry' : 'retries'})
               </span>
             )}
           </div>
@@ -228,15 +219,15 @@ export function PlayClient({ challenge }: PlayClientProps) {
         )}
       </div>
 
-      {/* Mulligan offer */}
+      {/* Free retry offer */}
       {showMulliganOffer && (
-        <div className="club-card mb-4 border-accent/30 p-4">
+        <div className="club-card mb-4 border-accent/40 p-4">
           <p className="font-serif text-sm text-foreground">
-            Tough break. Use a mulligan to retry without penalty?
+            Tough break. Use a free retry? No penalty applied.
           </p>
           <div className="mt-3 flex gap-3">
             <button onClick={handleMulligan} className="btn-club text-xs">
-              Use Mulligan ({mulligansLeft} left)
+              Use Free Retry ({mulligansLeft} left)
             </button>
             <button
               onClick={() => {
@@ -277,7 +268,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
           isPractice={mode === 'practice'}
         />
 
-        {/* Share buttons (on scored pass with resultId) */}
+        {/* Share buttons */}
         {state.status === 'pass' &&
           mode === 'scored' &&
           state.resultId &&
@@ -285,7 +276,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
             <div className="space-y-3">
               <ShareButtons
                 challengeName={challenge.name}
-                holeName={`Hole ${challenge.holeNumber}`}
+                holeName={`Challenge ${challenge.holeNumber}`}
                 prompt={lastPrompt}
                 wordCount={state.score.wordCount}
                 label={state.score.label}
@@ -297,7 +288,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
         {/* Error */}
         {state.status === 'error' && state.error && (
-          <div className="club-card border-destructive/30 p-4">
+          <div className="club-card border-destructive/40 p-4">
             <p className="font-serif text-sm text-destructive">{state.error}</p>
           </div>
         )}
