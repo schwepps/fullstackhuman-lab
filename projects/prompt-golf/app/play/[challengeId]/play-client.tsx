@@ -299,47 +299,55 @@ export function PlayClient({ challenge }: PlayClientProps) {
           </div>
         )}
 
-      {/* Mode indicator — only when actively playing */}
+      {/* Mode toggle — switch between practice and scored */}
       {showRetryInput && (
-        <div className="mb-4 flex items-center gap-3">
-          {mode === 'practice' ? (
-            <>
-              <div className="flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1">
-                <span className="inline-block h-2 w-2 rounded-full bg-primary" />
-                <span className="font-serif text-xs uppercase tracking-wider text-primary">
-                  Practice Mode
-                </span>
-                <span className="font-mono text-xs text-muted-foreground">
-                  ({2 - progress.practiceSwings} free{' '}
-                  {2 - progress.practiceSwings === 1 ? 'try' : 'tries'} left)
-                </span>
-              </div>
+        <div className="mb-4 space-y-3">
+          {canPractice && state.status === 'idle' && (
+            <div className="flex rounded-sm border border-border overflow-hidden">
+              <button
+                onClick={() => setModeOverride(null)}
+                className={`flex-1 px-4 py-2.5 font-serif text-xs uppercase tracking-wider transition-colors touch-manipulation focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                  mode === 'practice'
+                    ? 'bg-primary/15 text-primary border-r border-border'
+                    : 'text-muted-foreground hover:text-foreground border-r border-border'
+                }`}
+              >
+                Practice ({2 - progress.practiceSwings} free)
+              </button>
               <button
                 onClick={() => setModeOverride('scored')}
-                className="font-serif text-xs text-muted-foreground transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background touch-manipulation"
+                className={`flex-1 px-4 py-2.5 font-serif text-xs uppercase tracking-wider transition-colors touch-manipulation focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                  mode === 'scored'
+                    ? 'bg-accent/15 text-accent'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
               >
-                Skip to scored &rarr;
+                Scored{mulligansLeft > 0 ? ` (${mulligansLeft} retries)` : ''}
               </button>
-            </>
-          ) : (
-            <div className="flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1">
-              <span className="inline-block h-2 w-2 rounded-full bg-accent" />
-              <span className="font-serif text-xs uppercase tracking-wider text-accent">
-                Scored Attempt
-              </span>
-              {mulligansLeft > 0 && (
-                <span className="font-mono text-xs text-muted-foreground">
-                  ({mulligansLeft} free{' '}
-                  {mulligansLeft === 1 ? 'retry' : 'retries'})
-                </span>
-              )}
             </div>
           )}
 
-          {progress.isComplete && (
-            <span className="font-serif text-xs text-primary">
-              {'\u2713'} Completed
-            </span>
+          {/* Show mode badge when toggle not available */}
+          {(!canPractice || state.status !== 'idle') && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 rounded-full border border-accent/40 bg-accent/10 px-3 py-1">
+                <span className="inline-block h-2 w-2 rounded-full bg-accent" />
+                <span className="font-serif text-xs uppercase tracking-wider text-accent">
+                  Scored Attempt
+                </span>
+                {mulligansLeft > 0 && (
+                  <span className="font-mono text-xs text-muted-foreground">
+                    ({mulligansLeft} free{' '}
+                    {mulligansLeft === 1 ? 'retry' : 'retries'})
+                  </span>
+                )}
+              </div>
+              {progress.isComplete && (
+                <span className="font-serif text-xs text-primary">
+                  {'\u2713'} Completed
+                </span>
+              )}
+            </div>
           )}
         </div>
       )}
