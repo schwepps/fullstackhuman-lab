@@ -53,7 +53,8 @@ export function PlayClient({ challenge }: PlayClientProps) {
   const [showMulliganOffer, setShowMulliganOffer] = useState(false)
   const [pendingMulligan, setPendingMulligan] = useState(false)
   // When returning to a completed challenge, show debrief until player clicks "improve"
-  const [showRetryInput, setShowRetryInput] = useState(!progress.isComplete)
+  const [userWantsRetry, setUserWantsRetry] = useState(false)
+  const showRetryInput = !progress.isComplete || userWantsRetry
 
   const [lastPrompt, setLastPrompt] = useState('')
 
@@ -262,7 +263,7 @@ export function PlayClient({ challenge }: PlayClientProps) {
 
             {/* Try to improve */}
             <button
-              onClick={() => setShowRetryInput(true)}
+              onClick={() => setUserWantsRetry(true)}
               className="btn-fairway w-full"
             >
               Try to Improve Your Score
