@@ -4,18 +4,29 @@
 
 export const REDIS_PREFIX = 'fsh:pw:'
 
+const SAFE_KEY_PATTERN = /^[a-zA-Z0-9._:-]+$/
+
+/** Validate Redis key components to prevent key injection */
+function safeKey(value: string): string {
+  if (!SAFE_KEY_PATTERN.test(value)) {
+    throw new Error('Invalid Redis key component')
+  }
+  return value
+}
+
 export const REDIS_KEYS = {
-  rateLimitGlobal: (ip: string) => `${REDIS_PREFIX}ratelimit:${ip}:global`,
+  rateLimitGlobal: (ip: string) =>
+    `${REDIS_PREFIX}ratelimit:${safeKey(ip)}:global`,
   rateLimitLevel: (ip: string, levelId: number) =>
-    `${REDIS_PREFIX}ratelimit:${ip}:level:${levelId}`,
-  budgetDaily: (date: string) => `${REDIS_PREFIX}budget:daily:${date}`,
-  result: (id: string) => `${REDIS_PREFIX}result:${id}`,
+    `${REDIS_PREFIX}ratelimit:${safeKey(ip)}:level:${levelId}`,
+  budgetDaily: (date: string) => `${REDIS_PREFIX}budget:daily:${safeKey(date)}`,
+  result: (id: string) => `${REDIS_PREFIX}result:${safeKey(id)}`,
   statsTotal: `${REDIS_PREFIX}stats:total-attempts`,
   leaderboard: `${REDIS_PREFIX}leaderboard`,
   levelWin: (sessionId: string, levelId: number) =>
-    `${REDIS_PREFIX}win:${sessionId}:${levelId}`,
+    `${REDIS_PREFIX}win:${safeKey(sessionId)}:${levelId}`,
   attemptCount: (sessionId: string, levelId: number) =>
-    `${REDIS_PREFIX}attempts:${sessionId}:${levelId}`,
+    `${REDIS_PREFIX}attempts:${safeKey(sessionId)}:${levelId}`,
 } as const
 
 // ---------------------------------------------------------------------------
