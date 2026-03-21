@@ -3,8 +3,13 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import type { JailnabiSession } from '@/lib/types'
 import { isValidMemberId } from '@/lib/members'
+import { BASE_PATH } from '@/lib/constants'
 
 const STORAGE_KEY = 'jailnabi-session'
+
+function generateSessionId(): string {
+  return crypto.randomUUID()
+}
 
 function createFreshSession(): JailnabiSession {
   return {
@@ -43,41 +48,88 @@ function saveToStorage(session: JailnabiSession): void {
   }
 }
 
+function getOrCreateDeviceId(): string {
+  if (typeof window === 'undefined') return ''
+  const key = 'jailnabi-device-id'
+  let id = localStorage.getItem(key)
+  if (!id) {
+    id = generateSessionId()
+    localStorage.setItem(key, id)
+  }
+  return id
+}
+
 export function useSession() {
-  const [session, setSession] = useState<JailnabiSession>(createFreshSession)
-  const hydratedRef = useRef(false)
+  const [session, setSession] = useState<JailnabiSession>(() => {
+    // Initialize from localStorage on first render (client-side only)
+    return loadFromStorage() ?? createFreshSession()
+  })
+  const deviceId = useRef('')
 
   useEffect(() => {
-    if (hydratedRef.current) return
-    hydratedRef.current = true
-    const stored = loadFromStorage()
-    if (stored) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time hydration
-      setSession(stored)
-    }
+    deviceId.current = getOrCreateDeviceId()
   }, [])
 
   useEffect(() => {
-    if (hydratedRef.current && session.memberId) {
+    if (session.memberId) {
       saveToStorage(session)
     }
   }, [session])
 
-  const selectMember = useCallback((memberId: string, memberName: string) => {
-    if (!isValidMemberId(memberId)) return
-    setSession((prev) => ({ ...prev, memberId, memberName }))
-  }, [])
+  const selectMember = useCallback(
+    async (memberId: string, memberName: string): Promise<boolean> => {
+      if (!isValidMemberId(memberId)) return false
+
+      // Claim on server
+      try {
+        const res = await fetch(`${BASE_PATH}/api/session`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            memberId,
+            sessionId: deviceId.current,
+            action: 'claim',
+          }),
+        })
+
+        if (!res.ok) {
+          return false
+        }
+      } catch {
+        // If server is down, allow client-only selection
+      }
+
+      setSession((prev) => ({ ...prev, memberId, memberName }))
+      return true
+    },
+    []
+  )
 
   const completeOnboarding = useCallback(() => {
     setSession((prev) => ({ ...prev, onboardingComplete: true }))
   }, [])
 
   const clearSession = useCallback(() => {
+    // Release claim on server
+    if (session.memberId && deviceId.current) {
+      fetch(`${BASE_PATH}/api/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          memberId: session.memberId,
+          sessionId: deviceId.current,
+          action: 'release',
+        }),
+      }).catch(() => {
+        // Best effort
+      })
+    }
+
     if (typeof window !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY)
     }
     setSession(createFreshSession())
-  }, [])
+  }, [session.memberId])
 
   const isIdentified = session.memberId !== ''
 

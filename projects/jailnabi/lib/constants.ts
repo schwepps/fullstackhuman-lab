@@ -56,6 +56,9 @@ export const REDIS_KEYS = {
   // Shareable results
   result: (id: string) => `${REDIS_PREFIX}result:${safeKey(id)}`,
 
+  // Sessions (character locking)
+  session: (memberId: string) => `${REDIS_PREFIX}session:${safeKey(memberId)}`,
+
   // Rate limiting
   rateLimit: (ip: string) => `${REDIS_PREFIX}rate:${safeKey(ip)}`,
 
@@ -99,6 +102,7 @@ export const DEFENSE_DEADLINE_MS = 4 * 60 * 60 * 1000 // 4 hours
 export const CONVICT_PICK_DEADLINE_MS = 12 * 60 * 60 * 1000 // 12 hours
 export const MAX_ROUNDS_HISTORY = 200
 export const MAX_CRIMES_IN_POOL = 50
+export const SESSION_TTL_SECONDS = 24 * 60 * 60 // 24 hours
 
 // ── Result TTL ───────────────────────────────────────────────────
 export const RESULT_TTL_SECONDS = 30 * 24 * 60 * 60 // 30 days

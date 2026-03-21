@@ -1,7 +1,9 @@
 'use client'
 
+import Link from 'next/link'
 import type { Round } from '@/lib/types'
 import type { AISkill } from '@/lib/techniques'
+import { BASE_PATH } from '@/lib/constants'
 
 interface RoundStatusProps {
   round: Round | null
@@ -100,6 +102,14 @@ export function RoundStatus({
 
       {/* Phase description */}
       <p className="mb-4 text-sm text-muted-foreground">{phase.description}</p>
+
+      {/* Enter Courtroom link */}
+      <Link
+        href={`${BASE_PATH}/round/${round.id}`}
+        className="btn btn-primary mb-3 w-full"
+      >
+        Enter the Courtroom
+      </Link>
 
       {/* Call the Court button */}
       {onCallCourt && round.phase === 'prosecution' && (

@@ -7,6 +7,7 @@ import { Onboarding } from '@/components/onboarding'
 import { MemberGrid } from '@/components/member-grid'
 import { RoundStatus } from '@/components/round-status'
 import { CrimeSubmitForm } from '@/components/crime-submit-form'
+import { CrimePool } from '@/components/crime-pool'
 import { MEMBERS } from '@/lib/members'
 
 export default function TheYard() {
@@ -55,6 +56,8 @@ function YardContent({
     refresh,
   } = useRound()
 
+  const hasActiveRound = round !== null && round.phase !== 'closed'
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       {/* Header */}
@@ -86,6 +89,17 @@ function YardContent({
           />
         )}
       </section>
+
+      {/* Crime pool — only show when no active round */}
+      {!hasActiveRound && (
+        <section className="mb-6" aria-label="Crime pool">
+          <CrimePool
+            memberId={memberId}
+            hasActiveRound={hasActiveRound}
+            onRoundStarted={refresh}
+          />
+        </section>
+      )}
 
       {/* Crime submission */}
       <section className="mb-8" aria-label="Submit a crime">
