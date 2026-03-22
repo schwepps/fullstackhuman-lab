@@ -1,3 +1,5 @@
+import type { AISkill } from './types'
+
 // ── Site ─────────────────────────────────────────────────────────
 export function getSiteUrl(): string {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -19,73 +21,45 @@ export const REDIS_PREFIX = 'fsh:jn:'
 
 const SAFE_KEY_PATTERN = /^[a-zA-Z0-9._:-]+$/
 
-/** Validate Redis key components to prevent key injection */
 export function safeKey(value: string): string {
   if (!SAFE_KEY_PATTERN.test(value)) {
-    throw new Error(`Invalid Redis key component: ${value.slice(0, 40)}`)
+    throw new Error('Invalid Redis key component')
   }
   return value
 }
 
 export const REDIS_KEYS = {
-  // Crime pool
-  crimes: `${REDIS_PREFIX}crimes`,
-  crime: (id: string) => `${REDIS_PREFIX}crime:${safeKey(id)}`,
-
-  // Rounds
-  currentRound: `${REDIS_PREFIX}round:current`,
-  round: (id: string) => `${REDIS_PREFIX}round:${safeKey(id)}`,
-  roundEvidence: (id: string) => `${REDIS_PREFIX}round:${safeKey(id)}:evidence`,
-  roundDefense: (id: string) => `${REDIS_PREFIX}round:${safeKey(id)}:defense`,
-  roundVerdict: (id: string) => `${REDIS_PREFIX}round:${safeKey(id)}:verdict`,
-  roundConfession: (id: string) =>
-    `${REDIS_PREFIX}round:${safeKey(id)}:confession`,
-  roundsHistory: `${REDIS_PREFIX}rounds:history`,
-
-  // Criminal records
-  record: (memberId: string) => `${REDIS_PREFIX}record:${safeKey(memberId)}`,
-  recordConvictions: (memberId: string) =>
-    `${REDIS_PREFIX}record:${safeKey(memberId)}:convictions`,
-  recordConfessions: (memberId: string) =>
-    `${REDIS_PREFIX}record:${safeKey(memberId)}:confessions`,
-
-  // Leaderboards
-  leaderboardConvictions: `${REDIS_PREFIX}leaderboard:convictions`,
-  leaderboardWins: `${REDIS_PREFIX}leaderboard:wins`,
-
-  // Shareable results
+  room: (code: string) => `${REDIS_PREFIX}room:${safeKey(code)}`,
+  roomPlayers: (code: string) => `${REDIS_PREFIX}room:${safeKey(code)}:players`,
+  roundMessages: (code: string, round: number) =>
+    `${REDIS_PREFIX}room:${safeKey(code)}:round:${round}`,
+  roundVotes: (code: string, round: number) =>
+    `${REDIS_PREFIX}room:${safeKey(code)}:round:${round}:votes`,
+  roomScores: (code: string) => `${REDIS_PREFIX}room:${safeKey(code)}:scores`,
+  roomVerdict: (code: string) => `${REDIS_PREFIX}room:${safeKey(code)}:verdict`,
+  roomTip: (code: string) => `${REDIS_PREFIX}room:${safeKey(code)}:tip`,
   result: (id: string) => `${REDIS_PREFIX}result:${safeKey(id)}`,
-
-  // Sessions (character locking)
-  session: (memberId: string) => `${REDIS_PREFIX}session:${safeKey(memberId)}`,
-
-  // Rate limiting
   rateLimit: (ip: string) => `${REDIS_PREFIX}rate:${safeKey(ip)}`,
-
-  // Budget
   budget: (date: string) => `${REDIS_PREFIX}budget:${safeKey(date)}`,
 } as const
 
+// ── Room config ──────────────────────────────────────────────────
+export const MIN_PLAYERS = 3
+export const MAX_PLAYERS = 6
+export const TOTAL_ROUNDS = 3
+export const ROOM_CODE_LENGTH = 6
+export const ROOM_TTL_SECONDS = 24 * 60 * 60 // 24 hours
+export const ROUND_TIMEOUT_MS = 2 * 60 * 1000 // 2 minutes per player per round
+
 // ── Rate limits ──────────────────────────────────────────────────
 export const RATE_LIMITS = {
-  actionsPerWindow: 20,
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  actionsPerWindow: 30,
+  windowMs: 15 * 60 * 1000,
 } as const
 
 // ── Budget ───────────────────────────────────────────────────────
-export const BUDGET_WARN_THRESHOLD = 50
-export const BUDGET_SHUTDOWN_THRESHOLD = 100
-
-// ── Evidence types ───────────────────────────────────────────────
-import type { EvidenceType } from './types'
-
-export const EVIDENCE_TYPE_LABELS: Record<EvidenceType, string> = {
-  slack: 'Teams/Slack Message',
-  linkedin: 'LinkedIn Post',
-  email: 'Email Chain',
-  meeting: 'Meeting Transcript',
-  expense: 'Expense Report',
-}
+export const BUDGET_WARN_THRESHOLD = 100
+export const BUDGET_SHUTDOWN_THRESHOLD = 200
 
 // ── Validation ───────────────────────────────────────────────────
 export const MAX_PROMPT_LENGTH = 300
@@ -93,25 +67,50 @@ export const MIN_PROMPT_WORDS = 2
 export const MAX_PROMPT_WORDS = 25
 export const MAX_CRIME_LENGTH = 200
 export const MIN_CRIME_LENGTH = 5
-export const MAX_CONFESSION_LENGTH = 500
+export const MAX_NAME_LENGTH = 30
+export const MIN_NAME_LENGTH = 2
 export const MIN_WORD_VARIETY_RATIO = 0.3
 
-// ── Prosecution thresholds ──────────────────────────────────────
-export const MIN_EVIDENCE_FOR_COURT = 2
-export const DEFENSE_DEADLINE_MS = 4 * 60 * 60 * 1000 // 4 hours
-export const CONVICT_PICK_DEADLINE_MS = 12 * 60 * 60 * 1000 // 12 hours
-export const MAX_ROUNDS_HISTORY = 200
-export const MAX_CRIMES_IN_POOL = 50
-export const SESSION_TTL_SECONDS = 24 * 60 * 60 // 24 hours
-
 // ── Result TTL ───────────────────────────────────────────────────
-export const RESULT_TTL_SECONDS = 30 * 24 * 60 * 60 // 30 days
+export const RESULT_TTL_SECONDS = 30 * 24 * 60 * 60
 export const RESULT_ID_PATTERN = /^[a-zA-Z0-9_-]{10,30}$/
 
+// ── Scoring ──────────────────────────────────────────────────────
+export const AI_SCORE_WEIGHT = 0.6
+export const VOTE_SCORE_WEIGHT = 0.4
+
 // ── Models ───────────────────────────────────────────────────────
-/** Generates fake evidence from player prompts */
 export const EVIDENCE_MODEL = 'claude-haiku-4-5'
-/** Scores accusations, produces verdict and skill breakdown */
+export const SCORER_MODEL = 'claude-haiku-4-5'
 export const VERDICT_MODEL = 'claude-sonnet-4-6'
-/** Selects crimes from pool when convict doesn't pick */
-export const CRIME_SELECTOR_MODEL = 'claude-haiku-4-5'
+
+// ── AI Skills (one per room, assigned at creation) ───────────────
+export const AI_SKILLS: AISkill[] = [
+  { id: 'role', name: 'Give AI a role', tip: 'Tell the AI WHO it should be' },
+  {
+    id: 'specific',
+    name: 'Be specific',
+    tip: 'Details make AI outputs 10x better',
+  },
+  { id: 'steps', name: 'Step by step', tip: 'Ask AI to think in stages' },
+  {
+    id: 'compare',
+    name: 'Use comparisons',
+    tip: 'Show AI what you want by example',
+  },
+  {
+    id: 'bounds',
+    name: 'Set boundaries',
+    tip: 'Tell AI exactly what format you want',
+  },
+  {
+    id: 'persona',
+    name: 'Create a character',
+    tip: 'Give the AI a personality to write as',
+  },
+  {
+    id: 'wild',
+    name: 'Wild card',
+    tip: 'Surprise the judge — any technique goes',
+  },
+]

@@ -1,115 +1,143 @@
 'use client'
 
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useSession } from '@/hooks/use-session'
-import { useRound } from '@/hooks/use-round'
-import { MemberPicker } from '@/components/member-picker'
-import { Onboarding } from '@/components/onboarding'
-import { MemberGrid } from '@/components/member-grid'
-import { RoundStatus } from '@/components/round-status'
-import { CrimeSubmitForm } from '@/components/crime-submit-form'
-import { CrimePool } from '@/components/crime-pool'
-import { MEMBERS } from '@/lib/members'
+import { CreateRoomForm } from '@/components/create-room-form'
+import { BASE_PATH, MAX_NAME_LENGTH } from '@/lib/constants'
 
-export default function TheYard() {
-  const { session, isIdentified, selectMember, completeOnboarding } =
-    useSession()
+export default function LandingPage() {
+  const { sessionId, playerName, updateName } = useSession()
+  const router = useRouter()
+  const [joinCode, setJoinCode] = useState('')
+  const [joinName, setJoinName] = useState(playerName)
+  const [isJoining, setIsJoining] = useState(false)
+  const [joinError, setJoinError] = useState<string | null>(null)
 
-  // Step 1: Identity selection
-  if (!isIdentified) {
-    return <MemberPicker onSelect={selectMember} />
+  async function handleJoin(e: React.FormEvent) {
+    e.preventDefault()
+    if (!joinCode.trim() || !joinName.trim() || isJoining) return
+
+    setIsJoining(true)
+    setJoinError(null)
+
+    try {
+      const res = await fetch(
+        `${BASE_PATH}/api/room/${joinCode.trim().toUpperCase()}/join`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: joinName.trim(),
+            sessionId,
+          }),
+        }
+      )
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error ?? 'Failed to join')
+      }
+
+      updateName(joinName.trim())
+      router.push(`${BASE_PATH}/room/${joinCode.trim().toUpperCase()}`)
+    } catch (err) {
+      setJoinError(err instanceof Error ? err.message : 'Failed to join room')
+    } finally {
+      setIsJoining(false)
+    }
   }
 
-  // Step 2: Onboarding for first-time players
-  if (!session.onboardingComplete) {
-    return (
-      <>
-        <Onboarding currentSkill={null} onComplete={completeOnboarding} />
-        <YardContent
-          memberId={session.memberId}
-          memberName={session.memberName}
-        />
-      </>
-    )
-  }
-
-  // Step 3: The Yard
   return (
-    <YardContent memberId={session.memberId} memberName={session.memberName} />
-  )
-}
-
-function YardContent({
-  memberId,
-  memberName,
-}: {
-  memberId: string
-  memberName: string
-}) {
-  const {
-    round,
-    evidence,
-    skill,
-    isLoading,
-    isAdvancing,
-    canCallCourt,
-    callCourt,
-    refresh,
-  } = useRound()
-
-  const hasActiveRound = round !== null && round.phase !== 'closed'
-
-  return (
-    <div className="mx-auto max-w-4xl px-4 py-8">
-      {/* Header */}
+    <div className="mx-auto max-w-lg px-4 py-8">
+      {/* Hero */}
       <div className="mb-8 text-center">
-        <h1 className="mb-1 text-4xl font-black tracking-tight text-primary sm:text-5xl">
-          THE YARD
+        <h1 className="mb-2 text-5xl font-black tracking-tight text-primary sm:text-6xl">
+          JAILNABI
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Welcome back,{' '}
-          <span className="font-semibold text-foreground">{memberName}</span>
+        <p className="text-lg text-muted-foreground">
+          Where no one is innocent
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Create a room, accuse your friends, let AI generate the evidence.
+          <br />
+          Most guilty player goes to jail.
         </p>
       </div>
 
-      {/* Current round status */}
-      <section className="mb-6" aria-label="Current round">
-        {isLoading ? (
-          <div className="card animate-pulse p-6">
-            <div className="h-6 w-24 rounded bg-surface-hover" />
-            <div className="mt-4 h-8 w-3/4 rounded bg-surface-hover" />
+      {/* Create room */}
+      <section className="mb-8" aria-label="Create a room">
+        <CreateRoomForm
+          sessionId={sessionId}
+          savedName={playerName}
+          onNameChange={updateName}
+        />
+      </section>
+
+      {/* Divider */}
+      <div className="mb-8 flex items-center gap-4">
+        <div className="h-px flex-1 bg-border" />
+        <span className="text-xs uppercase tracking-wider text-muted-foreground">
+          or join a room
+        </span>
+        <div className="h-px flex-1 bg-border" />
+      </div>
+
+      {/* Join room */}
+      <section aria-label="Join a room">
+        <form onSubmit={handleJoin} className="card p-6">
+          <h2 className="mb-4 text-lg font-bold text-primary">Join a Room</h2>
+
+          <div className="mb-4">
+            <label
+              htmlFor="join-name"
+              className="mb-1 block text-sm font-semibold"
+            >
+              Your Name
+            </label>
+            <input
+              id="join-name"
+              type="text"
+              value={joinName}
+              onChange={(e) => setJoinName(e.target.value)}
+              placeholder="Enter your name"
+              maxLength={MAX_NAME_LENGTH}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
           </div>
-        ) : (
-          <RoundStatus
-            round={round}
-            skill={skill}
-            evidenceCount={evidence.length}
-            onCallCourt={() => callCourt(memberId)}
-            canCallCourt={canCallCourt}
-            isAdvancing={isAdvancing}
-          />
-        )}
-      </section>
 
-      {/* Crime pool — only show when no active round */}
-      {!hasActiveRound && (
-        <section className="mb-6" aria-label="Crime pool">
-          <CrimePool
-            memberId={memberId}
-            hasActiveRound={hasActiveRound}
-            onRoundStarted={refresh}
-          />
-        </section>
-      )}
+          <div className="mb-4">
+            <label
+              htmlFor="room-code"
+              className="mb-1 block text-sm font-semibold"
+            >
+              Room Code
+            </label>
+            <input
+              id="room-code"
+              type="text"
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              placeholder="JAIL42"
+              maxLength={6}
+              className="w-full rounded-md border border-border bg-background px-3 py-2 text-center font-mono text-lg tracking-widest placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
+          </div>
 
-      {/* Crime submission */}
-      <section className="mb-8" aria-label="Submit a crime">
-        <CrimeSubmitForm memberId={memberId} onSubmitted={refresh} />
-      </section>
+          {joinError && (
+            <p className="mb-4 text-xs text-danger" role="alert">
+              {joinError}
+            </p>
+          )}
 
-      {/* Member grid */}
-      <section aria-label="Inmates">
-        <h2 className="mb-4 text-lg font-bold text-foreground">The Inmates</h2>
-        <MemberGrid members={MEMBERS} />
+          <button
+            type="submit"
+            disabled={!joinCode.trim() || !joinName.trim() || isJoining}
+            className="btn btn-secondary w-full"
+          >
+            {isJoining ? 'Joining...' : 'Join Room'}
+          </button>
+        </form>
       </section>
     </div>
   )

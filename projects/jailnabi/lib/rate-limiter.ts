@@ -18,11 +18,19 @@ export async function checkRateLimit(ip: string): Promise<boolean> {
   return count <= RATE_LIMITS.actionsPerWindow
 }
 
-/** Get the client IP from request headers */
+/** Get the client IP from request headers (Vercel-aware) */
 export function getClientIp(request: Request): string {
+  // Vercel's trusted header (most reliable on Vercel)
+  const vercelIp = request.headers.get('x-vercel-forwarded-for')
+  if (vercelIp) return vercelIp.split(',')[0].trim()
+
+  // Standard proxy header
   const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) {
-    return forwarded.split(',')[0].trim()
-  }
+  if (forwarded) return forwarded.split(',')[0].trim()
+
+  // Direct connection
+  const realIp = request.headers.get('x-real-ip')
+  if (realIp) return realIp.trim()
+
   return '127.0.0.1'
 }

@@ -18,7 +18,7 @@ export async function generateMetadata({
   if (!result) return {}
 
   const title = `${result.convictName} found GUILTY — Jailnabi`
-  const description = `Crime: "${result.crimeText}" — Convicted by ${result.winningAccuserName}`
+  const description = `Crime: "${result.crime}" — Sentenced to: ${result.sentence}`
 
   return {
     title,
@@ -40,25 +40,16 @@ export async function generateMetadata({
 export default async function ResultPage({ params }: PageProps) {
   const { id } = await params
 
-  if (!RESULT_ID_PATTERN.test(id)) {
-    notFound()
-  }
+  if (!RESULT_ID_PATTERN.test(id)) notFound()
 
   const result = await getResult(id)
-  if (!result) {
-    notFound()
-  }
+  if (!result) notFound()
+
+  const shareUrl = `${getSiteUrl()}${BASE_PATH}/result/${id}`
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <Link
-        href="/"
-        className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary touch-manipulation"
-      >
-        &larr; Back to The Yard
-      </Link>
-
-      {/* Conviction card */}
+      {/* Jail card */}
       <div className="card border-danger p-6">
         <div className="mb-4 text-center">
           <div className="guilty-stamp inline-block">CONVICTED</div>
@@ -66,30 +57,27 @@ export default async function ResultPage({ params }: PageProps) {
 
         <div className="mb-4 text-center">
           <p className="text-2xl font-black">{result.convictName}</p>
-          <p className="inmate-number mt-1">
-            Conviction #{result.convictionCount || 1}
-          </p>
         </div>
 
         <div className="mb-4 rounded-md bg-surface p-3 text-center">
           <p className="text-xs uppercase tracking-wider text-muted-foreground">
             Crime
           </p>
-          <p className="mt-1 font-semibold">&ldquo;{result.crimeText}&rdquo;</p>
+          <p className="mt-1 font-semibold">&ldquo;{result.crime}&rdquo;</p>
         </div>
 
-        <div className="mb-4">
-          <p className="text-xs uppercase tracking-wider text-muted-foreground">
-            Key Evidence by {result.winningAccuserName}
+        <div className="mb-4 rounded-md border border-primary bg-primary-muted p-3 text-center">
+          <p className="text-xs uppercase tracking-wider text-primary">
+            Sentence
           </p>
-          <div className="evidence-card mt-2 border-l-danger bg-surface">
-            <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">
-              {result.winningEvidence}
-            </pre>
-          </div>
+          <p className="mt-1 text-lg font-bold text-primary">
+            {result.sentence}
+          </p>
         </div>
 
-        <p className="text-sm text-muted-foreground">{result.explanation}</p>
+        <p className="text-sm text-muted-foreground text-center">
+          {result.explanation}
+        </p>
 
         <div className="mt-6 text-center">
           <p className="text-xs text-muted-foreground">
@@ -98,30 +86,23 @@ export default async function ResultPage({ params }: PageProps) {
         </div>
       </div>
 
-      {/* Share buttons */}
-      <div className="mt-4 flex justify-center gap-3">
-        <ShareButton
-          label="Share on WhatsApp"
-          href={`https://wa.me/?text=${encodeURIComponent(`${result.convictName} found GUILTY of "${result.crimeText}" 🔒 ${getSiteUrl()}${BASE_PATH}/result/${id}`)}`}
-        />
-        <ShareButton
-          label="Share on LinkedIn"
-          href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(`${getSiteUrl()}${BASE_PATH}/result/${id}`)}`}
-        />
+      {/* Share + play */}
+      <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-center">
+        <a
+          href={`https://wa.me/?text=${encodeURIComponent(`${result.convictName} found GUILTY! "${result.crime}" — Sentence: ${result.sentence} ${shareUrl}`)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-primary touch-manipulation"
+        >
+          Share on WhatsApp
+        </a>
+        <Link
+          href={`${BASE_PATH}/`}
+          className="btn btn-secondary touch-manipulation"
+        >
+          Create Your Own Room
+        </Link>
       </div>
     </div>
-  )
-}
-
-function ShareButton({ label, href }: { label: string; href: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="btn btn-secondary text-xs touch-manipulation"
-    >
-      {label}
-    </a>
   )
 }
