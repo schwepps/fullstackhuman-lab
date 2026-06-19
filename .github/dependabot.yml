@@ -1,25 +1,16 @@
 version: 2
-# Add a new entry for each project added to projects/
+# This repo is a pnpm workspace with a SINGLE root lockfile (pnpm-lock.yaml).
+# Keep one entry scoped to '/': Dependabot updates every member manifest under
+# projects/* AND the shared root lockfile together.
+#
+# Do NOT add per-project entries (directory: '/projects/<name>'). Those scopes
+# do not contain the root lockfile, so Dependabot updates the member
+# package.json without updating pnpm-lock.yaml — which breaks
+# `pnpm install --frozen-lockfile` in CI and on Vercel.
+# See dependabot/dependabot-core#11135.
 updates:
   - package-ecosystem: 'npm'
     directory: '/'
-    schedule:
-      interval: 'weekly'
-      day: 'monday'
-    open-pull-requests-limit: 10
-    groups:
-      minor-and-patch:
-        patterns:
-          - '*'
-        update-types:
-          - 'minor'
-          - 'patch'
-    ignore:
-      - dependency-name: '*'
-        update-types: ['version-update:semver-major']
-
-  - package-ecosystem: 'npm'
-    directory: '/projects/turing-game'
     schedule:
       interval: 'weekly'
       day: 'monday'
