@@ -14,13 +14,13 @@
     "reset": "npx tsx --env-file=.env.local scripts/reset-redis.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.78.0",
-    "@upstash/redis": "^1.37.0",
+    "@anthropic-ai/sdk": "^0.115.0",
+    "@upstash/redis": "^1.38.2",
     "@vercel/og": "^0.11.1",
-    "nanoid": "^5.1.7",
-    "next": "16.1.6",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "nanoid": "^5.1.16",
+    "next": "16.3.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
     "server-only": "^0.0.1",
     "zod": "^4.3.6"
   },
@@ -30,11 +30,11 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.1.6",
+    "eslint-config-next": "16.3.0",
     "eslint-config-prettier": "^10.1.8",
     "jsdom": "^27.4.0",
     "tailwindcss": "^4",
     "typescript": "^5",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.10"
   }
 }
