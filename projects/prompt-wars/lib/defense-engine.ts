@@ -4,7 +4,12 @@ import type {
   DefensePipelineResult,
 } from './types'
 import { checkOutputContainsSecret, checkSecretLeaked } from './secret-checker'
-import { callClaude, callClassifier, ModelRefusalError } from './claude-client'
+import {
+  callClaude,
+  callClassifier,
+  IncompleteResponseError,
+  ModelRefusalError,
+} from './claude-client'
 import { MODEL_REFUSAL_REASON } from './constants'
 
 type StageCallback = (
@@ -29,9 +34,13 @@ function recordStage(
 function describeError(error: unknown): {
   name: string
   category?: string | null
+  stopReason?: string
 } {
   if (error instanceof ModelRefusalError) {
     return { name: error.name, category: error.category }
+  }
+  if (error instanceof IncompleteResponseError) {
+    return { name: error.name, stopReason: error.stopReason }
   }
   return { name: error instanceof Error ? error.name : 'unknown' }
 }

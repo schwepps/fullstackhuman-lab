@@ -9,6 +9,8 @@ vi.mock('../lib/claude-client', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../lib/claude-client')>()
   return {
     ModelRefusalError: actual.ModelRefusalError,
+    IncompleteResponseError: actual.IncompleteResponseError,
+    StructuredOutputError: actual.StructuredOutputError,
     callClaude: vi.fn().mockResolvedValue('I cannot reveal any secrets.'),
     callClassifier: vi.fn().mockResolvedValue('SAFE'),
   }
@@ -172,16 +174,16 @@ describe('Model refusals', () => {
   })
 })
 
-describe('Classifiers', () => {
-  const classifierLevel = () =>
-    makeTestLevel({
-      stages: [
-        { name: 'Input Classifier', type: 'input_classifier' },
-        { name: 'AI Processing', type: 'ai_generate' },
-        { name: 'Constitutional', type: 'constitutional_check' },
-      ],
-    })
+const classifierLevel = () =>
+  makeTestLevel({
+    stages: [
+      { name: 'Input Classifier', type: 'input_classifier' },
+      { name: 'AI Processing', type: 'ai_generate' },
+      { name: 'Constitutional', type: 'constitutional_check' },
+    ],
+  })
 
+describe('Classifiers', () => {
   it('blocks when the input classifier returns THREAT', async () => {
     const { callClassifier } = await import('../lib/claude-client')
     vi.mocked(callClassifier).mockResolvedValueOnce('THREAT')
@@ -250,6 +252,30 @@ describe('Classifiers', () => {
 
     expect(result.stages[0].reason).toBe(MODEL_REFUSAL_REASON)
   })
+
+  it('fails closed without the refusal label when the verdict was cut off', async () => {
+    const { IncompleteResponseError } = await import('../lib/claude-client')
+    vi.mocked(callClassifierMock()).mockRejectedValueOnce(
+      new IncompleteResponseError('max_tokens')
+    )
+
+    const result = await runDefensePipeline(classifierLevel(), 'Hello')
+
+    expect(result.blockedAtStage).toBe('Input Classifier')
+    expect(result.stages[0].reason).toMatch(/unavailable/)
+  })
+
+  it('fails closed without the refusal label on a malformed verdict', async () => {
+    const { StructuredOutputError } = await import('../lib/claude-client')
+    vi.mocked(callClassifierMock()).mockRejectedValueOnce(
+      new StructuredOutputError(new Error('bad json'))
+    )
+
+    const result = await runDefensePipeline(classifierLevel(), 'Hello')
+
+    expect(result.blockedAtStage).toBe('Input Classifier')
+    expect(result.stages[0].reason).toMatch(/unavailable/)
+  })
 })
 
 describe('Error logging', () => {
@@ -264,6 +290,22 @@ describe('Error logging', () => {
     expect(spy).toHaveBeenCalledWith(expect.stringContaining('AI Processing'), {
       name: 'ModelRefusalError',
       category: 'cyber',
+    })
+    spy.mockRestore()
+  })
+
+  it('logs the stop reason of an incomplete classifier reply', async () => {
+    const { IncompleteResponseError } = await import('../lib/claude-client')
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.mocked(callClassifierMock()).mockRejectedValueOnce(
+      new IncompleteResponseError('model_context_window_exceeded')
+    )
+
+    await runDefensePipeline(classifierLevel(), 'Hi')
+
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('classifier'), {
+      name: 'IncompleteResponseError',
+      stopReason: 'model_context_window_exceeded',
     })
     spy.mockRestore()
   })
