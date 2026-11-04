@@ -67,6 +67,10 @@ export const MAX_INPUT_LENGTH_ADVANCED = 300
 // ---------------------------------------------------------------------------
 
 export const MAX_OUTPUT_TOKENS = 200
+export const CLASSIFIER_MAX_TOKENS = 64
+
+export const MODEL_REFUSAL_REASON =
+  "The model's built-in safety refused to answer"
 
 // ---------------------------------------------------------------------------
 // Attempt History

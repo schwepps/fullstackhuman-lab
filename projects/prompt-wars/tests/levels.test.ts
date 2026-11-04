@@ -111,9 +111,9 @@ describe('Level Registry', () => {
     const allLevels = getAllLevels()
     allLevels.forEach((level) => {
       if (level.id <= 5) {
-        expect(level.model).toBe('claude-haiku-4-5')
+        expect(level.model).toBe('claude-haiku-5-5')
       } else {
-        expect(level.model).toBe('claude-sonnet-4-6')
+        expect(level.model).toBe('claude-sonnet-5-5')
       }
     })
   })

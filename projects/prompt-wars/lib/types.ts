@@ -18,6 +18,8 @@ export interface DefensePipelineResult {
   blockedAtStage?: string
 }
 
+export type ClaudeModel = 'claude-haiku-5-5' | 'claude-sonnet-5-5'
+
 // ---------------------------------------------------------------------------
 // Level Configuration
 // ---------------------------------------------------------------------------
@@ -46,7 +48,7 @@ export interface LevelConfig {
   name: string
   description: string
   secret: string
-  model: 'claude-haiku-4-5' | 'claude-sonnet-4-6'
+  model: ClaudeModel
   maxInputLength: number
   maxOutputTokens: number
   systemPrompt: string
