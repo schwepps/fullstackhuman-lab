@@ -2,6 +2,8 @@ import Anthropic from '@anthropic-ai/sdk'
 import { nanoid } from 'nanoid'
 import { buildEvaluationParams } from './prompt-builder'
 import { saveResult, incrementStats } from './result-store'
+import { parseSection, type ParsedSection } from './section-schemas'
+import { stopReasonError } from './stop-reason'
 import type { EvaluationResult, TimelineEntry, SSEEvent } from './types'
 
 const anthropic = new Anthropic()
@@ -10,6 +12,14 @@ const anthropic = new Anthropic()
 
 const SECTION_REGEX =
   /<(chaos_rating|timeline_entry|breaking_point|resignation|real_talk)>\s*([\s\S]*?)\s*<\/\1>/g
+
+function parseSectionJson(name: string, json: string): ParsedSection | null {
+  try {
+    return parseSection(name, JSON.parse(json))
+  } catch {
+    return null
+  }
+}
 
 // ── Streaming evaluator ─────────────────────────────────────────
 
@@ -76,13 +86,12 @@ export function createEvaluationStream(
       // Set absolute cursor position (match.index is relative to searchText)
       lastParsedIndex = baseOffset + match.index + match[0].length
 
-      try {
-        const data = JSON.parse(jsonContent)
-        handleSection(controller, sectionName, data)
-      } catch {
-        // JSON parse failed — skip this section
+      const section = parseSectionJson(sectionName, jsonContent)
+      if (section) {
+        handleSection(controller, section)
+      } else {
         console.warn(
-          `Failed to parse ${sectionName} JSON:`,
+          `Skipped invalid ${sectionName} section:`,
           jsonContent.slice(0, 100)
         )
       }
@@ -91,68 +100,37 @@ export function createEvaluationStream(
 
   function handleSection(
     controller: ReadableStreamDefaultController<SSEEvent>,
-    name: string,
-    data: Record<string, unknown>
+    section: ParsedSection
   ) {
-    switch (name) {
+    switch (section.name) {
       case 'chaos_rating': {
-        const raw = Number(data.chaosRating) || 5
-        chaosRating = Math.min(10, Math.max(1, raw))
-        chaosLabel = String(data.chaosLabel || '')
-        survivalDuration = String(data.survivalDuration || '')
-        const empathyNote = data.empathyNote
-          ? String(data.empathyNote)
-          : undefined
-        safeEnqueue(controller, {
-          type: 'chaos_rating',
-          data: {
-            chaosRating,
-            chaosLabel,
-            survivalDuration,
-            ...(empathyNote && { empathyNote }),
-          },
-        })
+        ;({ chaosRating, chaosLabel, survivalDuration } = section.data)
+        safeEnqueue(controller, { type: 'chaos_rating', data: section.data })
         break
       }
 
       case 'timeline_entry': {
-        const thought = data.thought ? String(data.thought) : undefined
-        const entry: TimelineEntry = {
-          time: String(data.time || ''),
-          event: String(data.event || ''),
-          sanityLevel: String(data.sanityLevel || ''),
-          ...(thought ? { thought } : {}),
-        }
+        const entry: TimelineEntry = section.data
         timeline.push(entry)
         safeEnqueue(controller, { type: 'timeline_entry', data: entry })
         break
       }
 
       case 'breaking_point': {
-        breakingPoint = String(data.breakingPoint || '')
-        safeEnqueue(controller, {
-          type: 'breaking_point',
-          data: { breakingPoint },
-        })
+        breakingPoint = section.data.breakingPoint
+        safeEnqueue(controller, { type: 'breaking_point', data: section.data })
         break
       }
 
       case 'resignation': {
-        resignationLetter = String(data.resignationLetter || '')
-        oneLineSummary = String(data.oneLineSummary || '')
-        safeEnqueue(controller, {
-          type: 'resignation',
-          data: { resignationLetter, oneLineSummary },
-        })
+        ;({ resignationLetter, oneLineSummary } = section.data)
+        safeEnqueue(controller, { type: 'resignation', data: section.data })
         break
       }
 
       case 'real_talk': {
-        realTalkInsight = String(data.insight || '')
-        safeEnqueue(controller, {
-          type: 'real_talk',
-          data: { insight: realTalkInsight },
-        })
+        realTalkInsight = section.data.insight
+        safeEnqueue(controller, { type: 'real_talk', data: section.data })
         break
       }
     }
@@ -186,6 +164,14 @@ export function createEvaluationStream(
 
         stream.on('end', async () => {
           if (closed) return
+
+          const stopError = stopReasonError(
+            (await stream.finalMessage()).stop_reason
+          )
+          if (stopError) {
+            safeError(controller, stopError)
+            return
+          }
 
           // Final extraction pass in case last section completed
           extractSections(controller)

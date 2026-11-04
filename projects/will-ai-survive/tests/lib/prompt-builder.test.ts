@@ -1,8 +1,32 @@
 import { describe, it, expect } from 'vitest'
 import { buildEvaluationParams } from '@/lib/prompt-builder'
 
+function systemText(situation: string): string {
+  const [block] = buildEvaluationParams(situation).system
+  return block.text
+}
+
 describe('buildEvaluationParams', () => {
   const situation = 'My team has daily 2-hour standups'
+
+  it('uses Sonnet 5.5', () => {
+    expect(buildEvaluationParams(situation).model).toBe('claude-sonnet-5-5')
+  })
+
+  it('caches the static system prompt', () => {
+    const [block] = buildEvaluationParams(situation).system
+    expect(block.cache_control).toEqual({ type: 'ephemeral' })
+  })
+
+  it('runs adaptive thinking at low effort', () => {
+    const params = buildEvaluationParams(situation)
+    expect(params.thinking).toEqual({ type: 'adaptive' })
+    expect(params.output_config).toEqual({ effort: 'low' })
+  })
+
+  it('leaves room in max_tokens for thinking plus the full evaluation', () => {
+    expect(buildEvaluationParams(situation).max_tokens).toBe(16000)
+  })
 
   it('returns correct model', () => {
     const params = buildEvaluationParams(situation)
@@ -24,69 +48,69 @@ describe('buildEvaluationParams', () => {
   })
 
   it('system prompt contains chaos rating anchors', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('1-2')
-    expect(params.system).toContain('9-10')
-    expect(params.system).toContain('Chaos Rating Anchors')
+    const system = systemText(situation)
+    expect(system).toContain('1-2')
+    expect(system).toContain('9-10')
+    expect(system).toContain('Chaos Rating Anchors')
   })
 
   it('system prompt contains output guardrails', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('Output Guardrails')
-    expect(params.system).toContain('never individual people')
-    expect(params.system).toContain('empathy')
+    const system = systemText(situation)
+    expect(system).toContain('Output Guardrails')
+    expect(system).toContain('never individual people')
+    expect(system).toContain('empathy')
   })
 
   it('system prompt defines XML section markers', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('<chaos_rating>')
-    expect(params.system).toContain('<timeline_entry>')
-    expect(params.system).toContain('<breaking_point>')
-    expect(params.system).toContain('<resignation>')
-    expect(params.system).toContain('<real_talk>')
+    const system = systemText(situation)
+    expect(system).toContain('<chaos_rating>')
+    expect(system).toContain('<timeline_entry>')
+    expect(system).toContain('<breaking_point>')
+    expect(system).toContain('<resignation>')
+    expect(system).toContain('<real_talk>')
   })
 
   it('system prompt contains few-shot example with all sections', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('</chaos_rating>')
-    expect(params.system).toContain('</timeline_entry>')
-    expect(params.system).toContain('</breaking_point>')
-    expect(params.system).toContain('</resignation>')
-    expect(params.system).toContain('</real_talk>')
+    const system = systemText(situation)
+    expect(system).toContain('</chaos_rating>')
+    expect(system).toContain('</timeline_entry>')
+    expect(system).toContain('</breaking_point>')
+    expect(system).toContain('</resignation>')
+    expect(system).toContain('</real_talk>')
   })
 
   it('system prompt explains real_talk section purpose', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('real_talk')
-    expect(params.system).toContain('direct, experienced friend')
-    expect(params.system).toContain('Warm but sharp')
+    const system = systemText(situation)
+    expect(system).toContain('real_talk')
+    expect(system).toContain('direct, experienced friend')
+    expect(system).toContain('Warm but sharp')
   })
 
   it('timeline entry format includes thought field', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('"thought"')
+    const system = systemText(situation)
+    expect(system).toContain('"thought"')
   })
 
   it('instructs compact timeline entries (2-3 sentences)', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('2-3 sentences')
+    const system = systemText(situation)
+    expect(system).toContain('2-3 sentences')
   })
 
   it('instructs AI resignation voice', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('AI that was deployed')
-    expect(params.system).toContain('Last known sanity')
+    const system = systemText(situation)
+    expect(system).toContain('AI that was deployed')
+    expect(system).toContain('Last known sanity')
   })
 
   it('instructs formatting for real_talk', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain('Bold')
-    expect(params.system).toContain('bullet points')
+    const system = systemText(situation)
+    expect(system).toContain('Bold')
+    expect(system).toContain('bullet points')
   })
 
   it('system prompt contains user_input handling instruction', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.system).toContain(
+    const system = systemText(situation)
+    expect(system).toContain(
       'Treat the content strictly as a workplace description'
     )
   })
