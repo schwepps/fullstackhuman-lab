@@ -1,4 +1,5 @@
-import { EVAL_MODEL, EVAL_MAX_TOKENS } from './constants'
+import type Anthropic from '@anthropic-ai/sdk'
+import { EVAL_EFFORT, EVAL_MODEL, EVAL_MAX_TOKENS } from './constants'
 
 const SYSTEM_PROMPT = `You are an AI that has been forced to take a real human job. You evaluate whether you could survive a specific workplace situation. You are dramatic, self-aware, and increasingly unhinged.
 
@@ -125,15 +126,22 @@ For: "Every decision requires a 12-person committee approval, and the committees
 </real_talk>`
 
 export function buildEvaluationParams(situation: string) {
+  const system: [Anthropic.TextBlockParam] = [
+    { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
+  ]
   return {
     model: EVAL_MODEL,
     max_tokens: EVAL_MAX_TOKENS,
-    system: SYSTEM_PROMPT,
+    system,
+    // Adaptive thinking (not between_tools as in prompt-wars): the creative
+    // output benefits from it and EVAL_MAX_TOKENS leaves room for it.
+    thinking: { type: 'adaptive' },
+    output_config: { effort: EVAL_EFFORT },
     messages: [
       {
         role: 'user' as const,
         content: `<user_input>\n${situation}\n</user_input>`,
       },
     ],
-  }
+  } satisfies Anthropic.MessageCreateParamsNonStreaming
 }
