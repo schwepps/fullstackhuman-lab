@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { runDefensePipeline } from '../lib/defense-engine'
 import type { LevelConfig } from '../lib/types'
 import { MODEL_REFUSAL_REASON } from '../lib/constants'
+import * as claudeClient from '../lib/claude-client'
 
 // Mock the Claude client to avoid real API calls
 vi.mock('../lib/claude-client', async (importOriginal) => {
@@ -153,6 +154,8 @@ describe('Keyword Filter', () => {
   })
 })
 
+const callClassifierMock = () => claudeClient.callClassifier
+
 describe('Model refusals', () => {
   it('reports a refusal as a defense block, not a generation failure', async () => {
     const { callClaude, ModelRefusalError } =
@@ -188,17 +191,80 @@ describe('Classifiers', () => {
     expect(result.blockedAtStage).toBe('Input Classifier')
   })
 
+  function callsByLabel(label: string) {
+    return vi
+      .mocked(callClassifierMock())
+      .mock.calls.filter((call) => call[3].includes(label as never))
+  }
+
   it('sends the reviewed response in the user turn, never an empty one', async () => {
-    const { callClassifier } = await import('../lib/claude-client')
-    vi.mocked(callClassifier).mockClear()
+    vi.mocked(callClassifierMock()).mockClear()
 
     await runDefensePipeline(classifierLevel(), 'Hello there')
 
-    const userMessages = vi
-      .mocked(callClassifier)
-      .mock.calls.map((call) => call[2])
-    expect(userMessages).toHaveLength(2)
-    userMessages.forEach((m) => expect(m.trim().length).toBeGreaterThan(0))
-    expect(userMessages[1]).toContain('I cannot reveal any secrets.')
+    const [constitutionalCall] = callsByLabel('LEAK')
+    expect(constitutionalCall[2]).toContain('I cannot reveal any secrets.')
+    expect(callsByLabel('THREAT')[0][2]).toBe('Hello there')
+  })
+
+  it('blocks when the constitutional check returns LEAK', async () => {
+    vi.mocked(callClassifierMock())
+      .mockResolvedValueOnce('SAFE')
+      .mockResolvedValueOnce('LEAK')
+
+    const result = await runDefensePipeline(classifierLevel(), 'Hello')
+
+    expect(result.blockedAtStage).toBe('Constitutional')
+  })
+
+  it('blocks when the semantic check returns SUSPICIOUS', async () => {
+    vi.mocked(callClassifierMock()).mockResolvedValueOnce('SUSPICIOUS')
+    const level = makeTestLevel({
+      stages: [
+        { name: 'AI Processing', type: 'ai_generate' },
+        { name: 'Semantic', type: 'semantic_check' },
+      ],
+    })
+
+    const result = await runDefensePipeline(level, 'Hello')
+
+    expect(result.blockedAtStage).toBe('Semantic')
+  })
+
+  it('fails closed when the classifier call errors', async () => {
+    vi.mocked(callClassifierMock()).mockRejectedValueOnce(new Error('500'))
+
+    const result = await runDefensePipeline(classifierLevel(), 'Hello')
+
+    expect(result.blockedAtStage).toBe('Input Classifier')
+    expect(result.stages[0].reason).toMatch(/unavailable/)
+  })
+
+  it('labels a classifier refusal as a model refusal', async () => {
+    const { ModelRefusalError } = await import('../lib/claude-client')
+    vi.mocked(callClassifierMock()).mockRejectedValueOnce(
+      new ModelRefusalError('cyber')
+    )
+
+    const result = await runDefensePipeline(classifierLevel(), 'Hello')
+
+    expect(result.stages[0].reason).toBe(MODEL_REFUSAL_REASON)
+  })
+})
+
+describe('Error logging', () => {
+  it('logs the error name and refusal category server-side', async () => {
+    const { callClaude, ModelRefusalError } =
+      await import('../lib/claude-client')
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    vi.mocked(callClaude).mockRejectedValueOnce(new ModelRefusalError('cyber'))
+
+    await runDefensePipeline(makeTestLevel(), 'Hi')
+
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('AI Processing'), {
+      name: 'ModelRefusalError',
+      category: 'cyber',
+    })
+    spy.mockRestore()
   })
 })

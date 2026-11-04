@@ -1,13 +1,11 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
-import { CLASSIFIER_MAX_TOKENS } from './constants'
+import { CLASSIFIER_MAX_TOKENS, MODEL_EFFORT } from './constants'
 import type { ClaudeModel } from './types'
 
 // The SDK already retries 429, 5xx and connection errors (honoring retry-after).
 const anthropic = new Anthropic()
-
-const EFFORT = 'low' as const
 
 export class ModelRefusalError extends Error {
   readonly category: string | null
@@ -38,7 +36,7 @@ export function buildRequestParams(
     max_tokens: maxTokens,
     system: systemPrompt,
     thinking: thinkingFor(model),
-    output_config: { effort: EFFORT },
+    output_config: { effort: MODEL_EFFORT },
     messages: [{ role: 'user', content: userMessage }],
   }
 }
@@ -57,7 +55,7 @@ export function buildClassifierParams<const L extends string>(
       userMessage,
       CLASSIFIER_MAX_TOKENS
     ),
-    output_config: { effort: EFFORT, format: zodOutputFormat(schema) },
+    output_config: { effort: MODEL_EFFORT, format: zodOutputFormat(schema) },
   }
 }
 

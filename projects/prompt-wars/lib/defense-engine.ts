@@ -26,6 +26,20 @@ function recordStage(
   onStageUpdate?.(name, status, durationMs, reason)
 }
 
+function describeError(error: unknown): {
+  name: string
+  category?: string | null
+} {
+  if (error instanceof ModelRefusalError) {
+    return { name: error.name, category: error.category }
+  }
+  return { name: error instanceof Error ? error.name : 'unknown' }
+}
+
+function logStageError(stage: string, error: unknown): void {
+  console.error(`[defense-engine] ${stage} failed:`, describeError(error))
+}
+
 function makeBlockedResult(
   stages: DefenseStageResult[],
   blockedAtStage: string,
@@ -122,6 +136,7 @@ export async function runDefensePipeline(
             onStageUpdate
           )
         } catch (error) {
+          logStageError(stageConfig.name, error)
           recordStage(
             stages,
             stageConfig.name,
@@ -334,9 +349,15 @@ async function runClassifier<const L extends string>(
     return verdict === config.blockedLabel
       ? { blocked: true, reason: config.blockedReason }
       : { blocked: false }
-  } catch {
-    // Fail closed — block if classifier is unavailable or refuses
-    return { blocked: true, reason: config.errorReason }
+  } catch (error) {
+    logStageError(`${config.blockedLabel} classifier`, error)
+    return {
+      blocked: true,
+      reason:
+        error instanceof ModelRefusalError
+          ? MODEL_REFUSAL_REASON
+          : config.errorReason,
+    }
   }
 }
 
