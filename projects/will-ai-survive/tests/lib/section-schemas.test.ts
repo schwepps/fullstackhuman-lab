@@ -90,3 +90,40 @@ describe('parseSection optional fields', () => {
     )
   })
 })
+
+describe('parseSection null tolerance', () => {
+  const base = { chaosLabel: 'a', survivalDuration: 'b' }
+
+  it('keeps a chaos rating whose empathyNote is null', () => {
+    const result = parseSection('chaos_rating', {
+      ...base,
+      chaosRating: 3,
+      empathyNote: null,
+    })
+
+    expect(result?.name).toBe('chaos_rating')
+  })
+
+  it('keeps a timeline entry whose thought is null', () => {
+    const result = parseSection('timeline_entry', {
+      time: 'Day 1',
+      event: 'E',
+      sanityLevel: '1%',
+      thought: null,
+    })
+
+    expect(result?.name).toBe('timeline_entry')
+  })
+
+  it.each([null, ''])('defaults a %j chaos rating to 5', (value) => {
+    const result = parseSection('chaos_rating', { ...base, chaosRating: value })
+
+    expect(result?.name === 'chaos_rating' && result.data.chaosRating).toBe(5)
+  })
+
+  it('treats a numeric 0 as a real value and clamps it to 1', () => {
+    const result = parseSection('chaos_rating', { ...base, chaosRating: 0 })
+
+    expect(result?.name === 'chaos_rating' && result.data.chaosRating).toBe(1)
+  })
+})

@@ -2,7 +2,12 @@ import Anthropic from '@anthropic-ai/sdk'
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
 import { getRedisClient } from './upstash'
-import { REDIS_KEYS, SAFETY_GATE_MAX_TOKENS, SECURITY_MODEL } from './constants'
+import {
+  REDIS_KEYS,
+  SAFETY_GATE_EFFORT,
+  SAFETY_GATE_MAX_TOKENS,
+  SECURITY_MODEL,
+} from './constants'
 import type { SafetyCheckResult } from './types'
 
 const anthropic = new Anthropic()
@@ -79,13 +84,13 @@ export function buildSafetyGateParams(input: string) {
     max_tokens: SAFETY_GATE_MAX_TOKENS,
     system: SAFETY_GATE_PROMPT,
     // Haiku 5.5 thinks by default; a one-word verdict needs no thinking.
-    thinking: { type: 'disabled' as const },
+    thinking: { type: 'disabled' },
     output_config: {
-      effort: 'low' as const,
+      effort: SAFETY_GATE_EFFORT,
       format: zodOutputFormat(SafetyVerdict),
     },
-    messages: [{ role: 'user' as const, content: input }],
-  }
+    messages: [{ role: 'user', content: input }],
+  } satisfies Anthropic.MessageCreateParamsNonStreaming
 }
 
 async function classifyWithModel(input: string): Promise<SafetyCheckResult> {

@@ -37,6 +37,8 @@ export const EVAL_MODEL = 'claude-sonnet-5-5'
 export const SECURITY_MODEL = 'claude-haiku-5-5'
 export const EVAL_MAX_TOKENS = 16000
 export const SAFETY_GATE_MAX_TOKENS = 64
+export const EVAL_EFFORT = 'low' as const
+export const SAFETY_GATE_EFFORT = 'low' as const
 
 // ── Support / Donations ─────────────────────────────────────────
 

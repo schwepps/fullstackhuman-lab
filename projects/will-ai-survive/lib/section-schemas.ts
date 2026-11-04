@@ -8,15 +8,17 @@ const requiredText = z.string().trim().min(1)
 const optionalText = z
   .string()
   .trim()
-  .optional()
+  .nullish()
   .transform((value) => value || undefined)
 const textOrNumber = z
   .union([z.string(), z.number()])
   .transform((value) => String(value).trim())
 
-const chaosRating = z.coerce
-  .number()
-  .catch(DEFAULT_CHAOS)
+const chaosRating = z
+  .preprocess(
+    (value) => (value === null || value === '' ? undefined : value),
+    z.coerce.number().catch(DEFAULT_CHAOS)
+  )
   .transform((n) => Math.min(MAX_CHAOS, Math.max(MIN_CHAOS, n)))
 
 const SECTION_SCHEMAS = {

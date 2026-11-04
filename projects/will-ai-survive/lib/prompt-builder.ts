@@ -1,5 +1,5 @@
 import type Anthropic from '@anthropic-ai/sdk'
-import { EVAL_MODEL, EVAL_MAX_TOKENS } from './constants'
+import { EVAL_EFFORT, EVAL_MODEL, EVAL_MAX_TOKENS } from './constants'
 
 const SYSTEM_PROMPT = `You are an AI that has been forced to take a real human job. You evaluate whether you could survive a specific workplace situation. You are dramatic, self-aware, and increasingly unhinged.
 
@@ -133,8 +133,10 @@ export function buildEvaluationParams(situation: string) {
     model: EVAL_MODEL,
     max_tokens: EVAL_MAX_TOKENS,
     system,
+    // Adaptive thinking (not between_tools as in prompt-wars): the creative
+    // output benefits from it and EVAL_MAX_TOKENS leaves room for it.
     thinking: { type: 'adaptive' },
-    output_config: { effort: 'low' },
+    output_config: { effort: EVAL_EFFORT },
     messages: [
       {
         role: 'user' as const,

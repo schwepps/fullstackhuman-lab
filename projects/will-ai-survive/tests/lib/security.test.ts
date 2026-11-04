@@ -4,6 +4,7 @@ import {
   sanitizeInput,
   verdictToResult,
 } from '@/lib/security'
+import { SAFETY_GATE_MAX_TOKENS } from '@/lib/constants'
 
 describe('sanitizeInput', () => {
   it('trims whitespace', () => {
@@ -71,7 +72,7 @@ describe('buildSafetyGateParams', () => {
     const params = buildSafetyGateParams('my boss')
     expect(params.model).toBe('claude-haiku-5-5')
     expect(params.thinking).toEqual({ type: 'disabled' })
-    expect(params.max_tokens).toBeGreaterThanOrEqual(64)
+    expect(params.max_tokens).toBe(SAFETY_GATE_MAX_TOKENS)
     expect(params.output_config.format.type).toBe('json_schema')
   })
 })

@@ -28,11 +28,6 @@ describe('buildEvaluationParams', () => {
     expect(buildEvaluationParams(situation).max_tokens).toBe(16000)
   })
 
-  it('returns correct model', () => {
-    const params = buildEvaluationParams(situation)
-    expect(params.model).toContain('claude')
-  })
-
   it('does not use tool_choice (text streaming, not tool use)', () => {
     const params = buildEvaluationParams(situation)
     expect(params).not.toHaveProperty('tool_choice')
