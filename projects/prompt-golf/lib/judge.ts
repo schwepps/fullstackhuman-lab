@@ -1,14 +1,25 @@
 import 'server-only'
-import { callClaude } from './claude-client'
-import { JUDGE_MODEL } from './constants'
-import type { CodeChallenge, JudgeTestResult } from './types'
+import { z } from 'zod'
+import { callStructured, ModelRefusalError } from './claude-client'
+import { JUDGE_CALL } from './constants'
+import type { CodeChallenge } from './types'
 
-const MAX_JUDGE_TOKENS = 2048
+export const JUDGE_VERDICT_SCHEMA = z.object({
+  pass: z.boolean(),
+  testResults: z.array(
+    z.object({ case: z.string(), pass: z.boolean(), reasoning: z.string() })
+  ),
+  summary: z.string(),
+})
 
-export interface JudgeVerdict {
-  pass: boolean
-  testResults: JudgeTestResult[]
-  summary: string
+export type JudgeVerdict = z.infer<typeof JUDGE_VERDICT_SCHEMA>
+
+function failedVerdict(caseName: string, reason: string): JudgeVerdict {
+  return {
+    pass: false,
+    testResults: [{ case: caseName, pass: false, reasoning: reason }],
+    summary: reason,
+  }
 }
 
 // ── Layer 1: Structural checks (deterministic, fast) ─────────────
@@ -56,23 +67,15 @@ export function runStructuralChecks(
 
 export async function judgeCode(
   challenge: CodeChallenge,
-  generatedCode: string,
-  onToken?: (token: string) => void
+  generatedCode: string
 ): Promise<JudgeVerdict> {
   // Run structural checks first
   const structural = runStructuralChecks(generatedCode, challenge)
   if (!structural.pass) {
-    return {
-      pass: false,
-      testResults: [
-        {
-          case: 'Structural check',
-          pass: false,
-          reasoning: structural.reason ?? 'Failed structural validation',
-        },
-      ],
-      summary: structural.reason ?? 'Failed structural validation',
-    }
+    return failedVerdict(
+      'Structural check',
+      structural.reason ?? 'Failed structural validation'
+    )
   }
 
   // Run semantic evaluation
@@ -105,15 +108,11 @@ After evaluating all test cases:
 ## Behavioral Test Cases
 Some test cases have expected value "BEHAVIOR_TEST". For these, evaluate the code BEHAVIORALLY based on the test description only. Do not compare output to the string "BEHAVIOR_TEST". Instead, reason about whether the code structure and logic would produce the described behavior (e.g., "Returns a function that delays invocation" — check if the code creates and returns a debounced wrapper function).
 
-## Output Format
+## Output
 
-Output your analysis, then wrap your final verdict in <verdict> tags as JSON:
+Return one testResults entry per test case, in order, with the case description and a brief trace as reasoning. Set pass to true only if every test case passes, and give a one-sentence summary.
 
-<verdict>
-{"pass": true_or_false, "testResults": [{"case": "description", "pass": true_or_false, "reasoning": "brief trace"}], "summary": "one-sentence assessment"}
-</verdict>
-
-Think through each test case step by step. Be fair but strict.`
+Be fair but strict.`
 
   const userMessage = `## Function Signature
 ${challenge.functionSignature}
@@ -126,62 +125,19 @@ ${generatedCode}
 ## Test Cases
 ${allTestCases.map((tc, i) => `${i + 1}. ${tc.description}: ${JSON.stringify(tc.input)} → ${JSON.stringify(tc.expected)}`).join('\n')}`
 
-  const response = await callClaude(
-    JUDGE_MODEL,
-    systemPrompt,
-    userMessage,
-    MAX_JUDGE_TOKENS,
-    onToken
-  )
-
-  return parseJudgeVerdict(response)
-}
-
-function parseJudgeVerdict(response: string): JudgeVerdict {
-  const verdictMatch = response.match(/<verdict>\s*([\s\S]*?)\s*<\/verdict>/)
-
-  if (!verdictMatch) {
-    console.warn('[judge] No <verdict> tags found in response')
-    return {
-      pass: false,
-      testResults: [
-        {
-          case: 'Parse error',
-          pass: false,
-          reasoning: 'Judge response did not contain a parseable verdict.',
-        },
-      ],
-      summary: 'Could not parse judge verdict. Treating as fail.',
-    }
-  }
-
   try {
-    const parsed = JSON.parse(verdictMatch[1])
-    return {
-      pass: Boolean(parsed.pass),
-      testResults: Array.isArray(parsed.testResults)
-        ? parsed.testResults.map(
-            (tr: { case?: string; pass?: boolean; reasoning?: string }) => ({
-              case: String(tr.case ?? ''),
-              pass: Boolean(tr.pass),
-              reasoning: String(tr.reasoning ?? ''),
-            })
-          )
-        : [],
-      summary: String(parsed.summary ?? ''),
-    }
-  } catch {
-    console.warn('[judge] Failed to parse verdict JSON')
-    return {
-      pass: false,
-      testResults: [
-        {
-          case: 'Parse error',
-          pass: false,
-          reasoning: 'Verdict JSON was malformed.',
-        },
-      ],
-      summary: 'Judge produced malformed verdict. Treating as fail.',
-    }
+    return await callStructured(
+      JUDGE_CALL,
+      systemPrompt,
+      userMessage,
+      JUDGE_VERDICT_SCHEMA
+    )
+  } catch (error) {
+    if (!(error instanceof ModelRefusalError)) throw error
+    console.warn(`[judge] Judge declined (category: ${error.category})`)
+    return failedVerdict(
+      'Judge declined',
+      'The judge declined to evaluate this code. Treating as fail.'
+    )
   }
 }

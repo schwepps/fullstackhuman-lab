@@ -1,9 +1,30 @@
 import 'server-only'
-import { callClaude } from './claude-client'
-import { ANALYZER_MODEL } from './constants'
+import { z } from 'zod'
+import {
+  callStructured,
+  IncompleteResponseError,
+  ModelRefusalError,
+  StructuredOutputError,
+} from './claude-client'
+import { ANALYZER_CALL } from './constants'
 import type { CodeChallenge } from './types'
 
-const MAX_ANALYZER_TOKENS = 768
+export const HINT_ANALYSIS_SCHEMA = z.object({
+  summary: z.string(),
+  detail: z.string(),
+})
+
+export const PASS_ANALYSIS_SCHEMA = HINT_ANALYSIS_SCHEMA.extend({
+  optimalPrompt: z.string(),
+  concept: z.string(),
+})
+
+const UNAVAILABLE: SwingAnalysis = {
+  summary: 'Analysis unavailable.',
+  detail: 'The analyzer could not produce a breakdown for this attempt.',
+  optimalPrompt: null,
+  concept: null,
+}
 
 export interface SwingAnalysis {
   summary: string
@@ -39,14 +60,31 @@ ${generatedCode}
 
 Result: ${verdict === 'pass' ? 'PASSED' : verdict === 'fail' ? 'FAILED' : 'PRACTICE (not judged)'}`
 
-  const response = await callClaude(
-    ANALYZER_MODEL,
-    systemPrompt,
-    userMessage,
-    MAX_ANALYZER_TOKENS
-  )
-
-  return parseAnalysis(response, verdict)
+  try {
+    if (verdict === 'pass') {
+      return await callStructured(
+        ANALYZER_CALL,
+        systemPrompt,
+        userMessage,
+        PASS_ANALYSIS_SCHEMA
+      )
+    }
+    const hint = await callStructured(
+      ANALYZER_CALL,
+      systemPrompt,
+      userMessage,
+      HINT_ANALYSIS_SCHEMA
+    )
+    return { ...hint, optimalPrompt: null, concept: null }
+  } catch (error) {
+    const isSkippable =
+      error instanceof ModelRefusalError ||
+      error instanceof IncompleteResponseError ||
+      error instanceof StructuredOutputError
+    if (!isSkippable) throw error
+    console.warn(`[analyzer] ${error.message}`)
+    return UNAVAILABLE
+  }
 }
 
 function buildAnalyzerPrompt(
@@ -69,14 +107,7 @@ The word count is provided in the user message. ALWAYS use the provided word cou
 ## Your Task
 Analyze the player's prompt and the code it generated.
 
-## Output Format
-Wrap your output in <analysis> tags as JSON:
-<analysis>
-{
-  "summary": "...",
-  "detail": "..."${verdict === 'pass' ? ',\n  "optimalPrompt": "...",\n  "concept": "..."' : ''}
-}
-</analysis>`
+`
 
   if (verdict === 'pass') {
     return `${base}
@@ -95,9 +126,7 @@ The optimalPrompt and concept are the main learning payoff — make them concret
 
 ## For PRACTICE swings (code was NOT judged):
 - **summary**: "Interesting approach. [observation about word choice]. Try scoring to see if it passes."
-- **detail**: Comment on the player's strategy — which words seem promising, what to refine. Do NOT reveal the optimal prompt. Do NOT claim correctness.
-
-Do NOT include optimalPrompt or concept fields — the player hasn't earned them yet.`
+- **detail**: Comment on the player's strategy — which words seem promising, what to refine. Do NOT reveal the optimal prompt. Do NOT claim correctness.`
   }
 
   return `${base}
@@ -106,42 +135,5 @@ Do NOT include optimalPrompt or concept fields — the player hasn't earned them
 - **summary**: "Misread: [what went wrong]. Try: [specific rephrasing direction]." (max 100 chars)
 - **detail**: Explain what the AI misunderstood and why, which word(s) led it astray, and a concrete direction to try.
 
-Do NOT include optimalPrompt or concept fields — the player hasn't earned them yet. Give directional hints without revealing the answer.`
-}
-
-function parseAnalysis(
-  response: string,
-  verdict: 'pass' | 'fail' | 'practice'
-): SwingAnalysis {
-  const match = response.match(/<analysis>\s*([\s\S]*?)\s*<\/analysis>/)
-
-  if (!match) {
-    return {
-      summary: 'Analysis unavailable.',
-      detail: 'The analyzer could not produce a breakdown for this attempt.',
-      optimalPrompt: null,
-      concept: null,
-    }
-  }
-
-  try {
-    const parsed = JSON.parse(match[1])
-    return {
-      summary: String(parsed.summary ?? 'Analysis unavailable.'),
-      detail: String(parsed.detail ?? ''),
-      optimalPrompt:
-        verdict === 'pass' && parsed.optimalPrompt
-          ? String(parsed.optimalPrompt)
-          : null,
-      concept:
-        verdict === 'pass' && parsed.concept ? String(parsed.concept) : null,
-    }
-  } catch {
-    return {
-      summary: 'Analysis unavailable.',
-      detail: 'The analyzer produced a malformed response.',
-      optimalPrompt: null,
-      concept: null,
-    }
-  }
+Give directional hints without revealing the answer.`
 }

@@ -1,14 +1,12 @@
 import 'server-only'
-import { callClaude } from './claude-client'
-import { GENERATOR_MODEL } from './constants'
+import { streamText } from './claude-client'
+import { GENERATOR_CALL } from './constants'
 import type { CodeChallenge } from './types'
-
-const MAX_OUTPUT_TOKENS = 1024
 
 /**
  * Generate TypeScript code from a natural language prompt.
  *
- * Uses Claude Haiku for fast, cheap code generation.
+ * Uses Claude Haiku with thinking off for fast, cheap code generation.
  * The system prompt constrains output to a single function
  * matching the challenge's signature.
  */
@@ -21,13 +19,7 @@ export async function generateCode(
 
   const userMessage = `The player's description:\n${playerPrompt}`
 
-  return callClaude(
-    GENERATOR_MODEL,
-    systemPrompt,
-    userMessage,
-    MAX_OUTPUT_TOKENS,
-    onToken
-  )
+  return streamText(GENERATOR_CALL, systemPrompt, userMessage, onToken)
 }
 
 function buildGeneratorPrompt(challenge: CodeChallenge): string {

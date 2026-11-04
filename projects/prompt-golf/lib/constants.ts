@@ -1,3 +1,5 @@
+import type { ModelCall } from './model-call'
+
 // ── Site ─────────────────────────────────────────────────────────
 export function getSiteUrl(): string {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
@@ -74,11 +76,34 @@ export const RESULT_TTL_SECONDS = 30 * 24 * 60 * 60 // 30 days
 
 // ── Models ───────────────────────────────────────────────────────
 /** Generates TypeScript code from the player's natural language prompt */
-export const GENERATOR_MODEL = 'claude-haiku-4-5'
+export const GENERATOR_MODEL = 'claude-haiku-5-5'
 /** Evaluates generated code correctness against test cases */
-export const JUDGE_MODEL = 'claude-sonnet-4-6'
+export const JUDGE_MODEL = 'claude-sonnet-5-5'
 /** Produces educational swing analysis (why the prompt worked/failed) */
-export const ANALYZER_MODEL = 'claude-haiku-4-5'
+export const ANALYZER_MODEL = 'claude-haiku-5-5'
+
+export const GENERATOR_CALL: ModelCall = {
+  model: GENERATOR_MODEL,
+  maxTokens: 1024,
+  effort: 'low',
+  thinking: 'off',
+}
+
+// The judge traces every test case before answering, and thinking tokens
+// count toward max_tokens, so it gets far more room than its JSON reply needs.
+export const JUDGE_CALL: ModelCall = {
+  model: JUDGE_MODEL,
+  maxTokens: 12_000,
+  effort: 'medium',
+  thinking: 'adaptive',
+}
+
+export const ANALYZER_CALL: ModelCall = {
+  model: ANALYZER_MODEL,
+  maxTokens: 1024,
+  effort: 'low',
+  thinking: 'off',
+}
 
 // ── Courses ──────────────────────────────────────────────────────
 export const COURSES = {
