@@ -4,6 +4,7 @@ import { getChallenge, isCodeChallenge } from '@/lib/challenges'
 import { validatePrompt } from '@/lib/anti-gaming'
 import { generateCode } from '@/lib/code-generator'
 import { judgeCode } from '@/lib/judge'
+import { ModelRefusalError } from '@/lib/claude-client'
 import { analyzeSwing } from '@/lib/swing-analyzer'
 import { calculateScore } from '@/lib/scoring'
 import {
@@ -324,7 +325,9 @@ export async function POST(request: NextRequest) {
           type: 'error',
           data: {
             message:
-              'Something went wrong on the course. Please try another swing.',
+              error instanceof ModelRefusalError
+                ? 'The caddie declined that swing. Try describing it differently.'
+                : 'Something went wrong on the course. Please try another swing.',
           },
         })
       } finally {
