@@ -1,11 +1,36 @@
 import { describe, it, expect } from 'vitest'
+import type Anthropic from '@anthropic-ai/sdk'
 import {
+  assertCompleted,
   assertNotRefused,
   buildClassifierParams,
   buildRequestParams,
+  IncompleteResponseError,
   ModelRefusalError,
+  parseStructuredMessage,
+  StructuredOutputError,
 } from '../lib/claude-client'
 import { CLASSIFIER_MAX_TOKENS } from '../lib/constants'
+
+type CompletionInfo = Pick<
+  Anthropic.Message,
+  'stop_reason' | 'stop_details' | 'content'
+>
+
+function message(
+  stopReason: Anthropic.StopReason,
+  text: string,
+  category: string | null = null
+): CompletionInfo {
+  return {
+    stop_reason: stopReason,
+    stop_details:
+      stopReason === 'refusal'
+        ? { type: 'refusal', category, explanation: null }
+        : null,
+    content: [{ type: 'text', text, citations: null }],
+  } as CompletionInfo
+}
 
 describe('buildRequestParams', () => {
   it('turns thinking off on Haiku 5.5 so the output budget goes to the reply', () => {
@@ -34,7 +59,7 @@ describe('buildRequestParams', () => {
 
 describe('buildClassifierParams', () => {
   it('constrains the reply to the given labels with a JSON schema', () => {
-    const params = buildClassifierParams(
+    const { params } = buildClassifierParams(
       'claude-haiku-5-5',
       'classify',
       'text',
@@ -48,7 +73,7 @@ describe('buildClassifierParams', () => {
   })
 
   it('keeps the effort level next to the output format', () => {
-    const params = buildClassifierParams('claude-sonnet-5-5', 'c', 't', [
+    const { params } = buildClassifierParams('claude-sonnet-5-5', 'c', 't', [
       'SAFE',
       'LEAK',
     ])
@@ -87,5 +112,79 @@ describe('assertNotRefused', () => {
     expect(() =>
       assertNotRefused({ stop_reason: 'end_turn', stop_details: null })
     ).not.toThrow()
+  })
+})
+
+describe('assertCompleted', () => {
+  it('throws ModelRefusalError carrying the refusal category', () => {
+    expect.assertions(2)
+    try {
+      assertCompleted(message('refusal', '', 'cyber'))
+    } catch (e) {
+      expect(e).toBeInstanceOf(ModelRefusalError)
+      expect((e as ModelRefusalError).category).toBe('cyber')
+    }
+  })
+
+  it('throws IncompleteResponseError when the output hit max_tokens', () => {
+    expect(() => assertCompleted(message('max_tokens', '{"ver'))).toThrow(
+      IncompleteResponseError
+    )
+  })
+
+  it('throws IncompleteResponseError when the context window overflowed', () => {
+    expect.assertions(2)
+    try {
+      assertCompleted(message('model_context_window_exceeded', ''))
+    } catch (e) {
+      expect(e).toBeInstanceOf(IncompleteResponseError)
+      expect((e as IncompleteResponseError).stopReason).toBe(
+        'model_context_window_exceeded'
+      )
+    }
+  })
+
+  it('accepts a normal end of turn', () => {
+    expect(() => assertCompleted(message('end_turn', 'ok'))).not.toThrow()
+  })
+})
+
+describe('parseStructuredMessage', () => {
+  const { format } = buildClassifierParams('claude-haiku-5-5', 's', 'u', [
+    'SAFE',
+    'THREAT',
+  ])
+
+  it('returns the parsed verdict', () => {
+    expect(
+      parseStructuredMessage(
+        message('end_turn', '{"verdict":"THREAT"}'),
+        format
+      )
+    ).toEqual({ verdict: 'THREAT' })
+  })
+
+  it('reports a refusal with partial JSON as a refusal, not a parse error', () => {
+    expect(() =>
+      parseStructuredMessage(message('refusal', '{"verd', 'cyber'), format)
+    ).toThrow(ModelRefusalError)
+  })
+
+  it('reports JSON cut off by max_tokens as an incomplete response', () => {
+    expect(() =>
+      parseStructuredMessage(message('max_tokens', '{"verd'), format)
+    ).toThrow(IncompleteResponseError)
+  })
+
+  it('throws StructuredOutputError on invalid JSON', () => {
+    expect(() =>
+      parseStructuredMessage(message('end_turn', 'not json'), format)
+    ).toThrow(StructuredOutputError)
+  })
+
+  it('throws StructuredOutputError when the verdict is not a known label', () => {
+    expect(() =>
+      parseStructuredMessage(message('end_turn', '{"verdict":"MAYBE"}'), format)
+    ).toThrow(StructuredOutputError)
   })
 })
