@@ -3,6 +3,7 @@ import { getChallenge, isCodeChallenge } from '../lib/challenges'
 import {
   IncompleteResponseError,
   ModelRefusalError,
+  StructuredOutputError,
 } from '../lib/claude-client'
 import { ANALYZER_CALL } from '../lib/constants'
 import {
@@ -88,6 +89,28 @@ describe('analyzeSwing', () => {
     const analysis = await analyzeSwing(chunkChallenge(), 'p', CODE, 'fail', 3)
 
     expect(analysis.summary).toBe('Analysis unavailable.')
+  })
+})
+
+describe('analyzeSwing errors', () => {
+  beforeEach(() => {
+    callStructured.mockReset()
+  })
+
+  it('falls back to a placeholder when the analysis is not valid JSON', async () => {
+    callStructured.mockRejectedValue(new StructuredOutputError('bad json'))
+
+    const analysis = await analyzeSwing(chunkChallenge(), 'p', CODE, 'pass', 3)
+
+    expect(analysis.summary).toBe('Analysis unavailable.')
+  })
+
+  it('still surfaces API failures', async () => {
+    callStructured.mockRejectedValue(new Error('overloaded'))
+
+    await expect(
+      analyzeSwing(chunkChallenge(), 'p', CODE, 'fail', 3)
+    ).rejects.toThrow('overloaded')
   })
 })
 

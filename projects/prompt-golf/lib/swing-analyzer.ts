@@ -4,6 +4,7 @@ import {
   callStructured,
   IncompleteResponseError,
   ModelRefusalError,
+  StructuredOutputError,
 } from './claude-client'
 import { ANALYZER_CALL } from './constants'
 import type { CodeChallenge } from './types'
@@ -78,7 +79,8 @@ Result: ${verdict === 'pass' ? 'PASSED' : verdict === 'fail' ? 'FAILED' : 'PRACT
   } catch (error) {
     const isSkippable =
       error instanceof ModelRefusalError ||
-      error instanceof IncompleteResponseError
+      error instanceof IncompleteResponseError ||
+      error instanceof StructuredOutputError
     if (!isSkippable) throw error
     console.warn(`[analyzer] ${error.message}`)
     return UNAVAILABLE

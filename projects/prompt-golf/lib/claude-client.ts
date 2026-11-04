@@ -34,6 +34,15 @@ export class IncompleteResponseError extends Error {
   }
 }
 
+export class StructuredOutputError extends Error {
+  constructor(cause: unknown) {
+    super(
+      `Structured output did not match the schema: ${cause instanceof Error ? cause.message : String(cause)}`
+    )
+    this.name = 'StructuredOutputError'
+  }
+}
+
 // Haiku 5.5 accepts disabled thinking; Sonnet 5.5 rejects it and uses
 // between_tools, which also skips thinking on a single-turn request.
 function thinkingFor(call: ModelCall): Anthropic.ThinkingConfigParam {
@@ -79,14 +88,25 @@ export function assertNotRefused(message: CompletionInfo): void {
   }
 }
 
-export function assertCompleted(message: CompletionInfo): void {
-  assertNotRefused(message)
-  if (
-    message.stop_reason === 'max_tokens' ||
-    message.stop_reason === 'model_context_window_exceeded'
-  ) {
+function assertContextFit(message: CompletionInfo): void {
+  if (message.stop_reason === 'model_context_window_exceeded') {
     throw new IncompleteResponseError(message.stop_reason)
   }
+}
+
+export function assertCompleted(message: CompletionInfo): void {
+  assertNotRefused(message)
+  assertContextFit(message)
+  if (message.stop_reason === 'max_tokens') {
+    throw new IncompleteResponseError(message.stop_reason)
+  }
+}
+
+// Truncated code (max_tokens) is let through: the judge's structural check
+// reports it to the player.
+export function assertStreamUsable(message: CompletionInfo): void {
+  assertNotRefused(message)
+  assertContextFit(message)
 }
 
 function textOf(message: CompletionInfo): string {
@@ -102,7 +122,11 @@ export function parseStructuredMessage<T>(
   format: StructuredFormat<T>
 ): T {
   assertCompleted(message)
-  return format.parse(textOf(message))
+  try {
+    return format.parse(textOf(message))
+  } catch (error) {
+    throw new StructuredOutputError(error)
+  }
 }
 
 export async function streamText(
@@ -116,8 +140,7 @@ export async function streamText(
   )
   if (onToken) stream.on('text', onToken)
   const message = await stream.finalMessage()
-  // Truncated code is returned as-is: the judge's structural check reports it.
-  assertNotRefused(message)
+  assertStreamUsable(message)
   return textOf(message)
 }
 

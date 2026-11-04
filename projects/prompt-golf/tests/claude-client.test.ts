@@ -3,11 +3,13 @@ import { z } from 'zod'
 import type Anthropic from '@anthropic-ai/sdk'
 import {
   assertCompleted,
+  assertStreamUsable,
   buildRequestParams,
   buildStructuredParams,
   IncompleteResponseError,
   ModelRefusalError,
   parseStructuredMessage,
+  StructuredOutputError,
 } from '../lib/claude-client'
 import { ANALYZER_CALL, GENERATOR_CALL, JUDGE_CALL } from '../lib/constants'
 import type { ModelCall } from '../lib/model-call'
@@ -126,6 +128,26 @@ describe('assertCompleted', () => {
   })
 })
 
+describe('assertStreamUsable', () => {
+  it('throws IncompleteResponseError when the context window overflowed', () => {
+    expect(() =>
+      assertStreamUsable(message('model_context_window_exceeded', 'fun'))
+    ).toThrow(IncompleteResponseError)
+  })
+
+  it('lets max_tokens truncation through for the structural check', () => {
+    expect(() =>
+      assertStreamUsable(message('max_tokens', 'function f() {'))
+    ).not.toThrow()
+  })
+
+  it('throws ModelRefusalError on a refusal', () => {
+    expect(() => assertStreamUsable(message('refusal', ''))).toThrow(
+      ModelRefusalError
+    )
+  })
+})
+
 describe('parseStructuredMessage', () => {
   const schema = z.object({ verdict: z.enum(['PASS', 'FAIL']) })
   const { format } = buildStructuredParams(JUDGE_CALL, 's', 'u', schema)
@@ -146,5 +168,17 @@ describe('parseStructuredMessage', () => {
     expect(() =>
       parseStructuredMessage(message('max_tokens', '{"verd'), format)
     ).toThrow(IncompleteResponseError)
+  })
+
+  it('throws StructuredOutputError on invalid JSON', () => {
+    expect(() =>
+      parseStructuredMessage(message('end_turn', 'not json'), format)
+    ).toThrow(StructuredOutputError)
+  })
+
+  it('throws StructuredOutputError when the JSON misses the schema', () => {
+    expect(() =>
+      parseStructuredMessage(message('end_turn', '{"verdict":"MAYBE"}'), format)
+    ).toThrow(StructuredOutputError)
   })
 })
