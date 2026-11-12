@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getLevelPublicInfo } from '@/lib/levels'
 import { PlayClient } from './play-client'
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+}
 
 export default async function PlayPage({
   params,

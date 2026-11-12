@@ -143,6 +143,9 @@ export const AVERAGE_COST_PER_ATTEMPT =
 // Site URL
 // ---------------------------------------------------------------------------
 
+/** Public address through the fullstackhuman.sh rewrite; getSiteUrl() is the Vercel host. */
+export const PUBLIC_URL = 'https://fullstackhuman.sh/lab/prompt-wars'
+
 export function getSiteUrl(): string {
   if (process.env.NEXT_PUBLIC_SITE_URL) {
     return process.env.NEXT_PUBLIC_SITE_URL
