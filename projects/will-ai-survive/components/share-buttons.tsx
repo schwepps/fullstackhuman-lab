@@ -120,6 +120,10 @@ export function ShareButtons(props: ShareButtonsProps) {
         </button>
       </div>
 
+      <p className="text-center text-xs text-muted-foreground">
+        Anyone with the link can read your description, so leave out real names.
+      </p>
+
       {/* LinkedIn clipboard feedback */}
       {linkedInCopied && (
         <p className="text-center text-xs text-muted-foreground">

@@ -13,6 +13,12 @@ describe('buildEvaluationParams', () => {
     expect(buildEvaluationParams(situation).model).toBe('claude-sonnet-5-5')
   })
 
+  it('opts into server-side refusal fallbacks', () => {
+    const params = buildEvaluationParams(situation)
+    expect(params.fallbacks).toBe('default')
+    expect(params.betas).toContain('server-side-fallback-2026-07-01')
+  })
+
   it('caches the static system prompt', () => {
     const [block] = buildEvaluationParams(situation).system
     expect(block.cache_control).toEqual({ type: 'ephemeral' })

@@ -10,15 +10,9 @@ import {
 
 type InputFormProps = {
   onSubmit: (situation: string) => void
-  isLoading?: boolean
-  loadingMessage?: string
 }
 
-export function InputForm({
-  onSubmit,
-  isLoading,
-  loadingMessage,
-}: InputFormProps) {
+export function InputForm({ onSubmit }: InputFormProps) {
   const [situation, setSituation] = useState('')
   const [error, setError] = useState<string | null>(null)
 
@@ -68,8 +62,7 @@ export function InputForm({
             placeholder="My manager schedules 2-hour standups where everyone reports what they had for breakfast..."
             rows={5}
             maxLength={MAX_SITUATION_LENGTH + 100}
-            disabled={isLoading}
-            className="w-full resize-none rounded-md border border-border bg-surface p-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 disabled:opacity-50"
+            className="w-full resize-none rounded-md border border-border bg-surface p-4 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
           />
 
           {/* Character count */}
@@ -103,8 +96,7 @@ export function InputForm({
               key={scenario}
               type="button"
               onClick={() => handleChipClick(scenario)}
-              disabled={isLoading}
-              className="min-h-11 touch-manipulation rounded-md border border-border bg-surface px-3 py-2.5 text-left text-xs text-foreground/80 shadow-sm transition-all hover:border-muted hover:shadow-md active:scale-[0.98] disabled:opacity-50"
+              className="min-h-11 touch-manipulation rounded-md border border-border bg-surface px-3 py-2.5 text-left text-xs text-foreground/80 shadow-sm transition-all hover:border-muted hover:shadow-md active:scale-[0.98]"
             >
               {scenario.length > 60 ? scenario.slice(0, 60) + '...' : scenario}
             </button>
@@ -115,12 +107,10 @@ export function InputForm({
       {/* Submit */}
       <button
         type="submit"
-        disabled={!isValid || isOverLimit || isLoading}
+        disabled={!isValid || isOverLimit}
         className="min-h-12 w-full cursor-pointer touch-manipulation rounded-lg bg-accent px-6 py-3 font-mono text-sm font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-red-700 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:text-slate-500 disabled:shadow-none disabled:hover:shadow-none"
       >
-        {isLoading
-          ? (loadingMessage ?? 'Evaluating...')
-          : 'Deploy AI to your job'}
+        Deploy AI to your job
       </button>
     </form>
   )

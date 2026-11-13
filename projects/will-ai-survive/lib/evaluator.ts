@@ -2,16 +2,20 @@ import Anthropic from '@anthropic-ai/sdk'
 import { nanoid } from 'nanoid'
 import { buildEvaluationParams } from './prompt-builder'
 import { saveResult, incrementStats } from './result-store'
-import { parseSection, type ParsedSection } from './section-schemas'
+import {
+  SECTION_REGEX,
+  parseSection,
+  type ParsedSection,
+} from './section-schemas'
 import { INCOMPLETE_EVALUATION_ERROR, stopReasonError } from './stop-reason'
-import type { EvaluationResult, TimelineEntry, SSEEvent } from './types'
+import type {
+  CalendarUnit,
+  EvaluationResult,
+  TimelineEntry,
+  SSEEvent,
+} from './types'
 
 const anthropic = new Anthropic()
-
-// ── XML section markers we expect from Claude ───────────────────
-
-const SECTION_REGEX =
-  /<(chaos_rating|timeline_entry|breaking_point|resignation|real_talk)>\s*([\s\S]*?)\s*<\/\1>/g
 
 function parseSectionJson(name: string, json: string): ParsedSection | null {
   try {
@@ -36,6 +40,7 @@ export function createEvaluationStream(
   let chaosRating = 0
   let chaosLabel = ''
   let survivalDuration = ''
+  let calendarUnit: CalendarUnit | undefined
   const timeline: TimelineEntry[] = []
   let breakingPoint = ''
   let resignationLetter = ''
@@ -44,6 +49,7 @@ export function createEvaluationStream(
   let closed = false
   let accumulated = ''
   let lastParsedIndex = 0
+  let droppedSections = 0
 
   function safeEnqueue(
     controller: ReadableStreamDefaultController<SSEEvent>,
@@ -90,6 +96,7 @@ export function createEvaluationStream(
       if (section) {
         handleSection(controller, section)
       } else {
+        droppedSections++
         console.warn(
           `Skipped invalid ${sectionName} section:`,
           jsonContent.slice(0, 100)
@@ -104,7 +111,8 @@ export function createEvaluationStream(
   ) {
     switch (section.name) {
       case 'chaos_rating': {
-        ;({ chaosRating, chaosLabel, survivalDuration } = section.data)
+        ;({ chaosRating, chaosLabel, survivalDuration, calendarUnit } =
+          section.data)
         safeEnqueue(controller, { type: 'chaos_rating', data: section.data })
         break
       }
@@ -148,7 +156,7 @@ export function createEvaluationStream(
 
   async function finalizeEvaluation(
     controller: ReadableStreamDefaultController<SSEEvent>,
-    stopReason: Anthropic.StopReason | null
+    stopReason: Anthropic.Beta.BetaStopReason | null
   ) {
     const stopError = stopReasonError(stopReason)
     if (stopError) return safeError(controller, stopError)
@@ -166,6 +174,7 @@ export function createEvaluationStream(
         chaosRating,
         chaosLabel,
         survivalDuration,
+        calendarUnit,
         timeline,
         breakingPoint,
         resignationLetter,
@@ -174,7 +183,8 @@ export function createEvaluationStream(
         createdAt: Date.now(),
       }
       await saveResult(result)
-      await incrementStats()
+      // Best-effort: a failed counter must not hide a saved result
+      incrementStats().catch(() => {})
       safeEnqueue(controller, { type: 'complete', data: { id } })
     } catch {
       safeEnqueue(controller, {
@@ -185,7 +195,25 @@ export function createEvaluationStream(
     safeClose(controller)
   }
 
-  let modelStream: ReturnType<typeof anthropic.messages.stream> | null = null
+  function logUsage(message: Anthropic.Beta.BetaMessage) {
+    const { usage } = message
+    console.info('Evaluation usage:', {
+      model: message.model,
+      stopReason: message.stop_reason,
+      fallbackRan: (usage.iterations ?? []).some(
+        (entry) => entry.type === 'fallback_message'
+      ),
+      inputTokens: usage.input_tokens,
+      cacheReadTokens: usage.cache_read_input_tokens,
+      cacheWriteTokens: usage.cache_creation_input_tokens,
+      outputTokens: usage.output_tokens,
+      timelineEntries: timeline.length,
+      droppedSections,
+    })
+  }
+
+  let modelStream: ReturnType<typeof anthropic.beta.messages.stream> | null =
+    null
 
   return new ReadableStream<SSEEvent>({
     // The reader went away: stop paying for output nobody will see
@@ -195,7 +223,7 @@ export function createEvaluationStream(
     },
     async start(controller) {
       try {
-        const stream = anthropic.messages.stream(
+        const stream = anthropic.beta.messages.stream(
           buildEvaluationParams(situation)
         )
         modelStream = stream
@@ -206,6 +234,7 @@ export function createEvaluationStream(
 
         const message = await stream.finalMessage()
         await finalizeEvaluation(controller, message.stop_reason)
+        logUsage(message)
       } catch (error) {
         console.error('Evaluation catch:', {
           name: error instanceof Error ? error.name : 'unknown',

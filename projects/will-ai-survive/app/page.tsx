@@ -15,9 +15,9 @@ export default function Home() {
 
   const isActive = state.status !== 'idle'
 
-  async function handleSubmit(situation: string) {
+  function handleSubmit(situation: string) {
     setSubmittedSituation(situation)
-    await evaluate(situation)
+    void evaluate(situation)
     setTimeout(() => {
       resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }, 300)

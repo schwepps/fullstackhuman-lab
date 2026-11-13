@@ -1,5 +1,8 @@
 import { z } from 'zod'
 
+export const SECTION_REGEX =
+  /<(chaos_rating|timeline_entry|breaking_point|resignation|real_talk)>\s*([\s\S]*?)\s*<\/\1>/g
+
 const MIN_CHAOS = 1
 const MAX_CHAOS = 10
 const DEFAULT_CHAOS = 5
@@ -21,15 +24,23 @@ const chaosRating = z
   )
   .transform((n) => Math.min(MAX_CHAOS, Math.max(MIN_CHAOS, n)))
 
+const calendarUnit = z
+  .enum(['hour', 'day', 'week', 'month'])
+  .optional()
+  .catch(undefined)
+const period = z.coerce.number().int().min(1).optional().catch(undefined)
+
 const SECTION_SCHEMAS = {
   chaos_rating: z.object({
     chaosRating,
     chaosLabel: requiredText,
     survivalDuration: requiredText,
+    calendarUnit,
     empathyNote: optionalText,
   }),
   timeline_entry: z.object({
     time: textOrNumber,
+    period,
     event: requiredText,
     thought: optionalText,
     sanityLevel: textOrNumber,

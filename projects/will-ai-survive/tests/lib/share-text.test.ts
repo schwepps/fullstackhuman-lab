@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
   buildLinkedInPostText,
   buildXShareText,
@@ -95,5 +95,28 @@ describe('share URLs', () => {
     expect(url).toContain('wa.me')
     expect(url).toContain(encodeURIComponent('2 days, 14 hours'))
     expect(url).toContain(encodeURIComponent('/result/abc123def456'))
+  })
+})
+
+describe('resultUrl base path', () => {
+  afterEach(() => vi.unstubAllEnvs())
+
+  it('adds the base path when the site URL lacks it', () => {
+    vi.stubEnv('NEXT_PUBLIC_SITE_URL', 'https://example.com')
+    vi.stubEnv('NEXT_PUBLIC_BASE_PATH', '/lab/will-ai-survive')
+    expect(resultUrl('abc123def456')).toBe(
+      'https://example.com/lab/will-ai-survive/result/abc123def456'
+    )
+  })
+
+  it('does not double the base path when the site URL has it', () => {
+    vi.stubEnv(
+      'NEXT_PUBLIC_SITE_URL',
+      'https://example.com/lab/will-ai-survive/'
+    )
+    vi.stubEnv('NEXT_PUBLIC_BASE_PATH', '/lab/will-ai-survive')
+    expect(resultUrl('abc123def456')).toBe(
+      'https://example.com/lab/will-ai-survive/result/abc123def456'
+    )
   })
 })

@@ -17,13 +17,17 @@ vi.mock('@anthropic-ai/sdk', () => {
       streamMock.chunks.forEach((chunk) =>
         this.textListeners.forEach((l) => l(chunk))
       )
-      return { stop_reason: streamMock.stopReason }
+      return {
+        model: 'claude-sonnet-5-5',
+        stop_reason: streamMock.stopReason,
+        usage: { input_tokens: 1, output_tokens: 1, iterations: null },
+      }
     }
   }
   class Anthropic {
     static APIError = class extends Error {}
     static RateLimitError = class extends Error {}
-    messages = { stream: () => new FakeStream() }
+    beta = { messages: { stream: () => new FakeStream() } }
   }
   return { default: Anthropic }
 })
@@ -79,6 +83,36 @@ describe('createEvaluationStream', () => {
 
     expect(events).toHaveLength(1)
     expect(events[0].type).toBe('error')
+  })
+
+  it('drops a malformed section without failing the evaluation', async () => {
+    streamMock.chunks = [
+      ...FULL_OUTPUT,
+      '<timeline_entry>{not json}</timeline_entry>',
+    ]
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const info = vi.spyOn(console, 'info').mockImplementation(() => {})
+    const { createEvaluationStream } = await import('@/lib/evaluator')
+
+    const events = await collect(createEvaluationStream('my job'))
+
+    expect(events.at(-1)?.type).toBe('complete')
+    expect(info).toHaveBeenCalledWith(
+      'Evaluation usage:',
+      expect.objectContaining({ droppedSections: 1, fallbackRan: false })
+    )
+    warn.mockRestore()
+    info.mockRestore()
+  })
+
+  it('still completes when the stats counter fails', async () => {
+    const { incrementStats } = await import('@/lib/result-store')
+    vi.mocked(incrementStats).mockRejectedValueOnce(new Error('redis down'))
+    const { createEvaluationStream } = await import('@/lib/evaluator')
+
+    const events = await collect(createEvaluationStream('my job'))
+
+    expect(events.at(-1)?.type).toBe('complete')
   })
 
   it('reports a cut-off output as incomplete even if sections arrived', async () => {

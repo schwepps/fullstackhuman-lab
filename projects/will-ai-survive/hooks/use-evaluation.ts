@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useCallback, useRef } from 'react'
-import type { TimelineEntry } from '@/lib/types'
+import { createSSEReader } from '@/lib/sse-client'
+import type { SSEChaosEvent, SSEEvent, TimelineEntry } from '@/lib/types'
 
 // ── Loading messages (rotate during pre-eval phase) ─────────────
 
@@ -20,12 +21,7 @@ const LOADING_MESSAGES = [
 export type EvaluationState = {
   status: 'idle' | 'loading' | 'streaming' | 'complete' | 'error'
   loadingMessage: string
-  chaosData: {
-    chaosRating: number
-    chaosLabel: string
-    survivalDuration: string
-    empathyNote?: string
-  } | null
+  chaosData: SSEChaosEvent['data'] | null
   timelineEntries: TimelineEntry[]
   breakingPoint: string | null
   resignationLetter: string | null
@@ -120,40 +116,16 @@ export function useEvaluation() {
         stopLoadingMessages()
         setState((prev) => ({ ...prev, status: 'streaming' }))
 
-        // Read SSE stream with spec-compliant parser
         const reader = response.body.getReader()
         const decoder = new TextDecoder()
-        let buffer = ''
-        let currentEventType = ''
-        let currentData = ''
+        const push = createSSEReader((event) =>
+          setState((prev) => applyEvent(prev, event))
+        )
 
         while (true) {
           const { done, value } = await reader.read()
           if (done) break
-
-          buffer += decoder.decode(value, { stream: true })
-          const lines = buffer.split('\n')
-          buffer = lines.pop() ?? ''
-
-          for (const line of lines) {
-            if (line.startsWith('event: ')) {
-              currentEventType = line.slice(7).trim()
-            } else if (line.startsWith('data: ')) {
-              currentData = line.slice(6)
-            } else if (line === '') {
-              // Blank line = event boundary (per SSE spec)
-              if (currentEventType && currentData) {
-                try {
-                  const data = JSON.parse(currentData)
-                  handleEvent(currentEventType, data, setState)
-                } catch {
-                  // Malformed event — skip
-                }
-              }
-              currentEventType = ''
-              currentData = ''
-            }
-          }
+          push(decoder.decode(value, { stream: true }))
         }
 
         // The stream ended without a final event (timeout, dropped connection)
@@ -192,115 +164,21 @@ export function useEvaluation() {
   return { state, evaluate, reset }
 }
 
-// ── Event handlers with runtime validation ──────────────────────
-
-function isRecord(v: unknown): v is Record<string, unknown> {
-  return typeof v === 'object' && v !== null
-}
-
-function handleEvent(
-  type: string,
-  data: unknown,
-  setState: React.Dispatch<React.SetStateAction<EvaluationState>>
-) {
-  if (!isRecord(data)) return
-
-  switch (type) {
-    case 'chaos_rating': {
-      if (
-        typeof data.chaosRating !== 'number' ||
-        typeof data.chaosLabel !== 'string' ||
-        typeof data.survivalDuration !== 'string'
-      )
-        return
-      setState((prev) => ({
-        ...prev,
-        chaosData: {
-          chaosRating: data.chaosRating as number,
-          chaosLabel: data.chaosLabel as string,
-          survivalDuration: data.survivalDuration as string,
-          ...(typeof data.empathyNote === 'string' && {
-            empathyNote: data.empathyNote as string,
-          }),
-        },
-      }))
-      break
-    }
-
-    case 'timeline_entry': {
-      if (
-        typeof data.time !== 'string' ||
-        typeof data.event !== 'string' ||
-        typeof data.sanityLevel !== 'string'
-      )
-        return
-      setState((prev) => ({
-        ...prev,
-        timelineEntries: [
-          ...prev.timelineEntries,
-          {
-            time: data.time as string,
-            event: data.event as string,
-            sanityLevel: data.sanityLevel as string,
-            ...(typeof data.thought === 'string' && {
-              thought: data.thought as string,
-            }),
-          },
-        ],
-      }))
-      break
-    }
-
-    case 'breaking_point': {
-      if (typeof data.breakingPoint !== 'string') return
-      setState((prev) => ({
-        ...prev,
-        breakingPoint: data.breakingPoint as string,
-      }))
-      break
-    }
-
-    case 'resignation': {
-      if (
-        typeof data.resignationLetter !== 'string' ||
-        typeof data.oneLineSummary !== 'string'
-      )
-        return
-      setState((prev) => ({
-        ...prev,
-        resignationLetter: data.resignationLetter as string,
-        oneLineSummary: data.oneLineSummary as string,
-      }))
-      break
-    }
-
-    case 'real_talk': {
-      if (typeof data.insight !== 'string') return
-      setState((prev) => ({
-        ...prev,
-        realTalkInsight: data.insight as string,
-      }))
-      break
-    }
-
-    case 'complete': {
-      if (typeof data.id !== 'string') return
-      setState((prev) => ({
-        ...prev,
-        status: 'complete',
-        resultId: data.id as string,
-      }))
-      break
-    }
-
-    case 'error': {
-      if (typeof data.message !== 'string') return
-      setState((prev) => ({
-        ...prev,
-        status: 'error',
-        error: data.message as string,
-      }))
-      break
-    }
+function applyEvent(prev: EvaluationState, event: SSEEvent): EvaluationState {
+  switch (event.type) {
+    case 'chaos_rating':
+      return { ...prev, chaosData: event.data }
+    case 'timeline_entry':
+      return { ...prev, timelineEntries: [...prev.timelineEntries, event.data] }
+    case 'breaking_point':
+      return { ...prev, breakingPoint: event.data.breakingPoint }
+    case 'resignation':
+      return { ...prev, ...event.data }
+    case 'real_talk':
+      return { ...prev, realTalkInsight: event.data.insight }
+    case 'complete':
+      return { ...prev, status: 'complete', resultId: event.data.id }
+    case 'error':
+      return { ...prev, status: 'error', error: event.data.message }
   }
 }

@@ -16,82 +16,66 @@ type RateLimitResult = {
   reason?: string
 }
 
+type Counter = { key: string; ttl: number }
+
 /**
- * Check all rate limits before incrementing any counter.
- * This avoids "burning" a user's quota when a later check rejects.
+ * Count first, then compare: parallel requests cannot all read the same
+ * count and pass. Shared counters are only counted once the per-IP limits
+ * pass, so one noisy IP cannot spend everyone's daily budget.
  *
- * EXPIRE NX runs on every increment but only sets a TTL when the key has
- * none: a crash between INCR and EXPIRE cannot leave a key without one, and
- * later requests cannot keep pushing the window's reset time back.
+ * EXPIRE NX starts each window once, so later requests cannot push it back.
  */
+async function incrementAll(counters: Counter[]): Promise<number[]> {
+  const pipeline = getRedisClient().pipeline()
+  for (const { key, ttl } of counters) {
+    pipeline.incr(key)
+    pipeline.expire(key, ttl, 'NX')
+  }
+  const results = await pipeline.exec()
+  return counters.map((_, i) => (results[i * 2] as number | null) ?? 0)
+}
+
 export async function checkEvalRateAllowed(
   ip: string
 ): Promise<RateLimitResult> {
-  const redis = getRedisClient()
+  const [hourlyCount, dailyCount] = await incrementAll([
+    { key: REDIS_KEYS.rateLimitEval(ip), ttl: TTL_RATE_LIMIT_HOUR },
+    { key: REDIS_KEYS.rateLimitEvalDay(ip), ttl: TTL_RATE_LIMIT_DAY },
+  ])
 
-  const hourlyKey = REDIS_KEYS.rateLimitEval(ip)
-  const dailyKey = REDIS_KEYS.rateLimitEvalDay(ip)
-  const globalKey = REDIS_KEYS.rateLimitGlobal
-  const budgetKey = REDIS_KEYS.budgetDaily(
-    new Date().toISOString().split('T')[0]
-  )
-
-  // Read all counters first (without incrementing).
-  // Note: read-then-increment has a small TOCTOU window under concurrency
-  // (two requests could both read count=4 and both pass). Acceptable for
-  // this app's traffic level. A Lua script would fix this if needed.
-  const pipeline = redis.pipeline()
-  pipeline.get<number>(hourlyKey)
-  pipeline.get<number>(dailyKey)
-  pipeline.get<number>(globalKey)
-  pipeline.get<number>(budgetKey)
-  const [hourlyRaw, dailyRaw, globalRaw, budgetRaw] = await pipeline.exec()
-
-  const hourlyCount = (hourlyRaw as number | null) ?? 0
-  const dailyCount = (dailyRaw as number | null) ?? 0
-  const globalCount = (globalRaw as number | null) ?? 0
-  const budgetCount = (budgetRaw as number | null) ?? 0
-
-  // Check all limits before incrementing
-  if (hourlyCount >= RATE_LIMIT_EVAL_PER_HOUR) {
+  if (hourlyCount > RATE_LIMIT_EVAL_PER_HOUR) {
     return {
       allowed: false,
       reason: 'Too many evaluations. Try again in an hour.',
     }
   }
 
-  if (dailyCount >= RATE_LIMIT_EVAL_PER_DAY) {
+  if (dailyCount > RATE_LIMIT_EVAL_PER_DAY) {
     return {
       allowed: false,
       reason: 'Daily limit reached. Come back tomorrow.',
     }
   }
 
-  if (globalCount >= RATE_LIMIT_GLOBAL_PER_MINUTE) {
+  const today = new Date().toISOString().split('T')[0]
+  const [globalCount, budgetCount] = await incrementAll([
+    { key: REDIS_KEYS.rateLimitGlobal, ttl: TTL_RATE_LIMIT_MINUTE },
+    { key: REDIS_KEYS.budgetDaily(today), ttl: TTL_BUDGET_DAY },
+  ])
+
+  if (globalCount > RATE_LIMIT_GLOBAL_PER_MINUTE) {
     return {
       allowed: false,
       reason: 'High demand right now. Try again in a minute.',
     }
   }
 
-  if (budgetCount >= DAILY_EVAL_BUDGET) {
+  if (budgetCount > DAILY_EVAL_BUDGET) {
     return {
       allowed: false,
       reason: 'The AI has had enough for today. Come back tomorrow.',
     }
   }
-
-  // All checks passed — increment all counters and start their windows
-  const incrPipeline = redis.pipeline()
-  incrPipeline.incr(hourlyKey)
-  incrPipeline.expire(hourlyKey, TTL_RATE_LIMIT_HOUR, 'NX')
-  incrPipeline.incr(dailyKey)
-  incrPipeline.expire(dailyKey, TTL_RATE_LIMIT_DAY, 'NX')
-  incrPipeline.incr(globalKey)
-  incrPipeline.expire(globalKey, TTL_RATE_LIMIT_MINUTE, 'NX')
-  incrPipeline.incr(budgetKey)
-  incrPipeline.expire(budgetKey, TTL_BUDGET_DAY, 'NX')
-  await incrPipeline.exec()
 
   return { allowed: true }
 }

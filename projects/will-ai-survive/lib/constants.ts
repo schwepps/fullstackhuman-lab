@@ -43,6 +43,7 @@ export const EVAL_MAX_TOKENS = 16000
 export const SAFETY_GATE_MAX_TOKENS = 64
 export const EVAL_EFFORT = 'low' as const
 export const SAFETY_GATE_EFFORT = 'low' as const
+export const FALLBACK_BETA = 'server-side-fallback-2026-07-01'
 
 // ── Support / Donations ─────────────────────────────────────────
 
@@ -65,6 +66,14 @@ export function getSiteUrl(): string {
   }
   return `http://localhost:${process.env.PORT ?? '3000'}`
 }
+
+/** Site URL plus the app's base path, for links that leave the app (shares, OG images). */
+export function getAppUrl(): string {
+  const site = getSiteUrl().replace(/\/$/, '')
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+  return site.endsWith(basePath) ? site : `${site}${basePath}`
+}
+
 export const APP_NAME = 'Will AI Survive your job?'
 
 // ── Example Scenarios (for input form chips) ────────────────────

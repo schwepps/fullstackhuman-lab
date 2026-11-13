@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getResult } from '@/lib/result-store'
 import { RESULT_ID_PATTERN } from '@/lib/validation'
-import { getSiteUrl, APP_NAME } from '@/lib/constants'
+import { getAppUrl, APP_NAME } from '@/lib/constants'
 import { ChaosMeter } from '@/components/chaos-meter'
 import { Timeline } from '@/components/timeline'
 import { BreakingPoint } from '@/components/breaking-point'
@@ -40,7 +40,7 @@ export async function generateMetadata({
     openGraph: {
       title: ogTitle,
       description: ogDescription,
-      images: [`${getSiteUrl()}/api/og?id=${id}`],
+      images: [`${getAppUrl()}/api/og?id=${id}`],
       type: 'website',
       siteName: 'FullStackHuman',
     },
@@ -48,7 +48,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title: ogTitle,
       description: ogDescription,
-      images: [`${getSiteUrl()}/api/og?id=${id}`],
+      images: [`${getAppUrl()}/api/og?id=${id}`],
     },
   }
 }

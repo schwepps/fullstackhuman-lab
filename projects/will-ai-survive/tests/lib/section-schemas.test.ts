@@ -126,4 +126,23 @@ describe('parseSection null tolerance', () => {
 
     expect(result?.name === 'chaos_rating' && result.data.chaosRating).toBe(1)
   })
+
+  it('parses calendar fields and drops invalid ones instead of failing', () => {
+    const rating = parseSection('chaos_rating', {
+      chaosRating: 5,
+      chaosLabel: 'L',
+      survivalDuration: '2 days',
+      calendarUnit: 'fortnight',
+    })
+    expect(rating?.name === 'chaos_rating' && rating.data.calendarUnit).toBe(
+      undefined
+    )
+    const entry = parseSection('timeline_entry', {
+      time: 'Day 2',
+      period: '2',
+      event: 'E',
+      sanityLevel: '50%',
+    })
+    expect(entry?.name === 'timeline_entry' && entry.data.period).toBe(2)
+  })
 })
