@@ -18,6 +18,12 @@ describe('assignPeriods', () => {
     expect(assignPeriods([entry(1), entry(3), entry(9)])).toEqual([1, 3, 7])
   })
 
+  it('keeps an entry missing its period in the previous column', () => {
+    expect(assignPeriods([entry(1), entry(2), entry(), entry(4)])).toEqual([
+      1, 2, 2, 4,
+    ])
+  })
+
   it('spreads old results without periods over at most four columns', () => {
     const periods = assignPeriods([1, 2, 3, 4, 5, 6, 7, 8].map(() => entry()))
     expect(periods).toEqual([1, 1, 2, 2, 3, 3, 4, 4])

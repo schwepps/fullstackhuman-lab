@@ -28,6 +28,7 @@ export function HeroPreview() {
   const [sanity, setSanity] = useState(100)
 
   useEffect(() => {
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches
     const step = Math.round((100 - FINAL_SANITY) / BLOCKS.length)
     const timers = BLOCKS.map((block) =>
       setTimeout(
@@ -37,7 +38,7 @@ export function HeroPreview() {
               ? FINAL_SANITY
               : Math.max(FINAL_SANITY, s - step)
           ),
-        (FIRST_DROP_S + block.order * DROP_GAP_S) * 1000 + 250
+        reduced ? 0 : (FIRST_DROP_S + block.order * DROP_GAP_S) * 1000 + 250
       )
     )
     return () => timers.forEach(clearTimeout)

@@ -1,3 +1,4 @@
+import { MAX_PERIODS } from '@/lib/calendar'
 import Anthropic from '@anthropic-ai/sdk'
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
@@ -70,8 +71,6 @@ function groupSections(all: ParsedSection[]) {
   }
   return grouped
 }
-
-const MAX_PERIODS = 7
 
 function isCalendarValid(grouped: ReturnType<typeof groupSections>) {
   const periods = grouped.timeline.map((entry) => entry.period)

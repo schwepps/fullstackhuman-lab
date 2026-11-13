@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   buildLinkedInPostText,
   buildLinkedInShareUrl,
@@ -25,27 +25,31 @@ const PLAIN = `${BUTTON} border-ink bg-card text-ink`
 
 export function ShareButtons({ onReset, ...share }: ShareButtonsProps) {
   const [toast, setToast] = useState<string | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   function showToast(message: string) {
+    clearTimeout(toastTimer.current)
     setToast(message)
-    setTimeout(() => setToast(null), TOAST_MS)
+    toastTimer.current = setTimeout(() => setToast(null), TOAST_MS)
   }
 
-  async function copy(text: string, message: string) {
+  async function copy(text: string, copied: string, failed: string) {
     try {
       await navigator.clipboard.writeText(text)
-      showToast(message)
+      showToast(copied)
     } catch {
-      showToast('Copy failed. Select the address bar instead.')
+      showToast(failed)
     }
   }
 
   function handleLinkedIn() {
-    window.open(buildLinkedInShareUrl(share), '_blank', 'noopener,noreferrer')
+    // Copy before opening: once the new tab has focus, the clipboard write is refused
     void copy(
       buildLinkedInPostText(share),
-      'Post text copied. Paste it in LinkedIn.'
+      'Post text copied. Paste it in LinkedIn.',
+      "Couldn't copy the post text."
     )
+    window.open(buildLinkedInShareUrl(share), '_blank', 'noopener,noreferrer')
   }
 
   return (
@@ -76,7 +80,13 @@ export function ShareButtons({ onReset, ...share }: ShareButtonsProps) {
         </a>
         <button
           type="button"
-          onClick={() => copy(buildResultUrl(share.resultId), 'Link copied')}
+          onClick={() =>
+            copy(
+              buildResultUrl(share.resultId),
+              'Link copied',
+              'Copy failed. Select the address bar instead.'
+            )
+          }
           className={PLAIN}
         >
           Copy link

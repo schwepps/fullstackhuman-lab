@@ -9,10 +9,17 @@ const SANITY_WARN = 35
 
 export type SanityTone = 'ok' | 'warn' | 'bad'
 
-/** 1-based column per entry. Results saved before calendar fields get evenly spread columns. */
+/**
+ * 1-based column per entry. An entry missing its period stays in the previous
+ * entry's column; results saved before calendar fields get evenly spread columns.
+ */
 export function assignPeriods(entries: TimelineEntry[]): number[] {
-  if (entries.every((entry) => entry.period != null)) {
-    return entries.map((entry) => Math.min(entry.period ?? 1, MAX_PERIODS))
+  if (entries.some((entry) => entry.period != null)) {
+    let previous = 1
+    return entries.map((entry) => {
+      previous = Math.min(entry.period ?? previous, MAX_PERIODS)
+      return previous
+    })
   }
   const columns = Math.min(entries.length, FALLBACK_COLUMNS)
   return entries.map((_, i) => Math.floor((i * columns) / entries.length) + 1)
