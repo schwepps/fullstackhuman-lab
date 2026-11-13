@@ -298,7 +298,6 @@ projects/prompt-golf/
     not-found.tsx                   # 404 (Out of Bounds)
     api/
       swing/route.ts                # POST: SSE stream (prompt → code gen → judge → analysis)
-      leaderboard/route.ts          # GET/POST: leaderboard
       og/route.tsx                  # GET: dynamic OG image (prompt-centric)
     globals.css                     # Golf course / country club theme
   components/                       # UI: prompt-input, code-output, swing-result, share, support

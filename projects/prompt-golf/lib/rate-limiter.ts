@@ -16,8 +16,11 @@ interface RateLimitResult {
 const WINDOW_SECONDS = Math.ceil(RATE_LIMITS.windowMs / 1000)
 
 /**
- * Check rate limits before incrementing any counter.
- * Uses unconditional EXPIRE to avoid TOCTOU race conditions.
+ * Count this swing, then compare against the limits.
+ *
+ * Incrementing first makes the check atomic: parallel requests cannot all
+ * read the same count and pass. EXPIRE NX starts the window once, so a
+ * steady trickle of requests cannot keep pushing the reset time back.
  */
 export async function checkAttemptAllowed(
   ip: string,
@@ -29,16 +32,17 @@ export async function checkAttemptAllowed(
   const globalKey = REDIS_KEYS.globalAttempts(ip)
   const challengeKey = REDIS_KEYS.attempts(ip, challengeId)
 
-  const readPipeline = redis.pipeline()
-  readPipeline.get<number>(globalKey)
-  readPipeline.get<number>(challengeKey)
-  const [globalRaw, challengeRaw] = await readPipeline.exec()
+  const pipeline = redis.pipeline()
+  pipeline.incr(globalKey)
+  pipeline.expire(globalKey, WINDOW_SECONDS, 'NX')
+  pipeline.incr(challengeKey)
+  pipeline.expire(challengeKey, WINDOW_SECONDS, 'NX')
+  const [globalRaw, , challengeRaw] = await pipeline.exec()
 
   const globalCount = (globalRaw as number | null) ?? 0
   const challengeCount = (challengeRaw as number | null) ?? 0
 
-  // Check global limit
-  if (globalCount >= RATE_LIMITS.globalPerWindow) {
+  if (globalCount > RATE_LIMITS.globalPerWindow) {
     const ttl = await redis.ttl(globalKey)
     return {
       allowed: false,
@@ -47,12 +51,11 @@ export async function checkAttemptAllowed(
     }
   }
 
-  // Check per-challenge limit
   const challengeLimit = isPractice
     ? RATE_LIMITS.practicePerChallengePerWindow
     : RATE_LIMITS.perChallengePerWindow
 
-  if (challengeCount >= challengeLimit) {
+  if (challengeCount > challengeLimit) {
     const ttl = await redis.ttl(challengeKey)
     return {
       allowed: false,
@@ -62,14 +65,6 @@ export async function checkAttemptAllowed(
       retryAfterSeconds: ttl > 0 ? ttl : WINDOW_SECONDS,
     }
   }
-
-  // All checks passed — increment
-  const incrPipeline = redis.pipeline()
-  incrPipeline.incr(globalKey)
-  incrPipeline.expire(globalKey, WINDOW_SECONDS)
-  incrPipeline.incr(challengeKey)
-  incrPipeline.expire(challengeKey, WINDOW_SECONDS)
-  await incrPipeline.exec()
 
   return { allowed: true }
 }
@@ -99,34 +94,55 @@ export async function getDailyBudget(): Promise<number> {
   return count ?? 0
 }
 
-/**
- * Increment server-side attempt count for scoring accuracy.
- * Prevents sessionId rotation to reset counts.
- */
-export async function incrementAttemptCount(
-  sessionId: string,
-  challengeId: string
-): Promise<number> {
-  const redis = getRedisClient()
-  const key = REDIS_KEYS.bestSwing(sessionId, challengeId)
-  const pipeline = redis.pipeline()
-  pipeline.incr(key + ':attempts')
-  pipeline.expire(key + ':attempts', RESULT_TTL_SECONDS)
-  const [countRaw] = await pipeline.exec()
-  return (countRaw as number | null) ?? 1
+const IP_ATTEMPTS_TTL_SECONDS = 24 * 60 * 60
+
+function attemptKeys(sessionId: string, challengeId: string, ip: string) {
+  return {
+    sessionKey: REDIS_KEYS.bestSwing(sessionId, challengeId) + ':attempts',
+    ipKey: REDIS_KEYS.bestSwing(`ip:${ip}`, challengeId) + ':attempts',
+  }
 }
 
 /**
- * Get current attempt count for a session + challenge.
+ * Increment the server-side attempt count used for the score penalty.
+ *
+ * The session id comes from the browser, so a fresh one would reset the
+ * count. The count is also kept per IP for a day and the higher one wins.
+ */
+export async function incrementAttemptCount(
+  sessionId: string,
+  challengeId: string,
+  ip: string
+): Promise<number> {
+  const redis = getRedisClient()
+  const { sessionKey, ipKey } = attemptKeys(sessionId, challengeId, ip)
+  const pipeline = redis.pipeline()
+  pipeline.incr(sessionKey)
+  pipeline.expire(sessionKey, RESULT_TTL_SECONDS)
+  pipeline.incr(ipKey)
+  pipeline.expire(ipKey, IP_ATTEMPTS_TTL_SECONDS, 'NX')
+  const [sessionRaw, , ipRaw] = await pipeline.exec()
+  return Math.max(
+    (sessionRaw as number | null) ?? 1,
+    (ipRaw as number | null) ?? 1
+  )
+}
+
+/**
+ * Get the current attempt count without incrementing (mulligan retries).
  */
 export async function getAttemptCount(
   sessionId: string,
-  challengeId: string
+  challengeId: string,
+  ip: string
 ): Promise<number> {
   const redis = getRedisClient()
-  const key = REDIS_KEYS.bestSwing(sessionId, challengeId) + ':attempts'
-  const count = await redis.get<number>(key)
-  return count ?? 0
+  const { sessionKey, ipKey } = attemptKeys(sessionId, challengeId, ip)
+  const [sessionCount, ipCount] = await redis.mget<(number | null)[]>(
+    sessionKey,
+    ipKey
+  )
+  return Math.max(sessionCount ?? 0, ipCount ?? 0)
 }
 
 /**
@@ -155,17 +171,4 @@ export async function consumeMulligan(
   }
 
   return true
-}
-
-/**
- * Get remaining mulligans for a course.
- */
-export async function getMulligansRemaining(
-  sessionId: string,
-  course: string
-): Promise<number> {
-  const redis = getRedisClient()
-  const key = REDIS_KEYS.mulligans(sessionId, course)
-  const count = await redis.get<number>(key)
-  return count ?? MULLIGANS_PER_COURSE
 }

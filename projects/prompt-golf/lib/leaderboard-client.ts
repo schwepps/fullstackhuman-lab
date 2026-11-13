@@ -5,6 +5,19 @@ import type { LeaderboardEntry } from './types'
 
 const MAX_ENTRIES = 50
 
+const HOLE_RANK_WEIGHT = 10_000
+
+/**
+ * Sorted-set score, lowest first. More holes always outranks fewer: a raw
+ * stroke total would put a one-hole player above anyone who finished the course.
+ */
+export function rankScore(
+  totalStrokes: number,
+  holesCompleted: number
+): number {
+  return totalStrokes - holesCompleted * HOLE_RANK_WEIGHT
+}
+
 /**
  * Record a hole win and auto-update the leaderboard.
  *
@@ -53,13 +66,9 @@ export async function recordHoleAndUpdateLeaderboard(
 
   // Fetch all hole scores
   const scorePipeline = redis.pipeline()
-  let totalPar = 0
   for (const holeId of completedHoles) {
     const key = `${REDIS_KEYS.leaderboard(course)}:hole:${safeKey(sessionId)}:${safeKey(String(holeId))}`
     scorePipeline.get<number>(key)
-    // Each hole has a par, but we don't have it here — use the passed par
-    // for the current hole. For accumulated, we'd need to look up each par.
-    // Simplified: assume par is stored per hole too.
   }
   const scores = await scorePipeline.exec()
 
@@ -77,7 +86,7 @@ export async function recordHoleAndUpdateLeaderboard(
     await redis.incrby(totalParKey, par)
     await redis.expire(totalParKey, RESULT_TTL_SECONDS)
   }
-  totalPar = (await redis.get<number>(totalParKey)) ?? par
+  const totalPar = (await redis.get<number>(totalParKey)) ?? par
 
   const entry: LeaderboardEntry = {
     displayName: displayName || 'Anonymous',
@@ -96,7 +105,7 @@ export async function recordHoleAndUpdateLeaderboard(
 
   const updatePipeline = redis.pipeline()
   updatePipeline.zadd(leaderboardKey, {
-    score: totalStrokes,
+    score: rankScore(totalStrokes, completedHoles.length),
     member: sessionId,
   })
   updatePipeline.set(metaKey, JSON.stringify(entry), {
@@ -126,8 +135,12 @@ export async function getLeaderboard(
   const results = await pipeline.exec()
 
   const entries: LeaderboardEntry[] = []
-  for (const raw of results) {
-    if (!raw) continue
+  for (const [i, raw] of results.entries()) {
+    if (!raw) {
+      // Metadata expired: drop the rank too, or dead entries fill the top slots
+      await redis.zrem(leaderboardKey, members[i])
+      continue
+    }
     try {
       const entry =
         typeof raw === 'string'
