@@ -7,7 +7,7 @@ const REFUSAL_ERROR =
   "Sorry, the AI can't evaluate this situation. Try describing it differently."
 
 export function stopReasonError(
-  stopReason: Anthropic.StopReason | null
+  stopReason: Anthropic.Beta.BetaStopReason | null
 ): string | null {
   switch (stopReason) {
     case 'refusal':

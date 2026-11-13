@@ -1,6 +1,34 @@
 import type { Metadata, Viewport } from 'next'
+import {
+  Bricolage_Grotesque,
+  Geist,
+  Geist_Mono,
+  Silkscreen,
+} from 'next/font/google'
 import { getSiteUrl } from '@/lib/constants'
+import { FshLogo } from '@/components/fsh-logo'
 import './globals.css'
+
+const bricolage = Bricolage_Grotesque({
+  subsets: ['latin'],
+  weight: ['600', '800'],
+  variable: '--font-bricolage',
+})
+const geist = Geist({ subsets: ['latin'], variable: '--font-geist' })
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
+})
+const silkscreen = Silkscreen({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-silkscreen',
+})
+const FONT_VARIABLES = [bricolage, geist, geistMono, silkscreen]
+  .map((font) => font.variable)
+  .join(' ')
+
+const FSH_URL = 'https://fullstackhuman.sh'
 
 export const metadata: Metadata = {
   title: 'Will AI Survive your job? | FullStackHuman',
@@ -23,7 +51,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#f8fafc',
+  themeColor: '#141a3a',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',
@@ -35,31 +63,36 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className="min-h-svh pb-safe antialiased">
-        {/* FSH-branded top bar (matches sharing-layout header) */}
-        <header className="flex h-12 items-center justify-between border-b border-border bg-surface px-4 sm:px-6">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <a
-              href="https://fullstackhuman.sh"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono text-[10px] font-semibold uppercase tracking-[0.15em] transition-colors hover:text-foreground"
-            >
+    <html lang="en" className={FONT_VARIABLES}>
+      <body className="flex min-h-svh flex-col">
+        <header className="on-ink sticky top-0 z-40 flex h-14 items-center justify-between border-b border-ink-line bg-ink-deep px-4 text-paper">
+          <a
+            href={FSH_URL}
+            className="inline-flex min-h-11 items-center gap-2 text-signal"
+          >
+            <FshLogo className="h-7 w-12" />
+            <span className="font-display text-xl text-paper">
               FullStackHuman
-            </a>
-            <span className="text-border">|</span>
-            <a
-              href="https://fullstackhuman.sh/lab"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-mono text-[10px] uppercase tracking-[0.15em] transition-colors hover:text-foreground"
-            >
+            </span>
+          </a>
+          <nav
+            aria-label="Breadcrumb"
+            className="pixel hidden items-center gap-2.5 text-on-ink-muted sm:flex"
+          >
+            <a href={`${FSH_URL}/lab`} className="text-signal">
               Lab
             </a>
-          </div>
+            <span aria-hidden="true">/</span>
+            <span>Will AI survive</span>
+          </nav>
         </header>
-        {children}
+        <div className="flex-1">{children}</div>
+        <footer className="bg-ink-deep px-4 py-7 pb-safe text-sm text-on-ink-muted">
+          <div className="mx-auto flex max-w-6xl flex-wrap justify-between gap-3">
+            <span>FullStackHuman Lab</span>
+            <span>Built to make a point about work, not people.</span>
+          </div>
+        </footer>
       </body>
     </html>
   )

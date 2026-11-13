@@ -1,16 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { checkEvalRateAllowed } from '@/lib/rate-limiter'
 
-// Mock pipeline results
 const mockPipelineExec = vi.fn()
-const mockPipelineGet = vi.fn()
 const mockPipelineIncr = vi.fn()
 const mockPipelineExpire = vi.fn()
 
 vi.mock('@/lib/upstash', () => ({
   getRedisClient: () => ({
     pipeline: () => ({
-      get: mockPipelineGet,
       incr: mockPipelineIncr,
       expire: mockPipelineExpire,
       exec: mockPipelineExec,
@@ -18,41 +15,46 @@ vi.mock('@/lib/upstash', () => ({
   }),
 }))
 
+// Each pipeline returns [count, expireResult, count, expireResult]
+const counts = (a: number, b: number) => [a, 1, b, 1]
+
 describe('checkEvalRateAllowed', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Default: pipeline methods return self for chaining
-    mockPipelineGet.mockReturnThis()
     mockPipelineIncr.mockReturnThis()
     mockPipelineExpire.mockReturnThis()
   })
 
   it('allows requests under all limits', async () => {
-    // First exec: read counters (all zero/null)
     mockPipelineExec
-      .mockResolvedValueOnce([null, null, null])
-      // Second exec: increment counters
-      .mockResolvedValueOnce([1, true, 1, true, 1, true])
+      .mockResolvedValueOnce(counts(1, 1))
+      .mockResolvedValueOnce(counts(1, 1))
 
     const result = await checkEvalRateAllowed('1.2.3.4')
-    expect(result.allowed).toBe(true)
-    expect(result.reason).toBeUndefined()
+    expect(result).toEqual({ allowed: true })
+    expect(mockPipelineIncr).toHaveBeenCalledTimes(4)
+    expect(mockPipelineExpire).toHaveBeenCalledTimes(4)
   })
 
-  it('blocks when hourly limit exceeded', async () => {
-    // Hourly count is at limit (5)
-    mockPipelineExec.mockResolvedValueOnce([5, 0, 0])
+  it('allows the request that reaches the hourly limit exactly', async () => {
+    mockPipelineExec
+      .mockResolvedValueOnce(counts(5, 5))
+      .mockResolvedValueOnce(counts(1, 1))
+
+    expect((await checkEvalRateAllowed('1.2.3.4')).allowed).toBe(true)
+  })
+
+  it('blocks when hourly limit exceeded, without touching shared counters', async () => {
+    mockPipelineExec.mockResolvedValueOnce(counts(6, 6))
 
     const result = await checkEvalRateAllowed('1.2.3.4')
     expect(result.allowed).toBe(false)
     expect(result.reason).toContain('hour')
-    // Should not increment (only 1 exec call for reads)
     expect(mockPipelineExec).toHaveBeenCalledTimes(1)
   })
 
   it('blocks when daily limit exceeded', async () => {
-    // Hourly OK (1), Daily at limit (15)
-    mockPipelineExec.mockResolvedValueOnce([1, 15, 0])
+    mockPipelineExec.mockResolvedValueOnce(counts(1, 16))
 
     const result = await checkEvalRateAllowed('1.2.3.4')
     expect(result.allowed).toBe(false)
@@ -61,56 +63,34 @@ describe('checkEvalRateAllowed', () => {
   })
 
   it('blocks when global limit exceeded', async () => {
-    // Hourly OK, Daily OK, Global at limit (30)
-    mockPipelineExec.mockResolvedValueOnce([1, 1, 30])
+    mockPipelineExec
+      .mockResolvedValueOnce(counts(1, 1))
+      .mockResolvedValueOnce(counts(31, 1))
 
     const result = await checkEvalRateAllowed('1.2.3.4')
     expect(result.allowed).toBe(false)
     expect(result.reason).toContain('demand')
-    expect(mockPipelineExec).toHaveBeenCalledTimes(1)
   })
 
-  it('does not burn counters when rejected', async () => {
-    // Daily limit exceeded
-    mockPipelineExec.mockResolvedValueOnce([1, 15, 0])
-
-    await checkEvalRateAllowed('1.2.3.4')
-
-    // Only 1 pipeline exec (read) — no increment pipeline
-    expect(mockPipelineExec).toHaveBeenCalledTimes(1)
-  })
-
-  it('increments all counters and sets TTLs when allowed', async () => {
+  it('blocks everyone once the daily budget is spent', async () => {
     mockPipelineExec
-      .mockResolvedValueOnce([0, 0, 0])
-      .mockResolvedValueOnce([1, true, 1, true, 1, true])
+      .mockResolvedValueOnce(counts(1, 1))
+      .mockResolvedValueOnce(counts(1, 1001))
 
-    await checkEvalRateAllowed('1.2.3.4')
-
-    // 2 pipeline execs: read + increment
-    expect(mockPipelineExec).toHaveBeenCalledTimes(2)
-    // Increment pipeline: hourly, daily, global and the daily budget
-    expect(mockPipelineIncr).toHaveBeenCalledTimes(4)
-    expect(mockPipelineExpire).toHaveBeenCalledTimes(4)
+    const result = await checkEvalRateAllowed('5.6.7.8')
+    expect(result.allowed).toBe(false)
+    expect(result.reason).toContain('enough for today')
   })
 
   it('starts each window once instead of extending it on every request', async () => {
     mockPipelineExec
-      .mockResolvedValueOnce([1, 1, 1, 1])
-      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce(counts(1, 1))
+      .mockResolvedValueOnce(counts(1, 1))
 
     await checkEvalRateAllowed('1.2.3.4')
 
     for (const call of mockPipelineExpire.mock.calls) {
       expect(call[2]).toBe('NX')
     }
-  })
-
-  it('blocks everyone once the daily budget is spent', async () => {
-    mockPipelineExec.mockResolvedValueOnce([0, 0, 0, 1000])
-
-    const result = await checkEvalRateAllowed('5.6.7.8')
-    expect(result.allowed).toBe(false)
-    expect(mockPipelineExec).toHaveBeenCalledTimes(1)
   })
 })

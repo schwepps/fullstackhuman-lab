@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   buildLinkedInPostText,
   buildLinkedInShareUrl,
@@ -8,13 +8,6 @@ import {
   buildWhatsAppShareUrl,
   resultUrl as buildResultUrl,
 } from '@/lib/share-text'
-import {
-  LinkedInIcon,
-  XIcon,
-  WhatsAppIcon,
-  ClipboardIcon,
-  CheckIcon,
-} from './icons'
 
 type ShareButtonsProps = {
   resultId: string
@@ -22,110 +15,101 @@ type ShareButtonsProps = {
   chaosLabel: string
   survivalDuration: string
   breakingPoint: string
+  onReset?: () => void
 }
 
-export function ShareButtons(props: ShareButtonsProps) {
-  const [copied, setCopied] = useState(false)
-  const [linkedInCopied, setLinkedInCopied] = useState(false)
+const TOAST_MS = 2000
+const BUTTON =
+  'notch-8 pixel flex min-h-13 flex-[1_1_180px] items-center justify-center border-2 px-5 text-[0.8125rem] touch-manipulation'
+const PLAIN = `${BUTTON} border-ink bg-card text-ink`
 
-  const url = buildResultUrl(props.resultId)
-  const xUrl = buildXShareUrl(props)
-  const whatsAppUrl = buildWhatsAppShareUrl(props)
+export function ShareButtons({ onReset, ...share }: ShareButtonsProps) {
+  const [toast, setToast] = useState<string | null>(null)
+  const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
-  async function handleLinkedIn() {
-    window.open(buildLinkedInShareUrl(props), '_blank', 'noopener,noreferrer')
-    try {
-      await navigator.clipboard.writeText(buildLinkedInPostText(props))
-    } catch {
-      // Silent fallback — share dialog already opened
-    }
-    setLinkedInCopied(true)
-    setTimeout(() => setLinkedInCopied(false), 3000)
+  function showToast(message: string) {
+    clearTimeout(toastTimer.current)
+    setToast(message)
+    toastTimer.current = setTimeout(() => setToast(null), TOAST_MS)
   }
 
-  async function handleCopy() {
+  async function copy(text: string, copied: string, failed: string) {
     try {
-      await navigator.clipboard.writeText(url)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(text)
+      showToast(copied)
     } catch {
-      const textarea = document.createElement('textarea')
-      textarea.value = url
-      document.body.appendChild(textarea)
-      textarea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textarea)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
+      showToast(failed)
     }
+  }
+
+  function handleLinkedIn() {
+    // Copy before opening: once the new tab has focus, the clipboard write is refused
+    void copy(
+      buildLinkedInPostText(share),
+      'Post text copied. Paste it in LinkedIn.',
+      "Couldn't copy the post text."
+    )
+    window.open(buildLinkedInShareUrl(share), '_blank', 'noopener,noreferrer')
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-center font-mono text-[10px] font-semibold uppercase tracking-[0.15em] text-muted-foreground">
-        Share Your Incident Report
-      </p>
-
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {/* LinkedIn — copies post text + opens share dialog */}
+    <div className="mt-6">
+      <div className="flex flex-wrap gap-2.5">
         <button
+          type="button"
           onClick={handleLinkedIn}
-          aria-label="Share on LinkedIn (copies post text and opens LinkedIn)"
-          className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg bg-[#0a66c2] px-4 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-[#004182] hover:shadow-md active:scale-[0.98]"
+          className={`${BUTTON} border-magenta bg-magenta text-paper`}
         >
-          <LinkedInIcon className="size-4" />
-          LinkedIn
+          Share on LinkedIn
         </button>
-
-        {/* X / Twitter */}
         <a
-          href={xUrl}
+          href={buildXShareUrl(share)}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Share on X (opens in new tab)"
-          className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-foreground px-4 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-slate-800 hover:shadow-md active:scale-[0.98]"
+          className={PLAIN}
         >
-          <XIcon className="size-4" />X / Twitter
+          Share on X
         </a>
-
-        {/* WhatsApp */}
         <a
-          href={whatsAppUrl}
+          href={buildWhatsAppShareUrl(share)}
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Share on WhatsApp (opens in new tab)"
-          className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#25D366] px-4 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-white shadow-sm transition-all hover:bg-[#1da851] hover:shadow-md active:scale-[0.98]"
+          className={PLAIN}
         >
-          <WhatsAppIcon className="size-4" />
           WhatsApp
         </a>
-
-        {/* Copy Link */}
         <button
-          onClick={handleCopy}
-          aria-live="polite"
-          className="flex min-h-11 cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-surface px-4 py-3 font-mono text-xs font-semibold uppercase tracking-wider text-foreground shadow-sm transition-all hover:border-muted hover:bg-surface-dim hover:shadow-md active:scale-[0.98]"
+          type="button"
+          onClick={() =>
+            copy(
+              buildResultUrl(share.resultId),
+              'Link copied',
+              'Copy failed. Select the address bar instead.'
+            )
+          }
+          className={PLAIN}
         >
-          {copied ? (
-            <>
-              <CheckIcon className="size-4 text-safe" />
-              Copied!
-            </>
-          ) : (
-            <>
-              <ClipboardIcon className="size-4" />
-              Copy Link
-            </>
-          )}
+          Copy link
         </button>
+        {onReset && (
+          <button
+            type="button"
+            onClick={onReset}
+            className={`${BUTTON} border-ink bg-ink text-signal`}
+          >
+            Try another job
+          </button>
+        )}
       </div>
-
-      {/* LinkedIn clipboard feedback */}
-      {linkedInCopied && (
-        <p className="text-center text-xs text-muted-foreground">
-          Post text copied — paste it in LinkedIn!
-        </p>
-      )}
+      <p className="mt-3 text-sm text-ink-muted">
+        Anyone with the link can read your description, so leave out real names.
+      </p>
+      <p
+        role="status"
+        className={`notch-8 pixel fixed bottom-6 left-1/2 -translate-x-1/2 bg-ink px-4.5 py-3 text-signal ${toast ? '' : 'hidden'}`}
+      >
+        {toast}
+      </p>
     </div>
   )
 }

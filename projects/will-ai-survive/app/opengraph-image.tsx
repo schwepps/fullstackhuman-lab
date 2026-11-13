@@ -15,8 +15,8 @@ export default function OgImage() {
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: '#1c1917',
-        color: '#fafaf9',
+        backgroundColor: '#141a3a',
+        color: '#f5f7fb',
         fontFamily: 'monospace',
         textAlign: 'center',
       }}
@@ -32,7 +32,7 @@ export default function OgImage() {
         }}
       >
         <span style={{ fontSize: 80, fontWeight: 800 }}>Will AI Survive</span>
-        <span style={{ fontSize: 80, fontWeight: 800, color: '#dc2626' }}>
+        <span style={{ fontSize: 80, fontWeight: 800, color: '#e0457b' }}>
           Your Job?
         </span>
       </div>
@@ -41,7 +41,7 @@ export default function OgImage() {
       <div
         style={{
           fontSize: 28,
-          color: '#a8a29e',
+          color: '#a9b4d0',
           lineHeight: 1.5,
           display: 'flex',
           maxWidth: 800,
@@ -58,7 +58,7 @@ export default function OgImage() {
           fontSize: 18,
           fontWeight: 700,
           letterSpacing: '0.12em',
-          color: '#57534e',
+          color: '#7fe0f0',
           display: 'flex',
         }}
       >

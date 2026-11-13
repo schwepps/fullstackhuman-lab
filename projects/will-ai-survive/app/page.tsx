@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { HeroPreview } from '@/components/hero-preview'
 import { InputForm } from '@/components/input-form'
 import { ResultCard } from '@/components/result-card'
 import { SupportCta } from '@/components/support-cta'
@@ -14,13 +15,19 @@ export default function Home() {
   )
 
   const isActive = state.status !== 'idle'
+  const isBusy = state.status === 'loading' || state.status === 'streaming'
+  const hasReport = state.chaosData != null
 
-  async function handleSubmit(situation: string) {
-    setSubmittedSituation(situation)
-    await evaluate(situation)
-    setTimeout(() => {
+  // Scroll once the report has content: while loading, the page is too short to reach it
+  useEffect(() => {
+    if (hasReport) {
       resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 300)
+    }
+  }, [hasReport])
+
+  function handleSubmit(situation: string) {
+    setSubmittedSituation(situation)
+    void evaluate(situation)
   }
 
   function handleReset() {
@@ -30,47 +37,36 @@ export default function Home() {
   }
 
   return (
-    <main className="mx-auto flex min-h-[calc(100svh-3rem)] max-w-3xl flex-col justify-center px-4 py-8 sm:py-12">
-      {/* Hero */}
-      <header className="mb-8 text-center sm:mb-10">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-          Will AI Survive
-          <br />
-          <span className="text-accent">Your Job?</span>
-        </h1>
-        <p className="mt-3 text-base text-muted sm:text-lg">
-          Describe your workplace chaos. AI will try to survive it.
-        </p>
-      </header>
-
-      {/* Input — full form when idle, collapsed case file when active */}
-      {!isActive ? (
-        <InputForm onSubmit={handleSubmit} />
-      ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-surface shadow-sm">
-          <div className="h-0.75 w-full bg-foreground" />
-          <div className="px-5 py-4">
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.15em] text-foreground">
-              Case File
-            </p>
-            <p className="mt-2 text-sm leading-relaxed text-foreground/80">
-              {submittedSituation}
-            </p>
-          </div>
+    <main className="mx-auto max-w-6xl px-4">
+      <section className="grid gap-7 pt-8 pb-9 lg:grid-cols-[6fr_5fr] lg:items-center lg:gap-12 lg:pt-14 lg:pb-16">
+        <div>
+          <p className="pixel mb-3.5 text-magenta">Lab experiment</p>
+          <h1 className="mb-5 font-display text-[clamp(3.25rem,9vw,6rem)] leading-[0.9] font-extrabold tracking-[-0.045em] text-balance">
+            Will AI survive your job?
+          </h1>
+          <p className="max-w-lg text-[1.1875rem] leading-snug lg:text-2xl">
+            Invite an AI to your workweek. It takes your job, your meetings and
+            your inbox, and you watch its calendar fall apart.
+          </p>
         </div>
-      )}
+        <HeroPreview />
+      </section>
 
-      {/* Results */}
+      <InputForm onSubmit={handleSubmit} isBusy={isBusy} />
+
       {isActive && (
-        <div ref={resultRef} className="mt-8 sm:mt-10">
-          <ResultCard state={state} onReset={handleReset} />
+        <div ref={resultRef} className="scroll-mt-18 pt-12 pb-16">
+          <ResultCard
+            state={state}
+            situation={submittedSituation}
+            onReset={handleReset}
+          />
         </div>
       )}
 
-      {/* Footer */}
-      <footer className="mt-8 pb-safe">
+      <div className="py-10">
         <SupportCta />
-      </footer>
+      </div>
     </main>
   )
 }

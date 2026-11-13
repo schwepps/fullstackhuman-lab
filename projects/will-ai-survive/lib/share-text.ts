@@ -1,4 +1,4 @@
-import { getSiteUrl } from './constants'
+import { getAppUrl } from './constants'
 
 type ShareParams = {
   resultId: string
@@ -9,7 +9,7 @@ type ShareParams = {
 }
 
 export function resultUrl(resultId: string): string {
-  return `${getSiteUrl()}/result/${resultId}`
+  return `${getAppUrl()}/result/${resultId}`
 }
 
 export function buildLinkedInPostText(params: ShareParams): string {

@@ -134,19 +134,20 @@ projects/will-ai-survive/
 
 ### Key Scripts (from projects/will-ai-survive/)
 
-| Script      | Description              |
-| ----------- | ------------------------ |
-| `dev`       | Start Next.js dev server |
-| `build`     | Build for production     |
-| `lint`      | Run ESLint               |
-| `typecheck` | TypeScript type checking |
-| `test`      | Run tests (watch)        |
-| `test:run`  | Run tests once           |
+| Script      | Description                                       |
+| ----------- | ------------------------------------------------- |
+| `dev`       | Start Next.js dev server                          |
+| `build`     | Build for production                              |
+| `lint`      | Run ESLint                                        |
+| `typecheck` | TypeScript type checking                          |
+| `test`      | Run tests (watch)                                 |
+| `test:run`  | Run tests once                                    |
+| `eval`      | Run the prompt eval (real API calls, costs money) |
 
 ### Coding Conventions
 
 - Same as turing-game: Prettier (no semis, single quotes, trailing commas)
-- **English-only**, no auth
+- **English UI**, no i18n, no auth. The AI writes its evaluation in the user's language (JSON keys and section tags stay English)
 - Redis keys prefixed `fsh:wais:` (lab namespace `fsh:`, project `wais:`)
 
 ---

@@ -43,6 +43,7 @@ export const EVAL_MAX_TOKENS = 16000
 export const SAFETY_GATE_MAX_TOKENS = 64
 export const EVAL_EFFORT = 'low' as const
 export const SAFETY_GATE_EFFORT = 'low' as const
+export const FALLBACK_BETA = 'server-side-fallback-2026-07-01'
 
 // ── Support / Donations ─────────────────────────────────────────
 
@@ -65,13 +66,33 @@ export function getSiteUrl(): string {
   }
   return `http://localhost:${process.env.PORT ?? '3000'}`
 }
+
+/** Site URL plus the app's base path, for links that leave the app (shares, OG images). */
+export function getAppUrl(): string {
+  const site = getSiteUrl().replace(/\/$/, '')
+  const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
+  return site.endsWith(basePath) ? site : `${site}${basePath}`
+}
+
 export const APP_NAME = 'Will AI Survive your job?'
 
 // ── Example Scenarios (for input form chips) ────────────────────
 
 export const EXAMPLE_SCENARIOS = [
-  'My manager schedules 2-hour standups where everyone reports what they had for breakfast before discussing any actual work.',
-  'We have a Slack channel called #urgent that has 200+ unread messages daily, none of which are actually urgent.',
-  'Our sprint retrospective about why we need fewer meetings is itself a 90-minute meeting.',
-  'Every PR requires approval from 6 people, 3 of whom are on permanent vacation.',
+  {
+    label: "Reply-all 'noted'",
+    text: "My manager replies-all to every email with just 'noted', then asks us to summarize the thread in a meeting.",
+  },
+  {
+    label: 'ER night shift',
+    text: 'ER nurse here. We are always short-staffed and the charting software logs us out every 4 minutes.',
+  },
+  {
+    label: 'Meeting about meetings',
+    text: 'Our sprint retrospective about why we need fewer meetings is itself a 90-minute meeting.',
+  },
+  {
+    label: 'Calm bakery',
+    text: 'I work in a small bakery. Early mornings, but I like it. The oven sometimes takes 10 extra minutes to heat.',
+  },
 ] as const

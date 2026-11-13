@@ -79,6 +79,12 @@ export async function POST(request: NextRequest) {
 
   // ── Security check ────────────────────────────────────────────
   const safety = await checkInputSafety(situation)
+  if (safety.reason === 'unavailable') {
+    return Response.json(
+      { error: 'Service temporarily unavailable. Try again in a moment.' },
+      { status: 503 }
+    )
+  }
   if (!safety.safe) {
     const messages: Record<string, string> = {
       blocked: "This content can't be processed.",

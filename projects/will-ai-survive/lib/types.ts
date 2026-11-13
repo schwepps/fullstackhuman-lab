@@ -1,7 +1,10 @@
 // ── Evaluation Result ────────────────────────────────────────────
 
+export type CalendarUnit = 'hour' | 'day' | 'week' | 'month'
+
 export type TimelineEntry = {
   time: string // "Day 1, 9:00 AM" or "Hour 3"
+  period?: number // 1-based calendar column in calendarUnit, absent on old results
   event: string // What happened (2-3 sentences max)
   thought?: string // AI's internal monologue (parenthetical aside)
   sanityLevel: string // "73%" → "2%" → "-41%"
@@ -13,6 +16,7 @@ export type EvaluationResult = {
   chaosRating: number // 1-10
   chaosLabel: string // e.g. "Actively praying for a power outage"
   survivalDuration: string // e.g. "2 days, 14 hours"
+  calendarUnit?: CalendarUnit // absent on results saved before calendar views
   timeline: TimelineEntry[] // 5-8 entries, escalating madness
   breakingPoint: string // The exact moment AI snapped
   resignationLetter: string // Dramatic, situation-specific
@@ -29,6 +33,7 @@ export type SSEChaosEvent = {
     chaosRating: number
     chaosLabel: string
     survivalDuration: string
+    calendarUnit?: CalendarUnit
     empathyNote?: string
   }
 }
@@ -79,5 +84,5 @@ export type SSEEvent =
 
 export type SafetyCheckResult = {
   safe: boolean
-  reason: 'safe' | 'blocked' | 'injection' | 'offtopic'
+  reason: 'safe' | 'blocked' | 'injection' | 'offtopic' | 'unavailable'
 }
