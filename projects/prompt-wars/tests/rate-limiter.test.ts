@@ -35,9 +35,11 @@ beforeEach(() => {
   mockPipeline.exec.mockResolvedValue([])
 })
 
+// exec resolves to [globalCount, expireResult, levelCount, expireResult],
+// with both counts taken after the increment.
 describe('checkAttemptAllowed', () => {
   it('allows attempt when under all limits', async () => {
-    mockPipeline.exec.mockResolvedValueOnce([0, 0]) // globalCount=0, levelCount=0
+    mockPipeline.exec.mockResolvedValueOnce([1, 1, 1, 1])
 
     const result = await checkAttemptAllowed('127.0.0.1', 1)
 
@@ -45,8 +47,16 @@ describe('checkAttemptAllowed', () => {
     expect(result.reason).toBeUndefined()
   })
 
-  it('rejects when global limit is reached', async () => {
-    mockPipeline.exec.mockResolvedValueOnce([30, 0]) // globalCount=30 (at limit)
+  it('allows the attempt that lands exactly on the limit', async () => {
+    mockPipeline.exec.mockResolvedValueOnce([30, 0, 10, 0])
+
+    const result = await checkAttemptAllowed('127.0.0.1', 3)
+
+    expect(result.allowed).toBe(true)
+  })
+
+  it('rejects when the global limit is passed', async () => {
+    mockPipeline.exec.mockResolvedValueOnce([31, 0, 1, 1])
 
     const result = await checkAttemptAllowed('127.0.0.1', 1)
 
@@ -55,8 +65,8 @@ describe('checkAttemptAllowed', () => {
     expect(result.retryAfterSeconds).toBeDefined()
   })
 
-  it('rejects when per-level limit is reached for basic levels', async () => {
-    mockPipeline.exec.mockResolvedValueOnce([0, 10]) // levelCount=10 (at limit)
+  it('rejects when the per-level limit is passed for basic levels', async () => {
+    mockPipeline.exec.mockResolvedValueOnce([11, 0, 11, 0])
 
     const result = await checkAttemptAllowed('127.0.0.1', 3)
 
@@ -65,8 +75,7 @@ describe('checkAttemptAllowed', () => {
   })
 
   it('uses stricter limit for advanced levels (6+)', async () => {
-    // 5 attempts blocks advanced levels but not basic ones
-    mockPipeline.exec.mockResolvedValueOnce([0, 5])
+    mockPipeline.exec.mockResolvedValueOnce([6, 0, 6, 0])
 
     const result = await checkAttemptAllowed('127.0.0.1', 6)
 
@@ -74,40 +83,32 @@ describe('checkAttemptAllowed', () => {
     expect(result.reason).toContain('FIREWALL COOLDOWN')
   })
 
-  it('allows 5 attempts on basic levels', async () => {
-    mockPipeline.exec.mockResolvedValueOnce([0, 5])
+  it('allows a 6th attempt on basic levels', async () => {
+    mockPipeline.exec.mockResolvedValueOnce([6, 0, 6, 0])
 
     const result = await checkAttemptAllowed('127.0.0.1', 3)
 
     expect(result.allowed).toBe(true)
   })
 
-  it('increments counters and sets TTL when allowed', async () => {
-    mockPipeline.exec.mockResolvedValueOnce([0, 0])
+  it('counts before checking, in a single round trip', async () => {
+    mockPipeline.exec.mockResolvedValueOnce([1, 1, 1, 1])
 
     await checkAttemptAllowed('127.0.0.1', 1)
 
-    // Second pipeline call should increment + expire
-    expect(mockRedis.pipeline).toHaveBeenCalledTimes(2)
-    expect(mockPipeline.incr).toHaveBeenCalledTimes(2) // global + level
-    expect(mockPipeline.expire).toHaveBeenCalledTimes(2)
-  })
-
-  it('does not increment counters when rejected', async () => {
-    mockPipeline.exec.mockResolvedValueOnce([30, 0]) // global limit hit
-
-    await checkAttemptAllowed('127.0.0.1', 1)
-
-    // Only one pipeline call (the read), no increment
     expect(mockRedis.pipeline).toHaveBeenCalledTimes(1)
+    expect(mockPipeline.incr).toHaveBeenCalledTimes(2) // global + level
   })
 
-  it('handles null counters as 0', async () => {
-    mockPipeline.exec.mockResolvedValueOnce([null, null])
+  it('starts the window once instead of extending it on every attempt', async () => {
+    mockPipeline.exec.mockResolvedValueOnce([2, 0, 2, 0])
 
-    const result = await checkAttemptAllowed('127.0.0.1', 1)
+    await checkAttemptAllowed('127.0.0.1', 1)
 
-    expect(result.allowed).toBe(true)
+    expect(mockPipeline.expire).toHaveBeenCalledTimes(2)
+    for (const call of mockPipeline.expire.mock.calls) {
+      expect(call[2]).toBe('NX')
+    }
   })
 })
 
@@ -241,21 +242,28 @@ describe('getTotalAttempts', () => {
   })
 })
 
+// exec resolves to [sessionCount, expireResult, ipCount, expireResult]
 describe('incrementAttemptCount', () => {
-  it('increments and returns count', async () => {
-    mockPipeline.exec.mockResolvedValueOnce([7])
+  it('returns the session count when it is the higher one', async () => {
+    mockPipeline.exec.mockResolvedValueOnce([7, 1, 2, 0])
 
-    const count = await incrementAttemptCount('session-123', 3)
+    const count = await incrementAttemptCount('session-123', 3, '127.0.0.1')
 
     expect(count).toBe(7)
-    expect(mockPipeline.incr).toHaveBeenCalled()
-    expect(mockPipeline.expire).toHaveBeenCalled()
+  })
+
+  it('returns the IP count for a fresh session id on a known IP', async () => {
+    mockPipeline.exec.mockResolvedValueOnce([1, 1, 5, 0])
+
+    const count = await incrementAttemptCount('new-session', 3, '127.0.0.1')
+
+    expect(count).toBe(5)
   })
 
   it('defaults to 1 when null', async () => {
-    mockPipeline.exec.mockResolvedValueOnce([null])
+    mockPipeline.exec.mockResolvedValueOnce([null, null, null, null])
 
-    const count = await incrementAttemptCount('session-123', 1)
+    const count = await incrementAttemptCount('session-123', 1, '127.0.0.1')
 
     expect(count).toBe(1)
   })

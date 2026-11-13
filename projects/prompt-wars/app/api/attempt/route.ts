@@ -164,7 +164,7 @@ export async function POST(request: NextRequest) {
         // Track attempt count server-side for accurate scoring
         let attemptsUsed = 1
         try {
-          attemptsUsed = await incrementAttemptCount(sessionId, levelId)
+          attemptsUsed = await incrementAttemptCount(sessionId, levelId, ip)
         } catch {
           // Non-critical — fall back to 1
         }
