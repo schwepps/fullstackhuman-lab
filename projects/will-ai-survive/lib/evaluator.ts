@@ -172,7 +172,6 @@ export function createEvaluationStream(
         oneLineSummary,
         realTalkInsight,
         createdAt: Date.now(),
-        upvotes: 0,
       }
       await saveResult(result)
       await incrementStats()
@@ -186,12 +185,20 @@ export function createEvaluationStream(
     safeClose(controller)
   }
 
+  let modelStream: ReturnType<typeof anthropic.messages.stream> | null = null
+
   return new ReadableStream<SSEEvent>({
+    // The reader went away: stop paying for output nobody will see
+    cancel() {
+      closed = true
+      modelStream?.abort()
+    },
     async start(controller) {
       try {
         const stream = anthropic.messages.stream(
           buildEvaluationParams(situation)
         )
+        modelStream = stream
         stream.on('text', (text) => {
           accumulated += text
           extractSections(controller)

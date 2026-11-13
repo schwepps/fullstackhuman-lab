@@ -74,7 +74,6 @@ app/
   support/page.tsx                # Ko-fi donation page
   api/
     swing/route.ts                # POST: SSE stream (validate → generate → judge → analyze)
-    leaderboard/route.ts          # GET: leaderboard rankings
     og/route.tsx                  # GET: dynamic OG image (prompt-centric)
   globals.css                     # Country club theme (greens, cream, gold, serif)
 components/

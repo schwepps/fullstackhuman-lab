@@ -155,6 +155,17 @@ export function useEvaluation() {
             }
           }
         }
+
+        // The stream ended without a final event (timeout, dropped connection)
+        setState((prev) =>
+          prev.status === 'streaming'
+            ? {
+                ...prev,
+                status: 'error',
+                error: 'Connection lost. Please try again.',
+              }
+            : prev
+        )
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') {
           // Request was cancelled — no error state needed

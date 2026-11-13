@@ -129,9 +129,9 @@ export async function POST(request: NextRequest) {
   // ── Get attempt number ──────────────────────────────────────────
   let attemptNumber = 1
   if (!isPractice && !isMulligan) {
-    attemptNumber = await incrementAttemptCount(sessionId, challengeId)
+    attemptNumber = await incrementAttemptCount(sessionId, challengeId, ip)
   } else if (!isPractice && isMulligan) {
-    attemptNumber = await getAttemptCount(sessionId, challengeId)
+    attemptNumber = await getAttemptCount(sessionId, challengeId, ip)
     if (attemptNumber < 1) attemptNumber = 1
   }
 

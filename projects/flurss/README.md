@@ -15,7 +15,7 @@ Real French news headlines rewritten as Soviet-style propaganda. Modern news sit
 | Framework | Next.js 16      |
 | Language  | TypeScript      |
 | Styling   | Tailwind CSS v4 |
-| OG Images | @vercel/og      |
+| OG Images | next/og         |
 
 ## Getting Started
 

@@ -72,6 +72,24 @@ export async function handleConnect(
         })
       )
 
+      state.playerIps.set(
+        requestedPlayerId,
+        ctx.request.headers.get('cf-connecting-ip') ?? 'unknown'
+      )
+
+      // A lone host who refreshed left the lobby with no host
+      if (state.currentPhase === 'lobby' && !state.hostId) {
+        state.hostId = requestedPlayerId
+        conn.send(
+          JSON.stringify({
+            type: 'phase_change',
+            phase: 'lobby',
+            yourPlayerId: requestedPlayerId,
+            isHost: true,
+          })
+        )
+      }
+
       sendPositionUpdates(conn, state)
 
       partyRoom.broadcast(
@@ -119,7 +137,10 @@ export async function handleConnect(
 
   const newSessionToken = crypto.randomUUID()
   state.connToPlayer.set(conn.id, conn.id)
-  state.sessionTokens.set(conn.id, newSessionToken)
+  state.playerIps.set(
+    conn.id,
+    ctx.request.headers.get('cf-connecting-ip') ?? 'unknown'
+  )
   state.zones.set(conn.id, 'main')
   state.positions.set(conn.id, { ...DEFAULT_SPAWN_POSITION })
 

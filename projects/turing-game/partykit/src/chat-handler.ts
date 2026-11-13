@@ -16,15 +16,6 @@ import { appendToChatHistory } from './chat-persistence'
 import type { GameState } from './game-state'
 import { updateEmotionOnMessage } from './agent-emotions'
 
-/** Encode HTML special chars for defense-in-depth XSS prevention */
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
 export async function handleChat(
   partyRoom: Party.Room,
   roomId: string,
@@ -52,11 +43,11 @@ export async function handleChat(
   const chatMsg: ChatMessage = {
     id: crypto.randomUUID(),
     playerId,
-    displayName: escapeHtml(
+    displayName:
       state.displayNames.get(playerId) ??
-        playerId.slice(0, FALLBACK_NAME_LENGTH)
-    ),
-    content: escapeHtml(trimmed),
+      playerId.slice(0, FALLBACK_NAME_LENGTH),
+    // Plain text: React escapes on render, and escaping here too would mark human messages
+    content: trimmed,
     zone: senderZone,
     timestamp: Date.now(),
   }

@@ -7,6 +7,7 @@ export const REDIS_KEYS = {
   rateLimitEval: (ip: string) => `${REDIS_PREFIX}:ratelimit:eval:${ip}`,
   rateLimitEvalDay: (ip: string) => `${REDIS_PREFIX}:ratelimit:eval-day:${ip}`,
   rateLimitGlobal: `${REDIS_PREFIX}:ratelimit:global`,
+  budgetDaily: (date: string) => `${REDIS_PREFIX}:budget:daily:${date}`,
   securityBlocked: `${REDIS_PREFIX}:security:blocked`,
   statsTotal: `${REDIS_PREFIX}:stats:total`,
 } as const
@@ -18,6 +19,8 @@ const isDev = process.env.NODE_ENV === 'development'
 export const RATE_LIMIT_EVAL_PER_HOUR = isDev ? 100 : 5
 export const RATE_LIMIT_EVAL_PER_DAY = isDev ? 500 : 15
 export const RATE_LIMIT_GLOBAL_PER_MINUTE = isDev ? 100 : 30
+// Hard stop on API spend: per-IP limits do not hold against rotating addresses
+export const DAILY_EVAL_BUDGET = isDev ? 10_000 : 1_000
 
 // ── TTLs (seconds) ─────────────────────────────────────────────
 
@@ -25,6 +28,7 @@ export const TTL_RESULT = 60 * 60 * 24 * 30 // 30 days
 export const TTL_RATE_LIMIT_HOUR = 60 * 60 // 1 hour
 export const TTL_RATE_LIMIT_DAY = 60 * 60 * 24 // 24 hours
 export const TTL_RATE_LIMIT_MINUTE = 60 // 1 minute
+export const TTL_BUDGET_DAY = 60 * 60 * 48 // 48 hours
 
 // ── Input Constraints ───────────────────────────────────────────
 

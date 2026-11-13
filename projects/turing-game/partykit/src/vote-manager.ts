@@ -19,6 +19,8 @@ export async function handleVote(
   roomId: string,
   state: GameState
 ) {
+  if (state.isVoteResolved) return
+
   const { roomStore } = await import('../../lib/game/room-store')
 
   // Record human vote
@@ -26,6 +28,10 @@ export async function handleVote(
     await roomStore.update(roomId, (r) => {
       const voter = r.players.get(voterId)
       if (!voter || voter.isEliminated) return r
+      const target = r.players.get(targetId)
+      if (!target || target.isEliminated || target.type === 'spectator') {
+        return r
+      }
       r.votes.set(voterId, targetId)
       return r
     })
@@ -54,7 +60,9 @@ export async function handleVote(
     (p) => isAgentType(p.type) && !freshRoom.votes.has(p.id)
   )
 
-  if (agents.length > 0) {
+  // Once per vote phase: each vote message would otherwise re-ask every agent
+  if (agents.length > 0 && !state.hasRequestedAgentVotes) {
+    state.hasRequestedAgentVotes = true
     try {
       const { generateAgentVote } = await import('./agent-manager')
       for (const agent of agents) {
@@ -86,6 +94,10 @@ export async function handleVote(
   // If not all voted and this isn't a timeout, wait for more
   if (!allVoted && voterId != null) return
 
+  // A concurrent call (another vote, or the timeout) may have tallied already
+  if (state.isVoteResolved) return
+  state.isVoteResolved = true
+
   // Tally votes
   const voteCounts = new Map<string, number>()
   for (const [, target] of updatedRoom.votes) {
@@ -112,7 +124,10 @@ export async function handleVote(
 
   const eliminatedId = mostVoted[0]
   const eliminatedPlayer = updatedRoom.players.get(eliminatedId)
-  if (!eliminatedPlayer) return
+  if (!eliminatedPlayer) {
+    await advanceRound(updatedRoom, roomId, partyRoom, state)
+    return
+  }
 
   // Eliminate
   await roomStore.update(roomId, (r) => {

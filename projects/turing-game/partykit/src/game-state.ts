@@ -28,11 +28,7 @@ export type AgentMovementState = {
   zoneDwellUntil: number
   // Per-agent tick offset — stagger so agents don't all move at once
   tickPhase: number
-  // Natural movement: track journey origin for sigmoid velocity
-  journeyStart: Position | null
   journeyDist: number
-  // Curved path: perpendicular offset direction (+1 or -1)
-  curveSign: number
   // Axis-aligned movement: 'x' = horizontal first, 'y' = vertical first
   axisFirst: 'x' | 'y'
 }
@@ -47,7 +43,6 @@ export type GameState = {
   assignedColors: Set<number>
   playerColors: Map<string, number>
   displayNames: Map<string, string>
-  sessionTokens: Map<string, string>
   chatTimestamps: Map<string, number[]>
   // Agent autonomous behavior
   agentMovement: Map<string, AgentMovementState>
@@ -62,6 +57,13 @@ export type GameState = {
   spectators: Set<string>
   // Players eliminated during voting — blocked from chat/vote/move
   eliminatedPlayers: Set<string>
+  // Vote phase guards — reset when a vote phase opens
+  isVoteResolved: boolean
+  hasRequestedAgentVotes: boolean
+  // Set while the host's start request is in flight
+  isStarting: boolean
+  // Client IP per player, for the room creation limit
+  playerIps: Map<string, string>
   // Agent collective memory — tracks what each bot has said (content + zone)
   agentMessageLog: Map<string, AgentLogEntry[]>
   // Agent emotional state — evolves based on game events and time

@@ -116,6 +116,7 @@ export const TOTAL_LEVELS = 7
 
 export const TTL_RESULT_SECONDS = 30 * 24 * 60 * 60 // 30 days
 export const TTL_WIN_SECONDS = 90 * 24 * 60 * 60 // 90 days
+export const TTL_IP_ATTEMPTS_SECONDS = 24 * 60 * 60 // 24 hours
 
 // ---------------------------------------------------------------------------
 // Support / Donations

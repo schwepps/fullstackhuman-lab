@@ -3,7 +3,6 @@ import { roomStore } from './room-store'
 import {
   MAX_CONCURRENT_ROOMS,
   MAX_ROOMS_PER_IP_PER_HOUR,
-  MAX_MESSAGES_PER_MINUTE,
   AGENT_RESPONSE_COOLDOWN_MS,
 } from './constants'
 
@@ -30,16 +29,6 @@ export async function checkRoomCreationAllowed(
   }
 
   return { allowed: true }
-}
-
-export async function checkMessageRateAllowed(
-  playerId: string
-): Promise<boolean> {
-  const redis = getRedisClient()
-  const key = `game:ratelimit:msg:${playerId}`
-  const count = await redis.incr(key)
-  if (count === 1) await redis.expire(key, 60)
-  return count <= MAX_MESSAGES_PER_MINUTE
 }
 
 export async function checkAgentCooldown(

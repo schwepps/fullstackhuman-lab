@@ -53,11 +53,9 @@ export function movementTick(
     if (mvState.targetZone && now >= mvState.zoneDwellUntil) {
       mvState.targetZone = null
       mvState.waypoint = randomMainPosition()
-      mvState.journeyStart = { x: currentPos.x, y: currentPos.y }
       const jdx = mvState.waypoint.x - currentPos.x
       const jdy = mvState.waypoint.y - currentPos.y
       mvState.journeyDist = Math.abs(jdx) + Math.abs(jdy)
-      mvState.curveSign = Math.random() < 0.5 ? 1 : -1
       mvState.axisFirst = Math.random() < 0.5 ? 'x' : 'y'
     }
 
@@ -66,12 +64,9 @@ export function movementTick(
       const wp = mvState.waypoint as Position | null
       if (!wp) continue
 
-      // Record journey origin for sigmoid velocity calculation
-      mvState.journeyStart = { x: currentPos.x, y: currentPos.y }
       const jdx = wp.x - currentPos.x
       const jdy = wp.y - currentPos.y
       mvState.journeyDist = Math.abs(jdx) + Math.abs(jdy)
-      mvState.curveSign = Math.random() < 0.5 ? 1 : -1
       mvState.axisFirst = Math.random() < 0.5 ? 'x' : 'y'
     }
 
@@ -162,7 +157,6 @@ function calculateMovement(
 
   if (dist < AGENT_WAYPOINT_ARRIVAL_PX) {
     mvState.waypoint = null
-    mvState.journeyStart = null
     mvState.waypointReachedAt = now
     mvState.nextIdleUntil =
       now + AGENT_IDLE_BASE_MS + Math.random() * AGENT_IDLE_JITTER_MS

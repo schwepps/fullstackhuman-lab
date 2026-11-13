@@ -19,7 +19,6 @@ export type EvaluationResult = {
   oneLineSummary: string // For OG description / share text
   realTalkInsight: string // Genuine actionable insight
   createdAt: number
-  upvotes: number
 }
 
 // ── SSE Event Types (server → client) ───────────────────────────

@@ -19,7 +19,7 @@ export function applyMove(
   position: Position,
   state: GameState,
   partyRoom: Party.Room,
-  options?: { skipBroadcastToSender?: boolean }
+  options?: { excludeConnId?: string }
 ): ZoneType | null {
   if (
     typeof position?.x !== 'number' ||
@@ -76,7 +76,7 @@ export function applyMove(
   }
 
   // Broadcast position — exclude sender for human moves (they have local prediction)
-  const exclude = options?.skipBroadcastToSender ? [playerId] : []
+  const exclude = options?.excludeConnId ? [options.excludeConnId] : []
   partyRoom.broadcast(
     JSON.stringify({
       type: 'position_update',

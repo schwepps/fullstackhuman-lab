@@ -1,4 +1,4 @@
-import { ImageResponse } from '@vercel/og'
+import { ImageResponse } from 'next/og'
 import { NextRequest } from 'next/server'
 import { getResult } from '@/lib/result-store'
 import { RESULT_ID_PATTERN } from '@/lib/validation'

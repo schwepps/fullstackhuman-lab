@@ -34,7 +34,6 @@ const mockResult: EvaluationResult = {
   realTalkInsight:
     'Try async standups via Slack — most updates are read, not discussed.',
   createdAt: Date.now(),
-  upvotes: 0,
 }
 
 describe('saveResult', () => {

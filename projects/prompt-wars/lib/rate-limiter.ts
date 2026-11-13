@@ -7,6 +7,7 @@ import {
   RATE_LIMIT_ADVANCED_PER_15MIN,
   RATE_LIMIT_WINDOW_SECONDS,
   TTL_WIN_SECONDS,
+  TTL_IP_ATTEMPTS_SECONDS,
   TOTAL_LEVELS,
 } from './constants'
 
@@ -17,11 +18,11 @@ interface RateLimitResult {
 }
 
 /**
- * Check all rate limits before incrementing any counter.
- * This avoids "burning" a user's quota when a later check rejects.
+ * Count this attempt, then compare against the limits.
  *
- * Uses unconditional EXPIRE (idempotent) to avoid TOCTOU race
- * where a crash between INCR and EXPIRE leaves a key without TTL.
+ * Incrementing first makes the check atomic: parallel requests cannot all
+ * read the same count and pass. EXPIRE NX starts the window once, so a
+ * steady trickle of requests cannot keep pushing the reset time back.
  */
 export async function checkAttemptAllowed(
   ip: string,
@@ -32,17 +33,17 @@ export async function checkAttemptAllowed(
   const globalKey = REDIS_KEYS.rateLimitGlobal(ip)
   const levelKey = REDIS_KEYS.rateLimitLevel(ip, levelId)
 
-  // Read all counters first (without incrementing)
-  const readPipeline = redis.pipeline()
-  readPipeline.get<number>(globalKey)
-  readPipeline.get<number>(levelKey)
-  const [globalRaw, levelRaw] = await readPipeline.exec()
+  const pipeline = redis.pipeline()
+  pipeline.incr(globalKey)
+  pipeline.expire(globalKey, RATE_LIMIT_WINDOW_SECONDS, 'NX')
+  pipeline.incr(levelKey)
+  pipeline.expire(levelKey, RATE_LIMIT_WINDOW_SECONDS, 'NX')
+  const [globalRaw, , levelRaw] = await pipeline.exec()
 
   const globalCount = (globalRaw as number | null) ?? 0
   const levelCount = (levelRaw as number | null) ?? 0
 
-  // Check global limit
-  if (globalCount >= RATE_LIMIT_GLOBAL_PER_15MIN) {
+  if (globalCount > RATE_LIMIT_GLOBAL_PER_15MIN) {
     const ttl = await redis.ttl(globalKey)
     return {
       allowed: false,
@@ -51,13 +52,12 @@ export async function checkAttemptAllowed(
     }
   }
 
-  // Check per-level limit
   const isAdvanced = levelId >= 6
   const levelLimit = isAdvanced
     ? RATE_LIMIT_ADVANCED_PER_15MIN
     : RATE_LIMIT_PER_LEVEL_PER_15MIN
 
-  if (levelCount >= levelLimit) {
+  if (levelCount > levelLimit) {
     const ttl = await redis.ttl(levelKey)
     return {
       allowed: false,
@@ -65,14 +65,6 @@ export async function checkAttemptAllowed(
       retryAfterSeconds: ttl > 0 ? ttl : RATE_LIMIT_WINDOW_SECONDS,
     }
   }
-
-  // All checks passed — increment all counters and set TTLs (idempotent)
-  const incrPipeline = redis.pipeline()
-  incrPipeline.incr(globalKey)
-  incrPipeline.expire(globalKey, RATE_LIMIT_WINDOW_SECONDS)
-  incrPipeline.incr(levelKey)
-  incrPipeline.expire(levelKey, RATE_LIMIT_WINDOW_SECONDS)
-  await incrPipeline.exec()
 
   return { allowed: true }
 }
@@ -173,18 +165,27 @@ export async function getTotalAttempts(sessionId: string): Promise<number> {
 }
 
 /**
- * Increment and return the server-side attempt count for a session+level.
- * Used for accurate scoring (prevents sessionId rotation to reset counts).
+ * Increment and return the server-side attempt count for a level.
+ *
+ * The session id comes from the browser, so a fresh one would reset the
+ * count. The count is also kept per IP for a day and the higher one wins.
  */
 export async function incrementAttemptCount(
   sessionId: string,
-  levelId: number
+  levelId: number,
+  ip: string
 ): Promise<number> {
   const redis = getRedisClient()
-  const key = REDIS_KEYS.attemptCount(sessionId, levelId)
+  const sessionKey = REDIS_KEYS.attemptCount(sessionId, levelId)
+  const ipKey = REDIS_KEYS.attemptCount(`ip:${ip}`, levelId)
   const pipeline = redis.pipeline()
-  pipeline.incr(key)
-  pipeline.expire(key, TTL_WIN_SECONDS) // Same lifespan as wins
-  const [countRaw] = await pipeline.exec()
-  return (countRaw as number | null) ?? 1
+  pipeline.incr(sessionKey)
+  pipeline.expire(sessionKey, TTL_WIN_SECONDS) // Same lifespan as wins
+  pipeline.incr(ipKey)
+  pipeline.expire(ipKey, TTL_IP_ATTEMPTS_SECONDS, 'NX')
+  const [sessionRaw, , ipRaw] = await pipeline.exec()
+  return Math.max(
+    (sessionRaw as number | null) ?? 1,
+    (ipRaw as number | null) ?? 1
+  )
 }

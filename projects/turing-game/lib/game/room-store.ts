@@ -103,11 +103,6 @@ export const roomStore = {
     return updated
   },
 
-  async delete(id: string): Promise<void> {
-    const redis = getRedisClient()
-    await redis.del(`game:room:${id}`)
-  },
-
   async getConcurrentCount(): Promise<number> {
     const redis = getRedisClient()
     // Use SCAN to count actual room keys — immune to TTL drift
