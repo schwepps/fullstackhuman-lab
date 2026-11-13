@@ -11,7 +11,7 @@ Users describe their workplace chaos. AI evaluates whether it could survive — 
 | Styling   | Tailwind CSS v4                |
 | AI        | Claude API (@anthropic-ai/sdk) |
 | Cache     | Upstash Redis                  |
-| OG Images | @vercel/og                     |
+| OG Images | next/og                        |
 | Testing   | Vitest                         |
 
 ## Setup
