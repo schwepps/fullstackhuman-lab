@@ -63,6 +63,7 @@ export async function handleReady(
 
   // Only host can start
   if (playerId !== state.hostId) return
+  if (state.isStarting) return
 
   // ── Lobby validation ──────────────────────────────────────────────────────
   const activeCount = new Set(state.connToPlayer.values()).size
@@ -74,6 +75,35 @@ export async function handleReady(
         type: 'lobby_error',
         message:
           'Need at least 2 players to play as human. Try custom-agent for solo testing.',
+      })
+    )
+    return
+  }
+
+  // Set before the first await below, so a second "ready" cannot start twice
+  state.isStarting = true
+
+  // A started room is what costs API money, so the creation limit applies here
+  try {
+    const { checkRoomCreationAllowed } =
+      await import('../../lib/game/rate-limiter')
+    const limit = await checkRoomCreationAllowed(
+      state.playerIps.get(playerId) ?? 'unknown'
+    )
+    if (!limit.allowed) {
+      state.isStarting = false
+      partyRoom.broadcast(
+        JSON.stringify({ type: 'lobby_error', message: limit.reason })
+      )
+      return
+    }
+  } catch (e) {
+    console.error('[handleReady] Room limit check failed:', e)
+    state.isStarting = false
+    partyRoom.broadcast(
+      JSON.stringify({
+        type: 'lobby_error',
+        message: 'Could not start the game. Try again in a moment.',
       })
     )
     return
@@ -142,19 +172,22 @@ export async function handleReady(
     )
   }
 
-  // Persist spawned agents to Redis (non-critical)
-  if (spawnedAgents.length > 0) {
-    try {
-      const { roomStore } = await import('../../lib/game/room-store')
-      await roomStore.update(roomId, (r) => {
-        for (const agent of spawnedAgents) {
-          r.players.set(agent.id, agent)
-        }
-        return r
-      })
-    } catch (e) {
-      console.error('[handleReady] Redis agent persist failed:', e)
-    }
+  // Persist spawned agents to Redis (non-critical), and drop players who left
+  // the lobby: they would count as voters who never vote
+  const connectedIds = new Set(state.connToPlayer.values())
+  try {
+    const { roomStore } = await import('../../lib/game/room-store')
+    await roomStore.update(roomId, (r) => {
+      for (const id of r.players.keys()) {
+        if (!connectedIds.has(id)) r.players.delete(id)
+      }
+      for (const agent of spawnedAgents) {
+        r.players.set(agent.id, agent)
+      }
+      return r
+    })
+  } catch (e) {
+    console.error('[handleReady] Redis agent persist failed:', e)
   }
 
   await startRound(partyRoom, roomId, 1, state)
@@ -259,6 +292,8 @@ export async function endRound(
   stopAgentLoop(state)
 
   state.currentPhase = 'vote'
+  state.isVoteResolved = false
+  state.hasRequestedAgentVotes = false
 
   try {
     const { roomStore } = await import('../../lib/game/room-store')

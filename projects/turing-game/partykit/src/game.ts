@@ -51,7 +51,6 @@ export default class GameRoom implements Party.Server {
     assignedColors: new Set(),
     playerColors: new Map(),
     displayNames: new Map(),
-    sessionTokens: new Map(),
     chatTimestamps: new Map(),
     agentMovement: new Map(),
     agentChatCooldowns: new Map(),
@@ -61,6 +60,10 @@ export default class GameRoom implements Party.Server {
     alarmFallbackTimer: null,
     spectators: new Set(),
     eliminatedPlayers: new Set(),
+    isVoteResolved: false,
+    hasRequestedAgentVotes: false,
+    isStarting: false,
+    playerIps: new Map(),
     agentMessageLog: new Map(),
     agentEmotions: new Map(),
     apiCallTimestamps: [],
@@ -109,7 +112,7 @@ export default class GameRoom implements Party.Server {
         if (typeof pos?.x !== 'number' || typeof pos?.y !== 'number') return
         if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y)) return
         applyMove(playerId, pos as Position, this.state, this.room, {
-          skipBroadcastToSender: true,
+          excludeConnId: sender.id,
         })
         break
       }
@@ -163,7 +166,10 @@ export default class GameRoom implements Party.Server {
     if (this.state.currentPhase === 'lobby') {
       this.state.positions.delete(playerId)
       this.state.zones.delete(playerId)
+      this.state.playerIps.delete(playerId)
       this.room.broadcast(JSON.stringify({ type: 'player_left', playerId }))
+
+      if (playerId === this.state.hostId) this.promoteNextHost()
     } else {
       // Fire-and-forget — don't block onClose with Redis calls
       const roomId = this.getRoomId()
@@ -179,6 +185,20 @@ export default class GameRoom implements Party.Server {
           console.error('[onClose] Redis disconnect update failed:', e)
         )
     }
+  }
+
+  private promoteNextHost() {
+    const next = this.state.connToPlayer.entries().next().value
+    this.state.hostId = next ? next[1] : null
+    if (!next) return
+    this.room.getConnection(next[0])?.send(
+      JSON.stringify({
+        type: 'phase_change',
+        phase: 'lobby',
+        yourPlayerId: next[1],
+        isHost: true,
+      })
+    )
   }
 
   async onAlarm() {

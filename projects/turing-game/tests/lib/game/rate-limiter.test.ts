@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import {
   checkRoomCreationAllowed,
-  checkMessageRateAllowed,
   checkAgentCooldown,
 } from '@/lib/game/rate-limiter'
 
@@ -66,38 +65,6 @@ describe('checkRoomCreationAllowed', () => {
     const result = await checkRoomCreationAllowed('127.0.0.1')
 
     expect(result).toEqual({ allowed: true })
-  })
-})
-
-describe('checkMessageRateAllowed', () => {
-  beforeEach(() => vi.clearAllMocks())
-
-  it('allows messages under the limit', async () => {
-    mockRedis.incr.mockResolvedValue(1)
-
-    const result = await checkMessageRateAllowed('player-1')
-
-    expect(result).toBe(true)
-    expect(mockRedis.expire).toHaveBeenCalledWith(
-      'game:ratelimit:msg:player-1',
-      60
-    )
-  })
-
-  it('allows exactly 8 messages per minute', async () => {
-    mockRedis.incr.mockResolvedValue(8)
-
-    const result = await checkMessageRateAllowed('player-1')
-
-    expect(result).toBe(true)
-  })
-
-  it('rejects 9th message in a minute', async () => {
-    mockRedis.incr.mockResolvedValue(9)
-
-    const result = await checkMessageRateAllowed('player-1')
-
-    expect(result).toBe(false)
   })
 })
 

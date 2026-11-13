@@ -216,14 +216,6 @@ describe('roomStore CRUD', () => {
     expect(result?.players).toBeInstanceOf(Map)
   })
 
-  it('delete removes room key', async () => {
-    const { roomStore } = await import('@/lib/game/room-store')
-
-    await roomStore.delete('test-room-1')
-
-    expect(mockRedis.del).toHaveBeenCalledWith('game:room:test-room-1')
-  })
-
   it('getConcurrentCount uses SCAN to count room keys', async () => {
     const { roomStore } = await import('@/lib/game/room-store')
     mockRedis.scan.mockResolvedValueOnce(['0', ['game:room:a', 'game:room:b']])

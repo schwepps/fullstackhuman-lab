@@ -62,9 +62,7 @@ export function startAgentLoop(
       zoneDwellUntil: 0,
       // Distribute agents evenly across tick phases
       tickPhase: agentCount > 1 ? agentIndex++ : 0,
-      journeyStart: null,
       journeyDist: 0,
-      curveSign: Math.random() < 0.5 ? 1 : -1,
       axisFirst: Math.random() < 0.5 ? 'x' : 'y',
     })
   }
