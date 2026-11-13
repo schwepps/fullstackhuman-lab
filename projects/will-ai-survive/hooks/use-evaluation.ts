@@ -7,13 +7,12 @@ import type { SSEChaosEvent, SSEEvent, TimelineEntry } from '@/lib/types'
 // ── Loading messages (rotate during pre-eval phase) ─────────────
 
 const LOADING_MESSAGES = [
-  'AI is reviewing the job listing...',
-  'AI is updating its resume...',
-  'AI is already regretting this...',
-  "AI is googling 'can robots cry'...",
-  'AI is calculating its notice period...',
-  'AI is checking its life insurance policy...',
-  'AI is writing a goodbye letter to its GPU...',
+  'Booking the AI',
+  'Accepting 14 meeting invites',
+  'Reading your inbox',
+  'Updating its resume',
+  "Googling 'can robots cry'",
+  'Calculating its notice period',
 ] as const
 
 // ── State types ─────────────────────────────────────────────────

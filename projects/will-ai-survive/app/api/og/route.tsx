@@ -6,9 +6,9 @@ import { RESULT_ID_PATTERN } from '@/lib/validation'
 export const runtime = 'edge'
 
 function ratingColor(rating: number): string {
-  if (rating <= 3) return '#16a34a'
-  if (rating <= 6) return '#d97706'
-  return '#dc2626'
+  if (rating <= 3) return '#5fd4a3'
+  if (rating <= 6) return '#f2c14e'
+  return '#e0457b'
 }
 
 export async function GET(request: NextRequest) {
@@ -35,8 +35,8 @@ export async function GET(request: NextRequest) {
         display: 'flex',
         flexDirection: 'column',
         padding: '48px 56px',
-        backgroundColor: '#1c1917',
-        color: '#fafaf9',
+        backgroundColor: '#141a3a',
+        color: '#f5f7fb',
         fontFamily: 'monospace',
       }}
     >
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
           fontSize: 13,
           fontWeight: 700,
           letterSpacing: '0.15em',
-          color: '#78716c',
+          color: '#7fe0f0',
           marginBottom: 24,
           display: 'flex',
         }}
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
             fontSize: 13,
             fontWeight: 700,
             letterSpacing: '0.1em',
-            color: '#a8a29e',
+            color: '#a9b4d0',
           }}
         >
           CHAOS
@@ -96,7 +96,7 @@ export async function GET(request: NextRequest) {
           style={{
             flex: 1,
             height: 24,
-            backgroundColor: '#292524',
+            backgroundColor: '#252d5c',
             borderRadius: 12,
             overflow: 'hidden',
             display: 'flex',
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
               width: `${barWidth}%`,
               height: '100%',
               background:
-                'linear-gradient(to right, #16a34a, #d97706, #dc2626)',
+                'linear-gradient(to right, #5fd4a3, #f2c14e, #e0457b)',
               borderRadius: 12,
             }}
           />
@@ -130,7 +130,7 @@ export async function GET(request: NextRequest) {
         style={{
           fontSize: 22,
           fontStyle: 'italic',
-          color: '#d6d3d1',
+          color: '#dbe2f2',
           marginBottom: 'auto',
           display: 'flex',
           lineHeight: 1.4,
@@ -145,7 +145,7 @@ export async function GET(request: NextRequest) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          borderTop: '1px solid #292524',
+          borderTop: '1px solid #252d5c',
           paddingTop: 20,
         }}
       >
@@ -154,12 +154,12 @@ export async function GET(request: NextRequest) {
             fontSize: 16,
             fontWeight: 700,
             letterSpacing: '0.08em',
-            color: '#a8a29e',
+            color: '#a9b4d0',
           }}
         >
           FullStackHuman
         </span>
-        <span style={{ fontSize: 14, color: '#78716c' }}>
+        <span style={{ fontSize: 14, color: '#7fe0f0' }}>
           How long would AI survive YOUR job?
         </span>
       </div>

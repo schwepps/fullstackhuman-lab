@@ -79,8 +79,20 @@ export const APP_NAME = 'Will AI Survive your job?'
 // ── Example Scenarios (for input form chips) ────────────────────
 
 export const EXAMPLE_SCENARIOS = [
-  'My manager schedules 2-hour standups where everyone reports what they had for breakfast before discussing any actual work.',
-  'We have a Slack channel called #urgent that has 200+ unread messages daily, none of which are actually urgent.',
-  'Our sprint retrospective about why we need fewer meetings is itself a 90-minute meeting.',
-  'Every PR requires approval from 6 people, 3 of whom are on permanent vacation.',
+  {
+    label: "Reply-all 'noted'",
+    text: "My manager replies-all to every email with just 'noted', then asks us to summarize the thread in a meeting.",
+  },
+  {
+    label: 'ER night shift',
+    text: 'ER nurse here. We are always short-staffed and the charting software logs us out every 4 minutes.',
+  },
+  {
+    label: 'Meeting about meetings',
+    text: 'Our sprint retrospective about why we need fewer meetings is itself a 90-minute meeting.',
+  },
+  {
+    label: 'Calm bakery',
+    text: 'I work in a small bakery. Early mornings, but I like it. The oven sometimes takes 10 extra minutes to heat.',
+  },
 ] as const
