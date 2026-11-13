@@ -5,7 +5,6 @@ import {
   buildLinkedInShareUrl,
   buildXShareUrl,
   buildWhatsAppShareUrl,
-  buildNativeShareData,
   resultUrl,
 } from '@/lib/share-text'
 
@@ -96,21 +95,5 @@ describe('share URLs', () => {
     expect(url).toContain('wa.me')
     expect(url).toContain(encodeURIComponent('2 days, 14 hours'))
     expect(url).toContain(encodeURIComponent('/result/abc123def456'))
-  })
-})
-
-describe('buildNativeShareData', () => {
-  it('returns valid ShareData shape', () => {
-    const data = buildNativeShareData(params)
-    expect(data).toHaveProperty('title')
-    expect(data).toHaveProperty('text')
-    expect(data).toHaveProperty('url')
-    expect(data.url).toContain('/result/abc123def456')
-  })
-
-  it('includes chaos info in text', () => {
-    const data = buildNativeShareData(params)
-    expect(data.text).toContain('8/10')
-    expect(data.text).toContain('2 days, 14 hours')
   })
 })

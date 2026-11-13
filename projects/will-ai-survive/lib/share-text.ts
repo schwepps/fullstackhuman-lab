@@ -1,4 +1,4 @@
-import { getSiteUrl, APP_NAME } from './constants'
+import { getSiteUrl } from './constants'
 
 type ShareParams = {
   resultId: string
@@ -57,12 +57,4 @@ export function buildWhatsAppShareUrl(params: ShareParams): string {
     resultUrl(params.resultId),
   ].join('\n')
   return `https://wa.me/?text=${encodeURIComponent(text)}`
-}
-
-export function buildNativeShareData(params: ShareParams): ShareData {
-  return {
-    title: APP_NAME,
-    text: `AI tried my job and lasted ${params.survivalDuration}. Chaos: ${params.chaosRating}/10 — "${params.chaosLabel}"`,
-    url: resultUrl(params.resultId),
-  }
 }

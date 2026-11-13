@@ -89,8 +89,28 @@ describe('checkEvalRateAllowed', () => {
 
     // 2 pipeline execs: read + increment
     expect(mockPipelineExec).toHaveBeenCalledTimes(2)
-    // Increment pipeline: 3 incr + 3 expire = 6 calls
-    expect(mockPipelineIncr).toHaveBeenCalledTimes(3)
-    expect(mockPipelineExpire).toHaveBeenCalledTimes(3)
+    // Increment pipeline: hourly, daily, global and the daily budget
+    expect(mockPipelineIncr).toHaveBeenCalledTimes(4)
+    expect(mockPipelineExpire).toHaveBeenCalledTimes(4)
+  })
+
+  it('starts each window once instead of extending it on every request', async () => {
+    mockPipelineExec
+      .mockResolvedValueOnce([1, 1, 1, 1])
+      .mockResolvedValueOnce([])
+
+    await checkEvalRateAllowed('1.2.3.4')
+
+    for (const call of mockPipelineExpire.mock.calls) {
+      expect(call[2]).toBe('NX')
+    }
+  })
+
+  it('blocks everyone once the daily budget is spent', async () => {
+    mockPipelineExec.mockResolvedValueOnce([0, 0, 0, 1000])
+
+    const result = await checkEvalRateAllowed('5.6.7.8')
+    expect(result.allowed).toBe(false)
+    expect(mockPipelineExec).toHaveBeenCalledTimes(1)
   })
 })
